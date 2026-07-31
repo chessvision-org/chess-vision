@@ -84,20 +84,12 @@ img {
 }
 
 ::selection {
-  background: color-mix(
-    in srgb,
-    var(--color-accent),
-    transparent calc(100% - 0.3 * 100%)
-  );
+  background: color-mix(in srgb, var(--color-accent), transparent calc(100% - 0.3 * 100%));
   color: var(--color-text-primary);
 }
 
 ::-moz-selection {
-  background: color-mix(
-    in srgb,
-    var(--color-accent),
-    transparent calc(100% - 0.3 * 100%)
-  );
+  background: color-mix(in srgb, var(--color-accent), transparent calc(100% - 0.3 * 100%));
   color: var(--color-text-primary);
 }
 
@@ -117,9 +109,9 @@ html.modal-open {
   overflow: hidden;
 }
 
-.modal-open [class*='modal-container'],
-.modal-open [class*='drawer'],
-.modal-open [class*='sidebar'] {
+.modal-open [class*="modal-container"],
+.modal-open [class*="drawer"],
+.modal-open [class*="sidebar"] {
   overflow: hidden;
 }
 

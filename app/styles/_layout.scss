@@ -1,5 +1,5 @@
-@use './variables' as v;
-@use './mixins' as mx;
+@use "./variables" as v;
+@use "./mixins" as mx;
 
 .page-layout {
   display: flex;
@@ -424,7 +424,7 @@
     opacity 0.18s v.$ease-exit,
     transform 0.18s v.$ease-exit;
 
-  &[data-state='open'] {
+  &[data-state="open"] {
     pointer-events: auto;
     opacity: 1;
     transform: scale(1) translate3d(0, 0, 0);
@@ -444,7 +444,7 @@
   pointer-events: none;
   transition: opacity 0.24s v.$ease-exit;
 
-  &[data-state='open'] {
+  &[data-state="open"] {
     opacity: 1;
     pointer-events: auto;
     transition: opacity 0.28s v.$ease-enter;
@@ -474,7 +474,7 @@
     grid-template-rows 0.24s v.$ease-exit,
     border-color 0.24s v.$ease-exit;
 
-  &[data-state='open'] {
+  &[data-state="open"] {
     grid-template-rows: 1fr;
     border-bottom-color: rgb(var(--val-border) / 0.5);
     pointer-events: auto;

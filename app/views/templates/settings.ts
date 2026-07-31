@@ -1,4 +1,4 @@
-import { html } from '../helpers/html';
+import { html } from "../helpers/html";
 
 export function SettingsPage(): string {
   return html`
@@ -13,18 +13,14 @@ export function SettingsPage(): string {
           <label class="setting-row">
             <div class="setting-info">
               <span class="setting-name">Show Coordinates</span
-              ><span class="setting-desc"
-                >Display rank and file labels around the board</span
-              >
+              ><span class="setting-desc">Display rank and file labels around the board</span>
             </div>
             <input type="checkbox" x-model="showCoords" class="toggle" />
           </label>
           <label class="setting-row">
             <div class="setting-info">
               <span class="setting-name">Board Frame</span
-              ><span class="setting-desc"
-                >Add a thin decorative border around the board</span
-              >
+              ><span class="setting-desc">Add a thin decorative border around the board</span>
             </div>
             <input type="checkbox" x-model="showFrame" class="toggle" />
           </label>
@@ -38,18 +34,10 @@ export function SettingsPage(): string {
           <div class="setting-row">
             <div class="setting-info">
               <span class="setting-name">Physical Size</span
-              ><span class="setting-desc"
-                >Board size in centimeters for export</span
-              >
+              ><span class="setting-desc">Board size in centimeters for export</span>
             </div>
             <div class="setting-control">
-              <input
-                type="range"
-                min="3"
-                max="30"
-                x-model="boardSize"
-                class="range"
-              />
+              <input type="range" min="3" max="30" x-model="boardSize" class="range" />
               <span class="range-val" x-text="boardSize + ' cm'"></span>
             </div>
           </div>
@@ -62,12 +50,12 @@ export function SettingsPage(): string {
         <div class="setting-card">
           <div class="color-grid">
             ${[
-              ['#F0D9B5', '#B58863', 'Classic'],
-              ['#EEEED2', '#769656', 'Green'],
-              ['#DEB887', '#8B4513', 'Wood'],
-              ['#E8E8E8', '#A0A0A0', 'Gray'],
-              ['#C8C8C8', '#606060', 'Dark'],
-              ['#FFCF9A', '#D08A4E', 'Warm']
+              ["#F0D9B5", "#B58863", "Classic"],
+              ["#EEEED2", "#769656", "Green"],
+              ["#DEB887", "#8B4513", "Wood"],
+              ["#E8E8E8", "#A0A0A0", "Gray"],
+              ["#C8C8C8", "#606060", "Dark"],
+              ["#FFCF9A", "#D08A4E", "Warm"],
             ]
               .map(
                 ([light, dark, name]) => `
@@ -75,18 +63,16 @@ export function SettingsPage(): string {
               :class="{ active: lightSquare === '${light}' }" title="${name}">
               <span class="theme-swatch" style="background:linear-gradient(135deg,${light} 50%,${dark} 50%)"></span>
               <span class="theme-name">${name}</span>
-            </button>`
+            </button>`,
               )
-              .join('')}
+              .join("")}
           </div>
           <div class="color-custom">
             <label class="color-pick"
-              ><span>Light</span
-              ><input type="color" x-model="lightSquare" class="color-input"
+              ><span>Light</span><input type="color" x-model="lightSquare" class="color-input"
             /></label>
             <label class="color-pick"
-              ><span>Dark</span
-              ><input type="color" x-model="darkSquare" class="color-input"
+              ><span>Dark</span><input type="color" x-model="darkSquare" class="color-input"
             /></label>
           </div>
         </div>
@@ -168,7 +154,7 @@ export function SettingsPage(): string {
         background: rgb(59 130 246);
       }
       .toggle::after {
-        content: '';
+        content: "";
         position: absolute;
         top: 2px;
         left: 2px;

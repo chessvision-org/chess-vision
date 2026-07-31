@@ -1,7 +1,7 @@
-import { html, raw } from '../helpers/html';
-import { exportPageScript } from '../helpers/chessClient';
-import { PageSidebarLayout } from '../components/PageSidebarLayout';
-import { Checkbox, ModalShell } from '../components/ui';
+import { html, raw } from "../helpers/html";
+import { exportPageScript } from "../helpers/chessClient";
+import { PageSidebarLayout } from "../components/PageSidebarLayout";
+import { Checkbox, ModalShell } from "../components/ui";
 import {
   ArrowLeft,
   Check,
@@ -18,8 +18,8 @@ import {
   SlidersHorizontal,
   Trash2,
   X,
-  XCircle
-} from '../components/icons';
+  XCircle,
+} from "../components/icons";
 
 export interface ExportPageOptions {
   tab?: string;
@@ -29,7 +29,7 @@ export interface ExportPageOptions {
 const MAX_FEN_LENGTH = 80;
 
 function sanitizeFenForExpr(fen: string): string {
-  return fen.replace(/[^\s/0-9a-zA-Z-]/g, '');
+  return fen.replace(/[^\s/0-9a-zA-Z-]/g, "");
 }
 
 function themeGrid(): string {
@@ -48,7 +48,7 @@ function themeGrid(): string {
               ? 'theme-tab theme-tab-active'
               : 'theme-tab theme-tab-inactive'"
           >
-            ${raw(Palette('theme-tab-icon'))} Presets
+            ${raw(Palette("theme-tab-icon"))} Presets
           </button>
           <span aria-hidden="true" class="theme-tabs-sep"></span>
           <button
@@ -60,7 +60,7 @@ function themeGrid(): string {
               ? 'theme-tab theme-tab-active'
               : 'theme-tab theme-tab-inactive'"
           >
-            ${raw(SlidersHorizontal('theme-tab-icon'))} Custom
+            ${raw(SlidersHorizontal("theme-tab-icon"))} Custom
           </button>
         </div>
       </div>
@@ -84,20 +84,14 @@ function themeGrid(): string {
                 :aria-label="'Apply ' + tile.name + ' theme'"
                 :aria-pressed="themeIsSelected(tile.light, tile.dark)"
               >
-                <span
-                  class="theme-swatch-half"
-                  :style="'background-color:' + tile.light"
-                ></span>
-                <span
-                  class="theme-swatch-half"
-                  :style="'background-color:' + tile.dark"
-                ></span>
+                <span class="theme-swatch-half" :style="'background-color:' + tile.light"></span>
+                <span class="theme-swatch-half" :style="'background-color:' + tile.dark"></span>
                 <span
                   x-show="themeIsSelected(tile.light, tile.dark)"
                   class="theme-swatch-check"
                   aria-hidden="true"
                 >
-                  ${raw(Check('theme-swatch-check-icon'))}
+                  ${raw(Check("theme-swatch-check-icon"))}
                 </span>
               </button>
               <template x-if="tile.custom !== null">
@@ -108,7 +102,7 @@ function themeGrid(): string {
                     @click="startEdit(tile)"
                     :aria-label="'Edit ' + tile.name"
                   >
-                    ${raw(Pencil('theme-action-icon'))}
+                    ${raw(Pencil("theme-action-icon"))}
                   </button>
                   <button
                     type="button"
@@ -116,7 +110,7 @@ function themeGrid(): string {
                     @click="deleteTheme(tile.custom)"
                     :aria-label="'Delete ' + tile.name"
                   >
-                    ${raw(Trash2('theme-action-icon'))}
+                    ${raw(Trash2("theme-action-icon"))}
                   </button>
                 </div>
               </template>
@@ -130,7 +124,7 @@ function themeGrid(): string {
               @click="startAdd()"
               aria-label="Create a custom theme"
             >
-              ${raw(Plus('theme-add-icon'))}
+              ${raw(Plus("theme-add-icon"))}
             </button>
             <span class="theme-tile-name">Add</span>
           </li>
@@ -144,12 +138,9 @@ function themeGrid(): string {
             :disabled="themePage === 0"
             aria-label="Previous page"
           >
-            ${raw(ChevronLeft('pager-icon'))}
+            ${raw(ChevronLeft("pager-icon"))}
           </button>
-          <span
-            class="pager-label"
-            x-text="(themePage + 1) + ' / ' + themePages"
-          ></span>
+          <span class="pager-label" x-text="(themePage + 1) + ' / ' + themePages"></span>
           <button
             type="button"
             class="pager-btn"
@@ -157,7 +148,7 @@ function themeGrid(): string {
             :disabled="themePage >= themePages - 1"
             aria-label="Next page"
           >
-            ${raw(ChevronRight('pager-icon'))}
+            ${raw(ChevronRight("pager-icon"))}
           </button>
         </div>
       </div>
@@ -174,7 +165,7 @@ function themeGrid(): string {
             @click="closePicker()"
             aria-label="Close and return to presets"
           >
-            ${raw(X('theme-close-icon'))}
+            ${raw(X("theme-close-icon"))}
           </button>
         </div>
 
@@ -187,10 +178,7 @@ function themeGrid(): string {
               : 'square-btn-inactive'"
             @click="pickerSetSide('light')"
           >
-            <span
-              class="square-color-preview"
-              :style="'background-color:' + pickerLight"
-            ></span>
+            <span class="square-color-preview" :style="'background-color:' + pickerLight"></span>
             <span class="square-info">
               <span class="square-label">Light square</span>
               <span class="square-hex" x-text="pickerLight"></span>
@@ -204,10 +192,7 @@ function themeGrid(): string {
               : 'square-btn-inactive'"
             @click="pickerSetSide('dark')"
           >
-            <span
-              class="square-color-preview"
-              :style="'background-color:' + pickerDark"
-            ></span>
+            <span class="square-color-preview" :style="'background-color:' + pickerDark"></span>
             <span class="square-info">
               <span class="square-label">Dark square</span>
               <span class="square-hex" x-text="pickerDark"></span>
@@ -257,13 +242,7 @@ function themeGrid(): string {
             placeholder="Name (optional)"
             aria-label="Theme name"
           />
-          <button
-            type="button"
-            class="btn btn-primary"
-            @click="saveCustomTheme()"
-          >
-            Save
-          </button>
+          <button type="button" class="btn btn-primary" @click="saveCustomTheme()">Save</button>
         </div>
       </div>
     </div>
@@ -320,12 +299,9 @@ function pieceSetGrid(): string {
           :disabled="piecePage === 0"
           aria-label="Previous page"
         >
-          ${raw(ChevronLeft('pager-icon'))}
+          ${raw(ChevronLeft("pager-icon"))}
         </button>
-        <span
-          class="pager-label"
-          x-text="(piecePage + 1) + ' / ' + piecePages"
-        ></span>
+        <span class="pager-label" x-text="(piecePage + 1) + ' / ' + piecePages"></span>
         <button
           type="button"
           class="pager-btn"
@@ -333,7 +309,7 @@ function pieceSetGrid(): string {
           :disabled="piecePage >= piecePages - 1"
           aria-label="Next page"
         >
-          ${raw(ChevronRight('pager-icon'))}
+          ${raw(ChevronRight("pager-icon"))}
         </button>
       </div>
     </div>
@@ -360,18 +336,10 @@ function boardStyleStep(): string {
                 alt="Chess board preview"
                 aria-label="Board preview"
               />
-              <div
-                class="board-preview-overlay"
-                x-show="previewLoading"
-                x-cloak
-              >
+              <div class="board-preview-overlay" x-show="previewLoading" x-cloak>
                 <div class="spinner" aria-hidden="true"></div>
               </div>
-              <div
-                class="board-preview-error"
-                x-show="!previewLoading && previewError"
-                x-cloak
-              >
+              <div class="board-preview-error" x-show="!previewLoading && previewError" x-cloak>
                 <p>Invalid FEN</p>
               </div>
             </div>
@@ -380,22 +348,20 @@ function boardStyleStep(): string {
           <div class="display-options">
             <span class="section-eyebrow">Display Options</span>
             ${Checkbox({
-              xModel: 'showCoords',
-              onInput: 'setShowCoords($event.target.checked)',
-              label: 'Show Coordinates'
+              xModel: "showCoords",
+              onInput: "setShowCoords($event.target.checked)",
+              label: "Show Coordinates",
             })}
             ${Checkbox({
-              xModel: 'showThinFrame',
-              onInput: 'setShowThinFrame($event.target.checked)',
-              label: 'Board Frame'
+              xModel: "showThinFrame",
+              onInput: "setShowThinFrame($event.target.checked)",
+              label: "Board Frame",
             })}
           </div>
         </div>
 
         <div class="board-style-panel-col">
-          <div class="board-style-panel">
-            ${raw(themeGrid())} ${raw(pieceSetGrid())}
-          </div>
+          <div class="board-style-panel">${raw(themeGrid())} ${raw(pieceSetGrid())}</div>
         </div>
       </div>
     </div>
@@ -403,10 +369,7 @@ function boardStyleStep(): string {
 }
 
 function exportSettingsStep(): string {
-  const formatBtn = (
-    format: 'jpeg' | 'png' | 'svg',
-    label: string
-  ): string => html`
+  const formatBtn = (format: "jpeg" | "png" | "svg", label: string): string => html`
     <button
       type="button"
       @click="toggleFormat('${format}')"
@@ -423,7 +386,7 @@ function exportSettingsStep(): string {
             : ''"
       >
         <span x-show="selectedFormats.includes('${format}')" x-cloak>
-          ${raw(Check('format-check-icon'))}
+          ${raw(Check("format-check-icon"))}
         </span>
       </span>
       ${label}
@@ -465,16 +428,14 @@ function exportSettingsStep(): string {
       <div class="settings-section">
         <span class="section-eyebrow">Format</span>
         <div class="format-options">
-          ${formatBtn('jpeg', 'JPEG')} ${formatBtn('png', 'PNG')}
-          ${formatBtn('svg', 'SVG')}
+          ${formatBtn("jpeg", "JPEG")} ${formatBtn("png", "PNG")} ${formatBtn("svg", "SVG")}
         </div>
       </div>
 
       <div class="settings-section">
         <span class="section-eyebrow">Quality</span>
         <div class="settings-btn-row">
-          ${resolutionBtn(1)} ${resolutionBtn(2)} ${resolutionBtn(3)}
-          ${resolutionBtn(4)}
+          ${resolutionBtn(1)} ${resolutionBtn(2)} ${resolutionBtn(3)} ${resolutionBtn(4)}
         </div>
       </div>
 
@@ -540,7 +501,7 @@ function exportSettingsStep(): string {
           :disabled="selectedFormats.length === 0"
           class="btn btn-primary download-btn"
         >
-          ${raw(Download('download-btn-icon'))} Download
+          ${raw(Download("download-btn-icon"))} Download
         </button>
       </div>
     </div>
@@ -550,12 +511,12 @@ function exportSettingsStep(): string {
 function exportProgressModal(): string {
   return html`
     ${ModalShell({
-      isOpenExpr: 'isExporting',
-      onCloseExpr: 'void 0',
-      title: 'Export Progress',
+      isOpenExpr: "isExporting",
+      onCloseExpr: "void 0",
+      title: "Export Progress",
       icon: FileImage,
-      iconColor: 'var(--color-text-secondary)',
-      maxWidth: '28rem',
+      iconColor: "var(--color-text-secondary)",
+      maxWidth: "28rem",
       showCloseButton: false,
       disableBackdropClick: true,
       children: html`
@@ -575,15 +536,9 @@ function exportProgressModal(): string {
               aria-valuemin="0"
               aria-valuemax="100"
             >
-              <div
-                class="progress-bar-fill"
-                :style="'width:' + displayProgress + '%'"
-              ></div>
+              <div class="progress-bar-fill" :style="'width:' + displayProgress + '%'"></div>
             </div>
-            <p
-              class="progress-percent"
-              x-text="Math.round(displayProgress) + '% complete'"
-            ></p>
+            <p class="progress-percent" x-text="Math.round(displayProgress) + '% complete'"></p>
           </div>
           <div class="progress-actions">
             <button
@@ -593,34 +548,27 @@ function exportProgressModal(): string {
               :aria-label="isPaused ? 'Resume export' : 'Pause export'"
             >
               <span x-show="isPaused" x-cloak class="progress-btn-inner">
-                ${raw(Play('progress-btn-icon'))} <span>Resume</span>
+                ${raw(Play("progress-btn-icon"))} <span>Resume</span>
               </span>
               <span x-show="!isPaused" x-cloak class="progress-btn-inner">
-                ${raw(Pause('progress-btn-icon'))} <span>Pause</span>
+                ${raw(Pause("progress-btn-icon"))} <span>Pause</span>
               </span>
             </button>
-            <button
-              type="button"
-              class="btn btn-danger progress-btn"
-              @click="cancelExport()"
-            >
-              ${raw(XCircle('progress-btn-icon'))} <span>Cancel</span>
+            <button type="button" class="btn btn-danger progress-btn" @click="cancelExport()">
+              ${raw(XCircle("progress-btn-icon"))} <span>Cancel</span>
             </button>
           </div>
         </div>
-      `
+      `,
     })}
   `;
 }
 
 export function ExportPage(options: ExportPageOptions = {}): string {
-  const tab =
-    options.tab === 'export-settings' ? 'export-settings' : 'board-style';
+  const tab = options.tab === "export-settings" ? "export-settings" : "board-style";
   const rawFen =
-    options.fen && options.fen.trim().length > 0
-      ? options.fen.trim().slice(0, MAX_FEN_LENGTH)
-      : '';
-  const fenExpr = rawFen ? `'${sanitizeFenForExpr(rawFen)}'` : 'null';
+    options.fen && options.fen.trim().length > 0 ? options.fen.trim().slice(0, MAX_FEN_LENGTH) : "";
+  const fenExpr = rawFen ? `'${sanitizeFenForExpr(rawFen)}'` : "null";
   const dataExpr = `exportPage({ tab: '${tab}', fen: ${fenExpr} })`;
 
   const tabs = html`
@@ -650,7 +598,7 @@ export function ExportPage(options: ExportPageOptions = {}): string {
                   ? 'tab-indicator-active'
                   : 'tab-indicator-inactive'"
               ></span>
-              ${raw(LayoutGrid('tab-icon'))} Board Style
+              ${raw(LayoutGrid("tab-icon"))} Board Style
             </button>
             <button
               type="button"
@@ -669,7 +617,7 @@ export function ExportPage(options: ExportPageOptions = {}): string {
                   ? 'tab-indicator-active'
                   : 'tab-indicator-inactive'"
               ></span>
-              ${raw(Download('tab-icon'))} Export Settings
+              ${raw(Download("tab-icon"))} Export Settings
             </button>
           </div>
         </div>
@@ -679,8 +627,8 @@ export function ExportPage(options: ExportPageOptions = {}): string {
 
   const sidebar = PageSidebarLayout({
     sidebar: tabs,
-    contentLabel: 'Export Studio',
-    children: html`${boardStyleStep()}${exportSettingsStep()}`
+    contentLabel: "Export Studio",
+    children: html`${boardStyleStep()}${exportSettingsStep()}`,
   });
 
   return html`
@@ -688,16 +636,13 @@ export function ExportPage(options: ExportPageOptions = {}): string {
       <h1 class="sr-only">Export Chess Diagram</h1>
 
       <div class="export-empty" x-show="!hasConfig" x-cloak>
-        <div class="export-empty-icon">
-          ${raw(Download('export-empty-icon-img'))}
-        </div>
+        <div class="export-empty-icon">${raw(Download("export-empty-icon-img"))}</div>
         <p class="export-empty-title">No board loaded</p>
         <p class="export-empty-text">
-          Open a position from the editor to export it as a high-resolution
-          image.
+          Open a position from the editor to export it as a high-resolution image.
         </p>
         <a href="/" class="btn btn-primary export-empty-link">
-          ${raw(ArrowLeft('export-empty-link-icon'))} Back to Editor
+          ${raw(ArrowLeft("export-empty-link-icon"))} Back to Editor
         </a>
       </div>
 

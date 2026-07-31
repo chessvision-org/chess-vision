@@ -1,23 +1,21 @@
-import type { PlacedPiece, SearchResponse } from '../types.ts';
-import { fetchText } from '../utils/fetch.ts';
-import { logDrift, trace } from '../utils/trace.ts';
+import type { PlacedPiece, SearchResponse } from "../types.ts";
+import { fetchText } from "../utils/fetch.ts";
+import { logDrift, trace } from "../utils/trace.ts";
 
 // Constants
 const PDB_PIECE: Record<string, string> = {
-  K: 'K',
-  Q: 'D',
-  R: 'T',
-  B: 'L',
-  N: 'S',
-  P: 'B'
+  K: "K",
+  Q: "D",
+  R: "T",
+  B: "L",
+  N: "S",
+  P: "B",
 };
 
 // Helpers
 function buildExpression(pieces: PlacedPiece[]): string {
-  const tokens = pieces.map(
-    (p) => `${p.white ? 'w' : 's'}${PDB_PIECE[p.piece] ?? '?'}${p.square}`
-  );
-  return `POSITION='${tokens.join(' ')}'`;
+  const tokens = pieces.map((p) => `${p.white ? "w" : "s"}${PDB_PIECE[p.piece] ?? "?"}${p.square}`);
+  return `POSITION='${tokens.join(" ")}'`;
 }
 
 export function pdbUrl(pieces: PlacedPiece[]): string {
@@ -25,38 +23,36 @@ export function pdbUrl(pieces: PlacedPiece[]): string {
 }
 
 // Search
-const PDB_LOGIN_REQUIRED = 'PDB requires login (2026-07-20+)';
+const PDB_LOGIN_REQUIRED = "PDB requires login (2026-07-20+)";
 
-export async function searchPdb(
-  pieces: PlacedPiece[]
-): Promise<SearchResponse> {
+export async function searchPdb(pieces: PlacedPiece[]): Promise<SearchResponse> {
   const url = pdbUrl(pieces);
-  const miss: SearchResponse = { found: false, database: 'PDB', url };
-  trace('PDB', 'expression', buildExpression(pieces));
+  const miss: SearchResponse = { found: false, database: "PDB", url };
+  trace("PDB", "expression", buildExpression(pieces));
   try {
     // PDB made login mandatory for searches on 2026-07-20 to block
     // crawler traffic. search.jsp now redirects to login.jsp; the
     // redirect is not followed so we do not hammer the server.
-    const html = await fetchText(url, { redirect: 'manual' });
+    const html = await fetchText(url, { redirect: "manual" });
     if (html === null) {
-      logDrift('PDB', url, PDB_LOGIN_REQUIRED);
+      logDrift("PDB", url, PDB_LOGIN_REQUIRED);
       return miss;
     }
     if (/the search command is not correct/i.test(html)) {
-      logDrift('PDB', url, html);
+      logDrift("PDB", url, html);
       return miss;
     }
     if (/no problems? (have|has) been found/i.test(html)) return miss;
     const m = html.match(/(\d+)\s+problem\(?s?\)?\s+found/i);
     if (!m) {
-      logDrift('PDB', url, html);
+      logDrift("PDB", url, html);
       return miss;
     }
-    const count = parseInt(m[1] ?? '0', 10);
-    trace('PDB', 'count', count);
-    return count > 0 ? { found: true, database: 'PDB', url } : miss;
+    const count = parseInt(m[1] ?? "0", 10);
+    trace("PDB", "count", count);
+    return count > 0 ? { found: true, database: "PDB", url } : miss;
   } catch (err) {
-    console.error('PDB error:', err);
+    console.error("PDB error:", err);
     return miss;
   }
 }

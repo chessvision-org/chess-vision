@@ -1,4 +1,4 @@
-import { html } from '../../helpers/html';
+import { html } from "../../helpers/html";
 
 interface CheckboxProps {
   checked?: boolean;
@@ -21,30 +21,28 @@ export function Checkbox({
   name,
   value,
   disabled = false,
-  className = '',
+  className = "",
   xModel,
-  onInput
+  onInput,
 }: CheckboxProps): string {
   const id = providedId ?? `checkbox-${++checkboxUid}`;
-  const nameAttr = name !== undefined ? html`name="${name}"` : '';
-  const valueAttr = value !== undefined ? html`value="${value}"` : '';
+  const nameAttr = name !== undefined ? html`name="${name}"` : "";
+  const valueAttr = value !== undefined ? html`value="${value}"` : "";
 
   return html`<label
     for="${id}"
-    class="checkbox-label ${disabled
-      ? 'checkbox-label-disabled'
-      : ''} ${className}"
+    class="checkbox-label ${disabled ? "checkbox-label-disabled" : ""} ${className}"
   >
     <input
       id="${id}"
       type="checkbox"
       ${nameAttr}
       ${valueAttr}
-      ${checked ? 'checked' : ''}
-      ${disabled ? 'disabled' : ''}
+      ${checked ? "checked" : ""}
+      ${disabled ? "disabled" : ""}
       class="checkbox-input"
-      ${xModel ? html`x-model="${xModel}"` : ''}
-      ${onInput ? html`@change="${onInput}"` : ''}
+      ${xModel ? html`x-model="${xModel}"` : ""}
+      ${onInput ? html`@change="${onInput}"` : ""}
     />
     <span class="checkbox-text">${label}</span>
   </label>`;

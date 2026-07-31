@@ -1,12 +1,11 @@
-@use './variables' as v;
-@use './mixins';
+@use "./variables" as v;
+@use "./mixins";
 
 // ===== Home editor page =====
 .editor-root {
   max-width: 1200px;
   margin: 0 auto;
-  padding: var(--spacing-fluid-sm) var(--spacing-fluid-sm)
-    var(--spacing-fluid-lg);
+  padding: var(--spacing-fluid-sm) var(--spacing-fluid-sm) var(--spacing-fluid-lg);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-fluid-sm);
@@ -116,11 +115,7 @@
 }
 
 .fen-input-wrap {
-  background-color: color-mix(
-    in srgb,
-    var(--color-surface-elevated) 35%,
-    var(--color-bg)
-  );
+  background-color: color-mix(in srgb, var(--color-surface-elevated) 35%, var(--color-bg));
   border: 1px solid var(--color-border-subtle);
   border-radius: 0.625rem;
   overflow: hidden;
@@ -297,11 +292,10 @@
   transition: filter 0.12s var(--animation-curve);
 
   &:hover::after {
-    content: '';
+    content: "";
     position: absolute;
     inset: 0;
-    box-shadow: inset 0 0 0 2px
-      color-mix(in srgb, var(--color-accent) 65%, transparent);
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-accent) 65%, transparent);
     pointer-events: none;
   }
 
@@ -309,7 +303,7 @@
     outline: none;
 
     &::after {
-      content: '';
+      content: "";
       position: absolute;
       inset: 0;
       box-shadow: inset 0 0 0 2px var(--color-accent);
@@ -320,7 +314,7 @@
 
 .board-square-selected {
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     inset: 0;
     box-shadow: inset 0 0 0 3px var(--color-accent);
@@ -427,11 +421,7 @@
   aspect-ratio: 1 / 1;
   border-radius: 0.5rem;
   border: 1px solid var(--color-border-subtle);
-  background-color: color-mix(
-    in srgb,
-    var(--color-surface-elevated) 40%,
-    var(--color-bg)
-  );
+  background-color: color-mix(in srgb, var(--color-surface-elevated) 40%, var(--color-bg));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -495,11 +485,7 @@
   padding: 0.5rem 0.625rem;
   border-radius: 0.5rem;
   border: 1px solid var(--color-border-subtle);
-  background-color: color-mix(
-    in srgb,
-    var(--color-surface-elevated) 40%,
-    var(--color-bg)
-  );
+  background-color: color-mix(in srgb, var(--color-surface-elevated) 40%, var(--color-bg));
   color: var(--color-text-primary);
   font-size: var(--text-fluid-xs);
   font-weight: 600;
@@ -576,4 +562,22 @@
     flex: 1;
     min-width: 0;
   }
+}
+
+// ===== Drag and drop =====
+.drag-ghost {
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.board-grid.drag-over {
+  box-shadow: inset 0 0 0 4px var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.trash-zone.drag-over {
+  border-color: var(--color-error);
+  color: var(--color-error);
+  background-color: color-mix(in srgb, var(--color-error) 8%, transparent);
+  border-style: solid;
 }

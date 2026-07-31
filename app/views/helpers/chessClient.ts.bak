@@ -1337,12 +1337,6 @@ export function editorStateScript(): string {
         shareOpen: false,
         shareUrl: '',
         queryFen: opts.queryFen || null,
-        // drag state
-        dragData: null,
-        dragGhost: null,
-        dragStartX: 0,
-        dragStartY: 0,
-        dragOverId: null,
 
         init: function () {
           this.loadPrefs();
@@ -1489,143 +1483,11 @@ export function editorStateScript(): string {
           this.held = null;
           this.commit(serialize(b));
         },
-clearSelection: function () {
+        clearSelection: function () {
           this.held = null;
           this.palettePiece = null;
-          this.cancelDrag();
         },
-        // --- Drag and drop ---
-        startDrag: function (dragData, clientX, clientY) {
-          var self = this;
-          if (this.dragData) return;
-          this.dragData = dragData;
-          this.dragStartX = clientX;
-          this.dragStartY = clientY;
-          var ghost = document.createElement('div');
-          ghost.className = 'drag-ghost';
-          ghost.style.pointerEvents = 'none';
-          ghost.style.position = 'fixed';
-          ghost.style.zIndex = '9999';
-          ghost.style.transform = 'translate(' + (clientX - 24) + 'px,' + (clientY - 24) + 'px)';
-          ghost.style.width = '48px';
-          ghost.style.height = '48px';
-          ghost.style.borderRadius = '4px';
-          ghost.style.boxShadow = '0 4px 12px rgba(0,0,0,0.4)';
-          ghost.style.opacity = '0.9';
-          var pieceKey = dragData.isFromPalette ? dragData.pieceKey : (dragData.piece === dragData.piece.toUpperCase() ? 'w' : 'b') + dragData.piece.toUpperCase();
-          ghost.style.backgroundImage = 'url(/piece/' + this.pieceStyle + '/' + pieceKey + '.svg)';
-          ghost.style.backgroundSize = 'cover';
-          ghost.style.backgroundRepeat = 'no-repeat';
-          ghost.style.backgroundPosition = 'center';
-          document.body.appendChild(ghost);
-          this.dragGhost = ghost;
-          document.addEventListener('pointermove', this.onDragMove);
-          document.addEventListener('pointerup', this.onDragEnd);
-          document.addEventListener('pointercancel', this.onDragEnd);
-        },
-        cancelDrag: function () {
-          if (this.dragGhost) {
-            this.dragGhost.remove();
-            this.dragGhost = null;
-          }
-          this.dragData = null;
-          this.dragOverId = null;
-          document.removeEventListener('pointermove', this.onDragMove);
-          document.removeEventListener('pointerup', this.onDragEnd);
-          document.removeEventListener('pointercancel', this.onDragEnd);
-        },
-        onDragMove: function (e) {
-          if (!this.dragGhost) return;
-          var x = e.clientX - this.dragStartX;
-          var y = e.clientY - this.dragStartY;
-          this.dragGhost.style.transform = 'translate(' + (e.clientX - 24) + 'px,' + (e.clientY - 24) + 'px)';
-          var overId = null;
-          var boardEl = document.querySelector('.board-grid');
-          if (boardEl) {
-            var r = boardEl.getBoundingClientRect();
-            if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
-              overId = 'board';
-            }
-          }
-          var trashEl = document.querySelector('.trash-zone');
-          if (trashEl) {
-            var tr = trashEl.getBoundingClientRect();
-            if (e.clientX >= tr.left && e.clientX <= tr.right && e.clientY >= tr.top && e.clientY <= tr.bottom) {
-              overId = 'trash';
-            }
-          }
-          if (overId !== this.dragOverId) {
-            this.dragOverId = overId;
-            if (boardEl) boardEl.classList.toggle('drag-over', overId === 'board');
-            if (trashEl) trashEl.classList.toggle('drag-over', overId === 'trash');
-          }
-        },
-        onDragEnd: function (e) {
-          var overId = this.dragOverId;
-          var dragData = this.dragData;
-          this.cancelDrag();
-          if (!dragData || !overId) return;
-          if (overId === 'trash') {
-            if (!dragData.isFromPalette && dragData.fromRow !== undefined && dragData.fromCol !== undefined) {
-              var r = dragData.fromRow;
-              var c = dragData.fromCol;
-              var b = this.squares.map(function (row) { return row.slice(); });
-              b[r][c] = '';
-              this.commit(serialize(b));
-            }
-            return;
-          }
-          if (overId === 'board' && dragData.toRow !== undefined && dragData.toCol !== undefined) {
-            var piece = dragData.piece;
-            var fromRow = dragData.fromRow;
-            var fromCol = dragData.fromCol;
-            var toRow = dragData.toRow;
-            var toCol = dragData.toCol;
-            var isFromPalette = dragData.isFromPalette;
-            var b = this.squares.map(function (row) { return row.slice(); });
-            if (isFromPalette) {
-              b[toRow][toCol] = piece;
-            } else if (fromRow !== undefined && fromCol !== undefined) {
-              b[toRow][toCol] = b[fromRow][fromCol];
-              b[fromRow][fromCol] = '';
-            }
-            this.commit(serialize(b));
-          }
-        },
-        startDragBoard: function (dr, dc, e) {
-          var a = this.actual(dr, dc);
-          var r = a[0];
-          var c = a[1];
-          var piece = this.squares[r][c];
-          if (!piece) return;
-          e.preventDefault();
-          this.startDrag({
-            piece: piece,
-            pieceKey: (piece === piece.toUpperCase() ? 'w' : 'b') + piece.toUpperCase(),
-            fromRow: r,
-            fromCol: c,
-            toRow: r,
-            toCol: c,
-            isFromPalette: false
-          }, e.clientX, e.clientY);
-        },
-        startDragPalette: function (key, e) {
-          e.preventDefault();
-          this.startDrag({
-            piece: (key[0] === 'w' ? key[1].toUpperCase() : key[1].toLowerCase()),
-            pieceKey: key,
-            fromRow: undefined,
-            fromCol: undefined,
-            toRow: undefined,
-            toCol: undefined,
-            isFromPalette: true
-          }, e.clientX, e.clientY);
-        },
-        setDragTarget: function (toRow, toCol) {
-          if (!this.dragData) return;
-          this.dragData.toRow = toRow;
-          this.dragData.toCol = toCol;
-        },
+
         loadFen: function (fen, fromHistory) {
           var p = placement(fen);
           if (!validPlacement(p)) return;
@@ -1644,7 +1506,6 @@ clearSelection: function () {
           if (this.past.length > 100) this.past.shift();
           this.future = [];
           this.loadFen(newPlacement + (meta ? ' ' + meta : ''), true);
-          this.saveHistory(this.fen, 'drag');
         },
         onFenInput: function (ev) {
           var v = String(
@@ -1662,7 +1523,6 @@ clearSelection: function () {
           this.error = '';
           this.clearSelection();
           this.loadFen(v, false);
-          this.saveHistory(this.fen, 'manual');
         },
         undo: function () {
           var prev = this.past.pop();
@@ -1775,7 +1635,6 @@ clearSelection: function () {
             });
         },
         exportImage: function () {
-          this.saveHistory(this.fen, 'export');
           try {
             sessionStorage.setItem(
               'cv_export_config',
@@ -1795,27 +1654,25 @@ clearSelection: function () {
             this.notify('error', 'No position to save.');
             return;
           }
-          var isFav = !!this.favorites[p];
-          if (isFav) {
-            delete this.favorites[p];
+          var idx = this.favorites.indexOf(p);
+          if (idx !== -1) {
+            this.favorites.splice(idx, 1);
             this.notify('info', 'Removed from favorites.');
           } else {
-            var favCount = Object.keys(this.favorites).length;
-            if (favCount >= 10) {
+            if (this.favorites.length >= 10) {
               this.notify('error', 'Favorite limit (10) reached.');
               return;
             }
-            this.favorites[p] = true;
+            this.favorites.push(p);
             this.notify('success', 'Position saved to favorites.');
           }
           try {
             localStorage.setItem(
-              'favoriteFens',
+              'chess-favorites',
               JSON.stringify(this.favorites)
             );
           } catch (e) {}
           this.syncFavorite();
-          this.saveHistory(this.fen, 'manual');
         },
         addToBatch: function () {
           var p = placement(this.fen);
@@ -1890,54 +1747,15 @@ clearSelection: function () {
         },
         loadFavorites: function () {
           try {
-            var raw = localStorage.getItem('favoriteFens');
-            if (raw) {
-              var parsed = JSON.parse(raw);
-              this.favorites = parsed && typeof parsed === 'object' ? parsed : {};
-            } else {
-              this.favorites = {};
-            }
+            this.favorites =
+              JSON.parse(localStorage.getItem('chess-favorites') || '[]') || [];
           } catch (e) {
-            this.favorites = {};
+            this.favorites = [];
           }
-        },
-        loadHistory: function () {
-          try {
-            var raw = localStorage.getItem('fen-history');
-            if (raw) {
-              var parsed = JSON.parse(raw);
-              this.history = Array.isArray(parsed) ? parsed : [];
-            } else {
-              this.history = [];
-            }
-          } catch (e) {
-            this.history = [];
-          }
-        },
-        saveHistory: function (fen, source) {
-          var p = placement(fen);
-          if (!p || !validPlacement(p)) return;
-          var now = Date.now();
-          var newEntry = {
-            id: now,
-            fen: fen,
-            isFavorite: !!this.favorites[p],
-            lastActiveAt: now,
-            createdAt: now,
-            source: source || 'manual'
-          };
-          var updated = [newEntry].concat(this.history.filter(function (e) {
-            return e.fen !== fen;
-          }));
-          if (updated.length > 200) updated = updated.slice(0, 200);
-          this.history = updated;
-          try {
-            localStorage.setItem('fen-history', JSON.stringify(updated));
-          } catch (e) {}
         },
         syncFavorite: function () {
           var p = placement(this.fen);
-          this.isFavorite = !!this.favorites[p];
+          this.isFavorite = this.favorites.indexOf(p) !== -1;
         },
         notify: function (type, message) {
           this.$store.notifications.push({ type: type, message: message });

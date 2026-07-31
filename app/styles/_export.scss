@@ -1,5 +1,5 @@
-@use './variables' as v;
-@use './mixins' as mx;
+@use "./variables" as v;
+@use "./mixins" as mx;
 
 // =============================================================
 // Export Page (studio)
@@ -899,11 +899,7 @@
   border-radius: 0.75rem;
   border: 1px dashed var(--color-border);
   padding: 0.875rem 1rem;
-  background: color-mix(
-    in srgb,
-    var(--color-surface-elevated),
-    transparent 60%
-  );
+  background: color-mix(in srgb, var(--color-surface-elevated), transparent 60%);
 }
 
 .pro-tips-title {
@@ -957,11 +953,7 @@
 .progress-bar-fill {
   height: 100%;
   border-radius: 9999px;
-  background: linear-gradient(
-    90deg,
-    var(--color-accent-muted),
-    var(--color-accent)
-  );
+  background: linear-gradient(90deg, var(--color-accent-muted), var(--color-accent));
   transition: width 0.15s ease-out;
 }
 

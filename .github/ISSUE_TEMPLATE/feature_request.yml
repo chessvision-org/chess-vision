@@ -1,7 +1,7 @@
 name: Feature Request
 description: Suggest an improvement or new capability
-title: '[Feature]: '
-labels: ['enhancement', 'needs-review']
+title: "[Feature]: "
+labels: ["enhancement", "needs-review"]
 
 body:
   - type: textarea

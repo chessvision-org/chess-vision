@@ -1,5 +1,5 @@
-import { html, raw } from '../helpers/html';
-import { editorStateScript } from '../helpers/chessClient';
+import { html, raw } from "../helpers/html";
+import { editorStateScript } from "../helpers/chessClient";
 import {
   renderBoard,
   renderBoardOptions,
@@ -8,20 +8,16 @@ import {
   renderFenToolbar,
   renderPalette,
   renderShareDialog,
-  renderTrashZone
-} from '../components/chess/editorParts';
-import {
-  isValidFen,
-  MAX_FEN_LENGTH,
-  STARTING_FEN
-} from '../components/chess/boardUtils';
+  renderTrashZone,
+} from "../components/chess/editorParts";
+import { isValidFen, MAX_FEN_LENGTH, STARTING_FEN } from "../components/chess/boardUtils";
 
 export interface HomePageOptions {
   fen?: string | null;
   queryFen?: string | null;
 }
 
-const DEFAULT_PIECE_STYLE = 'cburnett';
+const DEFAULT_PIECE_STYLE = "cburnett";
 
 export function HomePage(options: HomePageOptions = {}): string {
   const queryFen =
@@ -33,14 +29,12 @@ export function HomePage(options: HomePageOptions = {}): string {
   const queryExpr = hasValidQuery ? queryFen : null;
 
   const dataExpr = `editorState({ fen: '${fen}', queryFen: ${
-    queryExpr === null ? 'null' : `'${queryExpr}'`
+    queryExpr === null ? "null" : `'${queryExpr}'`
   } })`;
 
   return html`
     <div class="editor-root" x-data="${dataExpr}">
-      <h1 class="sr-only">
-        Free Chess Diagram Generator — FEN to PNG, JPEG &amp; SVG
-      </h1>
+      <h1 class="sr-only">Free Chess Diagram Generator — FEN to PNG, JPEG &amp; SVG</h1>
 
       <header class="editor-head">
         <h1 class="editor-title">Chess Diagram Generator</h1>
@@ -52,16 +46,12 @@ export function HomePage(options: HomePageOptions = {}): string {
       ${renderFenToolbar(fen)}
 
       <div class="workspace">
-        <section
-          class="editor-board-card card-elevated"
-          aria-label="Board editor"
-        >
+        <section class="editor-board-card card-elevated" aria-label="Board editor">
           ${renderCommandBar()} ${renderBoard()} ${renderBoardOptions()}
         </section>
 
         <aside class="editor-side">
-          ${renderPalette(DEFAULT_PIECE_STYLE)} ${renderDbSearch(fen)}
-          ${renderTrashZone()}
+          ${renderPalette(DEFAULT_PIECE_STYLE)} ${renderDbSearch(fen)} ${renderTrashZone()}
         </aside>
       </div>
 

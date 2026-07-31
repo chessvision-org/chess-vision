@@ -1,1 +1,1 @@
-console.log('  CSP style-src: using unsafe-inline (no hash update needed)');
+console.log("  CSP style-src: using unsafe-inline (no hash update needed)");

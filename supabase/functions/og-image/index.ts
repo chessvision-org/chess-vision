@@ -1,64 +1,49 @@
 // @ts-ignore - ESM module lacks types in Deno
-import { initWasm, Resvg } from 'https://esm.sh/@resvg/resvg-wasm@3.1.1';
+import { initWasm, Resvg } from "https://esm.sh/@resvg/resvg-wasm@3.1.1";
 
-const resvgWasm = await fetch(
-  'https://esm.sh/@resvg/resvg-wasm@3.1.1/index_bg.wasm'
-).then((res: Response) => res.arrayBuffer());
+const resvgWasm = await fetch("https://esm.sh/@resvg/resvg-wasm@3.1.1/index_bg.wasm").then(
+  (res: Response) => res.arrayBuffer(),
+);
 await initWasm(resvgWasm);
 
 // Constants
-const DEFAULT_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR';
-const PIECE_NAMES = [
-  'wK',
-  'wQ',
-  'wR',
-  'wB',
-  'wN',
-  'wP',
-  'bK',
-  'bQ',
-  'bR',
-  'bB',
-  'bN',
-  'bP'
-];
+const DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+const PIECE_NAMES = ["wK", "wQ", "wR", "wB", "wN", "wP", "bK", "bQ", "bR", "bB", "bN", "bP"];
 const PIECE_CACHE: Record<string, string> = {};
 
 await Promise.all(
   PIECE_NAMES.map(async (name) => {
     try {
-      const res = await fetch(
-        `https://lichess1.org/assets/piece/cburnett/${name}.svg`
-      );
+      const res = await fetch(`https://lichess1.org/assets/piece/cburnett/${name}.svg`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       PIECE_CACHE[name] = `data:image/svg+xml;base64,${btoa(await res.text())}`;
     } catch (e) {
       console.warn(`Failed to preload piece ${name}:`, e);
     }
-  })
+  }),
 );
 
 // Handler
 Deno.serve(async (req) => {
   try {
     const url = new URL(req.url);
-    const rawFen = url.searchParams.get('fen') || DEFAULT_FEN;
-    const fen = rawFen.split(' ')[0];
-    const isFlipped = url.searchParams.get('flipped') === 'true';
+    const rawFen = url.searchParams.get("fen") || DEFAULT_FEN;
+    const fen = rawFen.split(" ")[0];
+    const isFlipped = url.searchParams.get("flipped") === "true";
 
-    const rows = fen.split('/');
-    if (rows.length !== 8) return new Response('Invalid FEN', { status: 400 });
+    const rows = fen.split("/");
+    if (rows.length !== 8) return new Response("Invalid FEN", { status: 400 });
 
     const boardSize = 560;
     const squareSize = boardSize / 8;
     const offsetX = (1200 - boardSize) / 2;
     const offsetY = (630 - boardSize) / 2;
 
-    let svgBoard = '';
+    let svgBoard = "";
 
     for (let r = 0; r < 8; r++) {
       for (let c = 0; c < 8; c++) {
-        const color = (r + c) % 2 === 0 ? '#f0d9b5' : '#b58863';
+        const color = (r + c) % 2 === 0 ? "#f0d9b5" : "#b58863";
         const x = offsetX + c * squareSize;
         const y = offsetY + r * squareSize;
         svgBoard += `<rect x="${x}" y="${y}" width="${squareSize}" height="${squareSize}" fill="${color}" />`;
@@ -77,7 +62,7 @@ Deno.serve(async (req) => {
           const y = offsetY + visRow * squareSize;
 
           const piece = char.toUpperCase();
-          const color = char === piece ? 'w' : 'b';
+          const color = char === piece ? "w" : "b";
           const dataUri = PIECE_CACHE[`${color}${piece}`];
 
           if (dataUri) {
@@ -110,21 +95,21 @@ Deno.serve(async (req) => {
     </svg>`;
 
     const pngData = new Resvg(svgString, {
-      fitTo: { mode: 'width', value: 1200 },
-      font: { loadSystemFonts: false }
+      fitTo: { mode: "width", value: 1200 },
+      font: { loadSystemFonts: false },
     })
       .render()
       .asPng();
 
     return new Response(pngData, {
       headers: {
-        'Content-Type': 'image/png',
-        'Cache-Control': 'public, max-age=31536000, immutable',
-        'Access-Control-Allow-Origin': '*'
-      }
+        "Content-Type": "image/png",
+        "Cache-Control": "public, max-age=31536000, immutable",
+        "Access-Control-Allow-Origin": "*",
+      },
     });
   } catch (error) {
-    console.error('OG Image Generation Error:', error);
-    return new Response('Error generating image', { status: 500 });
+    console.error("OG Image Generation Error:", error);
+    return new Response("Error generating image", { status: 500 });
   }
 });

@@ -1,5 +1,5 @@
-import { html, raw, escapeHtml } from '../../helpers/html';
-import { Checkbox, ModalShell } from '../ui';
+import { html, raw, escapeHtml } from "../../helpers/html";
+import { Checkbox, ModalShell } from "../ui";
 import {
   ArrowUpRight,
   BookOpen,
@@ -20,15 +20,9 @@ import {
   Search,
   Share2,
   Star,
-  Undo2
-} from '../icons';
-import {
-  buildDbUrl,
-  FILES,
-  pieceName,
-  pieceSrc,
-  type DatabaseProvider
-} from './boardUtils';
+  Undo2,
+} from "../icons";
+import { buildDbUrl, FILES, pieceName, pieceSrc, type DatabaseProvider } from "./boardUtils";
 
 interface BoardCoords {
   ranks: string[];
@@ -36,48 +30,37 @@ interface BoardCoords {
 }
 
 const DEFAULT_COORDS: BoardCoords = {
-  ranks: ['8', '7', '6', '5', '4', '3', '2', '1'],
-  files: FILES.split('')
+  ranks: ["8", "7", "6", "5", "4", "3", "2", "1"],
+  files: FILES.split(""),
 };
 
 function renderCoords(): string {
   const { ranks, files } = DEFAULT_COORDS;
   return html`<div class="coords-ranks" x-show="showCoords">
       ${ranks
-        .map(
-          (n, i) =>
-            html`<div class="coord-rank" x-text="flipped ? ${i + 1} : ${n}">
-              ${n}
-            </div>`
-        )
-        .join('')}
+        .map((n, i) => html`<div class="coord-rank" x-text="flipped ? ${i + 1} : ${n}">${n}</div>`)
+        .join("")}
     </div>
     <div class="coords-files" x-show="showCoords">
       ${files
         .map(
           (l, i) =>
-            html`<div
-              class="coord-file"
-              x-text="flipped ? '${files[7 - i]}' : '${l}'"
-            >
-              ${l}
-            </div>`
+            html`<div class="coord-file" x-text="flipped ? '${files[7 - i]}' : '${l}'">${l}</div>`,
         )
-        .join('')}
+        .join("")}
     </div>`;
 }
 
 export function renderBoard(): string {
-  return html`<div
-    class="board-wrap"
-    :class="{ 'board-frame-on': showThinFrame }"
-  >
+  return html`<div class="board-wrap" :class="{ 'board-frame-on': showThinFrame }">
     <div
       class="board-grid"
       role="grid"
       tabindex="0"
       aria-label="Chess board editor"
       @keydown="onKeydown($event)"
+      @pointermove="setDragTarget($event)"
+      @pointerleave="dragOverId = null"
     >
       <template x-for="(row, ri) in viewRows" :key="'row-' + ri">
         <template x-for="(cell, ci) in row" :key="'cell-' + ci">
@@ -90,6 +73,7 @@ export function renderBoard(): string {
             :aria-label="squareLabel(ri, ci)"
             :aria-selected="isSelected(ri, ci)"
             @click="clickSquare(ri, ci)"
+            @pointerdown="startDragBoard(ri, ci, $event)"
           >
             <img
               x-show="cell"
@@ -116,7 +100,7 @@ export function renderCommandBar(): string {
       title="Undo (Ctrl+Z)"
       aria-label="Undo"
     >
-      ${raw(Undo2('h-4 w-4'))}
+      ${raw(Undo2("h-4 w-4"))}
     </button>
     <button
       type="button"
@@ -126,7 +110,7 @@ export function renderCommandBar(): string {
       title="Redo (Ctrl+Y)"
       aria-label="Redo"
     >
-      ${raw(Redo2('h-4 w-4'))}
+      ${raw(Redo2("h-4 w-4"))}
     </button>
     <span class="sep"></span>
     <button
@@ -136,7 +120,7 @@ export function renderCommandBar(): string {
       title="Flip board (F)"
       aria-label="Flip board"
     >
-      ${raw(Repeat2('h-4 w-4'))}
+      ${raw(Repeat2("h-4 w-4"))}
     </button>
     <span class="spacer"></span>
     <button
@@ -146,7 +130,7 @@ export function renderCommandBar(): string {
       title="Remove selected piece"
       aria-label="Remove selected piece"
     >
-      ${raw(Eraser('h-4 w-4'))}
+      ${raw(Eraser("h-4 w-4"))}
     </button>
     <button
       type="button"
@@ -155,7 +139,7 @@ export function renderCommandBar(): string {
       title="Copy FEN"
       aria-label="Copy FEN"
     >
-      ${raw(Copy('h-4 w-4'))}
+      ${raw(Copy("h-4 w-4"))}
     </button>
     <button
       type="button"
@@ -164,14 +148,14 @@ export function renderCommandBar(): string {
       title="Share position"
       aria-label="Share position"
     >
-      ${raw(Share2('h-4 w-4'))}
+      ${raw(Share2("h-4 w-4"))}
     </button>
     <a
       href="/export"
       class="btn-icon btn-icon-accent"
       title="Download / Export"
       aria-label="Download or export"
-      >${raw(Download('h-4 w-4'))}</a
+      >${raw(Download("h-4 w-4"))}</a
     >
   </div>`;
 }
@@ -181,22 +165,14 @@ export function renderFenToolbar(fen: string): string {
     <div class="fen-header">
       <div class="fen-title">
         <h2 class="fen-label">FEN Notation</h2>
-        <span class="fen-hint"
-          >Edit the position or click pieces on the board.</span
-        >
+        <span class="fen-hint">Edit the position or click pieces on the board.</span>
       </div>
       <div class="fen-actions">
-        <a
-          href="/advanced-fen"
-          class="btn btn-outline btn-sm"
-          title="Advanced FEN Input"
-          >${raw(Plus('h-3.5 w-3.5'))}<span class="hide-sm">Advanced</span></a
+        <a href="/advanced-fen" class="btn btn-outline btn-sm" title="Advanced FEN Input"
+          >${raw(Plus("h-3.5 w-3.5"))}<span class="hide-sm">Advanced</span></a
         >
-        <a
-          href="/fen-history"
-          class="btn btn-outline btn-sm"
-          title="FEN History"
-          >${raw(History('h-3.5 w-3.5'))}<span class="hide-sm">History</span></a
+        <a href="/fen-history" class="btn btn-outline btn-sm" title="FEN History"
+          >${raw(History("h-3.5 w-3.5"))}<span class="hide-sm">History</span></a
         >
       </div>
     </div>
@@ -209,7 +185,7 @@ export function renderFenToolbar(fen: string): string {
           title="Paste FEN from clipboard"
           aria-label="Paste FEN"
         >
-          ${raw(Clipboard('h-4 w-4'))}
+          ${raw(Clipboard("h-4 w-4"))}
         </button>
         <span class="sep"></span>
         <button
@@ -220,7 +196,7 @@ export function renderFenToolbar(fen: string): string {
           title="Save position to favorites"
           aria-label="Save position to favorites"
         >
-          ${raw(Star('h-4 w-4'))}
+          ${raw(Star("h-4 w-4"))}
         </button>
         <button
           type="button"
@@ -229,7 +205,7 @@ export function renderFenToolbar(fen: string): string {
           title="Add position to batch"
           aria-label="Add position to batch"
         >
-          ${raw(ListPlus('h-4 w-4'))}
+          ${raw(ListPlus("h-4 w-4"))}
         </button>
         <span class="sep"></span>
         <button
@@ -239,7 +215,7 @@ export function renderFenToolbar(fen: string): string {
           title="Reset to starting position"
           aria-label="Reset to starting position"
         >
-          ${raw(RotateCcw('h-4 w-4'))}
+          ${raw(RotateCcw("h-4 w-4"))}
         </button>
         <button
           type="button"
@@ -248,7 +224,7 @@ export function renderFenToolbar(fen: string): string {
           title="Clear the board"
           aria-label="Clear the board"
         >
-          ${raw(Eraser('h-4 w-4'))}
+          ${raw(Eraser("h-4 w-4"))}
         </button>
       </div>
       <textarea
@@ -267,8 +243,8 @@ export function renderFenToolbar(fen: string): string {
   </div>`;
 }
 
-const WHITE_KEYS = ['wK', 'wQ', 'wR', 'wB', 'wN', 'wP'];
-const BLACK_KEYS = ['bK', 'bQ', 'bR', 'bB', 'bN', 'bP'];
+const WHITE_KEYS = ["wK", "wQ", "wR", "wB", "wN", "wP"];
+const BLACK_KEYS = ["bK", "bQ", "bR", "bB", "bN", "bP"];
 
 function paletteGroup(keys: string[], label: string, style: string): string {
   return html`<div class="palette-group">
@@ -282,6 +258,7 @@ function paletteGroup(keys: string[], label: string, style: string): string {
               class="palette-btn"
               :class="{ 'palette-btn-active': palettePiece === '${key}' }"
               @click="selectPalette('${key}')"
+              @pointerdown="startDragPalette('${key}', $event)"
               :aria-pressed="palettePiece === '${key}'"
               title="${pieceName(key)}"
               aria-label="${pieceName(key)}"
@@ -293,23 +270,19 @@ function paletteGroup(keys: string[], label: string, style: string): string {
                 class="palette-piece"
                 draggable="false"
               />
-            </button>`
+            </button>`,
         )
-        .join('')}
+        .join("")}
     </div>
   </div>`;
 }
 
 export function renderPalette(pieceStyle: string): string {
   return html`<section class="card palette-card" aria-label="Piece palette">
-    <h3 class="card-title">${raw(ChessKing('h-4 w-4'))} Pieces</h3>
-    ${paletteGroup(WHITE_KEYS, 'White', pieceStyle)}
-    ${paletteGroup(BLACK_KEYS, 'Black', pieceStyle)}
-    <p
-      class="palette-hint"
-      x-show="palettePiece"
-      x-text="'Placing: ' + palettePieceName()"
-    ></p>
+    <h3 class="card-title">${raw(ChessKing("h-4 w-4"))} Pieces</h3>
+    ${paletteGroup(WHITE_KEYS, "White", pieceStyle)}
+    ${paletteGroup(BLACK_KEYS, "Black", pieceStyle)}
+    <p class="palette-hint" x-show="palettePiece" x-text="'Placing: ' + palettePieceName()"></p>
   </section>`;
 }
 
@@ -318,15 +291,15 @@ const DB_PROVIDERS: {
   label: string;
   icon: (c?: string, h?: boolean) => string;
 }[] = [
-  { id: 'lichess', label: 'Lichess', icon: Globe },
-  { id: 'chessdb', label: 'ChessDB', icon: Database },
-  { id: 'pdb', label: 'PDB', icon: Library },
-  { id: 'yacpdb', label: 'YACPDB', icon: BookOpen }
+  { id: "lichess", label: "Lichess", icon: Globe },
+  { id: "chessdb", label: "ChessDB", icon: Database },
+  { id: "pdb", label: "PDB", icon: Library },
+  { id: "yacpdb", label: "YACPDB", icon: BookOpen },
 ];
 
 export function renderDbSearch(fen: string): string {
   return html`<section class="card db-card" aria-label="Position databases">
-    <h3 class="card-title">${raw(Search('h-4 w-4'))} Database Search</h3>
+    <h3 class="card-title">${raw(Search("h-4 w-4"))} Database Search</h3>
     <p class="db-hint">Open this position in an external database.</p>
     <div class="db-grid">
       ${DB_PROVIDERS.map(
@@ -339,56 +312,55 @@ export function renderDbSearch(fen: string): string {
             rel="noopener"
             title="${p.label}"
           >
-            <span class="db-icon">${raw(p.icon('h-4 w-4'))}</span>
+            <span class="db-icon">${raw(p.icon("h-4 w-4"))}</span>
             <span class="db-label">${p.label}</span>
-            <span class="db-open">${raw(ArrowUpRight('h-3.5 w-3.5'))}</span>
-          </a>`
-      ).join('')}
+            <span class="db-open">${raw(ArrowUpRight("h-3.5 w-3.5"))}</span>
+          </a>`,
+      ).join("")}
     </div>
   </section>`;
 }
 
 export function renderTrashZone(): string {
-  return html`<button
-    type="button"
+  return html`<div
     class="trash-zone"
-    :class="{ 'trash-zone-active': held }"
+    :class="{ 'trash-zone-active': held, 'drag-over': dragOverId === 'trash' }"
     @click="removeHeld()"
+    @pointerenter="dragOverId = 'trash'"
+    @pointerleave="dragOverId = null"
   >
     <span x-show="!held">Click to remove a selected piece</span>
     <span x-show="held">Remove selected piece</span>
-  </button>`;
+  </div>`;
 }
 
 export function renderBoardOptions(): string {
   return html`<div class="board-options">
     ${Checkbox({
-      label: 'Coordinates',
-      xModel: 'showCoords',
-      onInput: 'persistOptions()'
+      label: "Coordinates",
+      xModel: "showCoords",
+      onInput: "persistOptions()",
     })}
     ${Checkbox({
-      label: 'Thin frame',
-      xModel: 'showThinFrame',
-      onInput: 'persistOptions()'
+      label: "Thin frame",
+      xModel: "showThinFrame",
+      onInput: "persistOptions()",
     })}
   </div>`;
 }
 
 export function renderShareDialog(): string {
   return ModalShell({
-    isOpenExpr: 'shareOpen',
-    onCloseExpr: 'shareOpen = false',
-    title: 'Share position',
+    isOpenExpr: "shareOpen",
+    onCloseExpr: "shareOpen = false",
+    title: "Share position",
     icon: Share2,
     children: html`<p class="text-sm text-text-secondary mb-3">
         Anyone with this link can open the same position.
       </p>
       <div class="share-row">
         <input type="text" readonly class="input-field" x-model="shareUrl" />
-        <button type="button" class="btn btn-primary" @click="copyShareUrl()">
-          Copy link
-        </button>
-      </div>`
+        <button type="button" class="btn btn-primary" @click="copyShareUrl()">Copy link</button>
+      </div>`,
   });
 }

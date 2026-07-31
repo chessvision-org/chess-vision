@@ -1,10 +1,10 @@
-import { html, raw } from '../../helpers/html';
-import type { IconFn } from '../../components/Icon';
-import { ChevronDown } from '../../components/icons';
+import { html, raw } from "../../helpers/html";
+import type { IconFn } from "../../components/Icon";
+import { ChevronDown } from "../../components/icons";
 
 // ===== Constants — ported from master `aboutConstants.ts` =====
-export const CONTACT_EMAIL = 'contact@chessvision.org';
-export const REPO_URL = 'https://github.com/chessviewer-org/chess-viewer';
+export const CONTACT_EMAIL = "contact@chessvision.org";
+export const REPO_URL = "https://github.com/chessviewer-org/chess-viewer";
 export const REPO_ISSUES_URL = `${REPO_URL}/issues`;
 export const REPO_DISCUSSIONS_URL = `${REPO_URL}/discussions`;
 export const REPO_DOCS_URL = `${REPO_URL}/tree/master/docs`;
@@ -13,35 +13,20 @@ export const REPO_CONTRIBUTING_URL = `${REPO_URL}/blob/master/CONTRIBUTING.md`;
 export const REPO_CHANGELOG_URL = `${REPO_URL}/blob/master/CHANGELOG.md`;
 export const REPO_COMMITS_URL = `${REPO_URL}/commits`;
 
-export const CRYPTO_WALLET_ADDRESS =
-  '0x31eB555dAAC8253FF9835448bFA1542BFA969aDb';
+export const CRYPTO_WALLET_ADDRESS = "0x31eB555dAAC8253FF9835448bFA1542BFA969aDb";
 
-export const LICENSE_NAME = 'GNU AGPL-3.0';
+export const LICENSE_NAME = "GNU AGPL-3.0";
 
 // ===== Parts — ported from master `parts.tsx` =====
-export function SectionHeading({
-  icon: Icon,
-  title
-}: {
-  icon: IconFn;
-  title: string;
-}): string {
-  return html`<h2 class="about-heading">
-    ${raw(Icon('about-heading-icon'))} ${title}
-  </h2>`;
+export function SectionHeading({ icon: Icon, title }: { icon: IconFn; title: string }): string {
+  return html`<h2 class="about-heading">${raw(Icon("about-heading-icon"))} ${title}</h2>`;
 }
 
 export function Lead({ children }: { children: string }): string {
   return html`<p class="about-lead">${raw(children)}</p>`;
 }
 
-export function InfoCard({
-  title,
-  children
-}: {
-  title: string;
-  children: string;
-}): string {
+export function InfoCard({ title, children }: { title: string; children: string }): string {
   return html`<section class="about-info-card">
     <h3 class="about-info-card-title">${title}</h3>
     <div class="about-info-card-body">${raw(children)}</div>
@@ -55,14 +40,14 @@ export function Callout({ children }: { children: string }): string {
 export function FactRow({
   icon: Icon,
   label,
-  value
+  value,
 }: {
   icon: IconFn;
   label: string;
   value: string;
 }): string {
   return html`<div class="fact-row fact-list-divider">
-    <span class="fact-label"> ${raw(Icon('fact-icon'))} ${label} </span>
+    <span class="fact-label"> ${raw(Icon("fact-icon"))} ${label} </span>
     <span class="fact-value">${raw(value)}</span>
   </div>`;
 }
@@ -75,17 +60,16 @@ export function ExternalLinkButton({
   href,
   icon: Icon,
   children,
-  variant = 'neutral',
-  className = ''
+  variant = "neutral",
+  className = "",
 }: {
   href: string;
   icon: IconFn;
   children: string;
-  variant?: 'primary' | 'neutral';
+  variant?: "primary" | "neutral";
   className?: string;
 }): string {
-  const variantClass =
-    variant === 'primary' ? 'about-btn-primary' : 'about-btn-neutral';
+  const variantClass = variant === "primary" ? "about-btn-primary" : "about-btn-neutral";
   return html`<a
     href="${href}"
     target="_blank"
@@ -101,7 +85,7 @@ export function MailButton({
   subject,
   icon: Icon,
   children,
-  className = ''
+  className = "",
 }: {
   email: string;
   subject?: string;
@@ -112,10 +96,7 @@ export function MailButton({
   const href = subject
     ? `mailto:${email}?subject=${encodeURIComponent(subject)}`
     : `mailto:${email}`;
-  return html`<a
-    href="${href}"
-    class="about-btn about-btn-neutral ${className}"
-  >
+  return html`<a href="${href}" class="about-btn about-btn-neutral ${className}">
     ${raw(Icon())} ${children}
   </a>`;
 }
@@ -129,9 +110,7 @@ export function FAQItem({ q, a }: { q: string; a: string }): string {
       :aria-expanded="open ? 'true' : 'false'"
     >
       <span class="faq-text">${q}</span>
-      <span class="faq-icon" :class="open ? 'faq-icon-open' : ''"
-        >${raw(ChevronDown(''))}</span
-      >
+      <span class="faq-icon" :class="open ? 'faq-icon-open' : ''">${raw(ChevronDown(""))}</span>
     </button>
     <div x-show="open" x-transition>
       <div class="faq-body-text">${raw(a)}</div>

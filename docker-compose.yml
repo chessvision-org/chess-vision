@@ -2,7 +2,7 @@ services:
   chess-viewer:
     build: .
     ports:
-      - '3001:3001'
+      - "3001:3001"
     environment:
       - NODE_ENV=production
     restart: unless-stopped

@@ -1,4 +1,4 @@
-import { html } from '../helpers/html';
+import { html } from "../helpers/html";
 
 export function AdvancedFenPage(): string {
   return html`

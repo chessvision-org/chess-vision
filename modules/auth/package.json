@@ -2,13 +2,13 @@
   "name": "@chess-viewer/auth",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@chess-viewer/core": "workspace:*"
-  },
-  "exports": {
-    ".": "./src/index.ts"
   }
 }

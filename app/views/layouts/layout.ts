@@ -1,13 +1,13 @@
-import { html, raw } from '../helpers/html';
-import { Navbar } from '../components/Navbar';
-import { NotificationContainer, notificationsScript } from '../components/ui';
+import { html, raw } from "../helpers/html";
+import { Navbar } from "../components/Navbar";
+import { NotificationContainer, notificationsScript } from "../components/ui";
 import {
   DEFAULT_DESCRIPTION,
   DEFAULT_OG_IMAGE,
   SITE_NAME,
   SITE_URL,
-  TITLE_SEPARATOR
-} from '../helpers/seo';
+  TITLE_SEPARATOR,
+} from "../helpers/seo";
 
 interface LayoutProps {
   title: string;
@@ -20,11 +20,10 @@ interface LayoutProps {
   children: string;
 }
 
-const ALPINE_CDN =
-  'https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js';
+const ALPINE_CDN = "https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js";
 
 function serializeSchema(obj: Record<string, unknown>): string {
-  return JSON.stringify(obj).replace(/</g, '\\u003c');
+  return JSON.stringify(obj).replace(/</g, "\\u003c");
 }
 
 export function Layout({
@@ -34,30 +33,25 @@ export function Layout({
   noindex = false,
   image,
   schemas = [],
-  rightSlot = '',
-  children
+  rightSlot = "",
+  children,
 }: LayoutProps) {
-  const fullTitle = title
-    ? `${SITE_NAME}${TITLE_SEPARATOR}${title}`
-    : SITE_NAME;
+  const fullTitle = title ? `${SITE_NAME}${TITLE_SEPARATOR}${title}` : SITE_NAME;
   const ogImage = image ?? DEFAULT_OG_IMAGE;
-  const canonical =
-    path !== undefined ? `${SITE_URL}${path === '/' ? '/' : path}` : undefined;
+  const canonical = path !== undefined ? `${SITE_URL}${path === "/" ? "/" : path}` : undefined;
 
-  return html`<!doctype html>
+  return html`
+    <!doctype html>
     <html lang="en" data-theme="dark">
       <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>${fullTitle}</title>
         <meta name="description" content="${description}" />
-        <meta
-          name="robots"
-          content="${noindex ? 'noindex, nofollow' : 'index, follow'}"
-        />
+        <meta name="robots" content="${noindex ? 'noindex, nofollow' : 'index, follow'}" />
         ${canonical !== undefined
-          ? html`<link rel="canonical" href="${canonical}" />`
-          : ''}
+                                  ? html`<link rel="canonical" href="${canonical}" />`
+                                  : ''}
 
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="${SITE_NAME}" />
@@ -65,8 +59,8 @@ export function Layout({
         <meta property="og:description" content="${description}" />
         <meta property="og:image" content="${ogImage}" />
         ${canonical !== undefined
-          ? html`<meta property="og:url" content="${canonical}" />`
-          : ''}
+                                  ? html`<meta property="og:url" content="${canonical}" />`
+                                  : ''}
 
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="${fullTitle}" />
@@ -74,13 +68,13 @@ export function Layout({
         <meta name="twitter:image" content="${ogImage}" />
 
         ${schemas
-          .map(
-            (s) =>
-              html`<script type="application/ld+json">
-                ${raw(serializeSchema(s))}
-              </script>`
-          )
-          .join('')}
+                                  .map(
+                                    (s) =>
+                                      html`<script type="application/ld+json">
+                                        ${raw(serializeSchema(s))}
+                                      </script>`
+                                  )
+                                  .join('')}
 
         <link rel="icon" href="/favicon.ico" type="image/x-icon" />
         <link rel="icon" type="image/png" sizes="192x192" href="/logo192.png" />
@@ -100,20 +94,12 @@ export function Layout({
         <script defer src="${ALPINE_CDN}"></script>
       </head>
       <body>
-        <div
-          class="page-layout"
-          x-data="layoutState()"
-          @keydown.escape.window="closeAll()"
-        >
+        <div class="page-layout" x-data="layoutState()" @keydown.escape.window="closeAll()">
           <a href="#main-content" class="skiplink">Skip to main content</a>
 
           ${Navbar({ isAuthenticated: false, rightSlot })}
 
-          <main
-            id="main-content"
-            tabindex="-1"
-            class="main-content-offset main-region"
-          >
+          <main id="main-content" tabindex="-1" class="main-content-offset main-region">
             ${children}
           </main>
 
@@ -121,8 +107,8 @@ export function Layout({
         </div>
 
         <script>
-          document.addEventListener('alpine:init', () => {
-            Alpine.data('layoutState', () => ({
+          document.addEventListener("alpine:init", () => {
+            Alpine.data("layoutState", () => ({
               isMobileMenuOpen: false,
               isDesktopDropdownOpen: false,
               toggleMobile() {
@@ -138,15 +124,16 @@ export function Layout({
               },
               async signOut() {
                 try {
-                  await fetch('/auth/sign-out', { method: 'POST' });
+                  await fetch("/auth/sign-out", { method: "POST" });
                 } catch {}
                 window.location.reload();
-              }
+              },
             }));
           });
         </script>
 
         ${raw(notificationsScript())}
       </body>
-    </html>`;
+    </html>
+  `;
 }

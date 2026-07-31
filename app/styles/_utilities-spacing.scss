@@ -1,15 +1,13 @@
-@use 'sass:string';
+@use "sass:string";
 
-$scale:
-  0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 20, 24,
-  28, 32;
+$scale: 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 20, 24, 28, 32;
 
 @function dot-to-dash($value) {
-  $result: '';
+  $result: "";
   @for $i from 1 through string.length($value) {
     $char: string.slice($value, $i, $i);
-    @if $char == '.' {
-      $char: '-';
+    @if $char == "." {
+      $char: "-";
     }
     $result: #{$result}#{$char};
   }

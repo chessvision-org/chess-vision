@@ -1,6 +1,6 @@
-import { createApp } from './app';
+import { createApp } from "./app";
 
-const PORT = parseInt(process.env['SSR_PORT'] || '3000', 10);
+const PORT = parseInt(process.env["SSR_PORT"] || "3000", 10);
 
 const app = createApp();
 

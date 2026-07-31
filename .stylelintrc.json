@@ -1,0 +1,43 @@
+{
+  "extends": ["stylelint-config-standard-scss"],
+  "ignorePatterns": [
+    "node_modules",
+    "dist",
+    "build",
+    "public",
+    ".tmp",
+    "supabase",
+    "src",
+    "modules",
+    "server",
+    "scripts",
+    "public/styles/main.css",
+    "ui/lib/css/theme.css"
+  ],
+  "rules": {
+    "scss/at-rule-no-unknown": null,
+    "scss/dollar-variable-pattern": null,
+    "selector-class-pattern": null,
+    "declaration-block-no-shorthand-property-overrides": null,
+    "keyframes-name-pattern": null,
+    "rule-empty-line-before": null,
+    "property-no-vendor-prefix": null,
+    "value-keyword-case": null,
+    "selector-no-vendor-prefix": null,
+    "property-no-deprecated": null,
+    "media-feature-range-notation": null,
+    "color-function-alias-notation": null,
+    "color-function-notation": null,
+    "alpha-value-notation": null,
+    "declaration-block-no-redundant-longhand-properties": null,
+    "font-family-name-quotes": null,
+    "custom-property-empty-line-before": null,
+    "scss/at-extend-no-missing-placeholder": null,
+    "declaration-empty-line-before": null,
+    "shorthand-property-no-redundant-values": null,
+    "scss/dollar-variable-empty-line-before": null,
+    "scss/dollar-variable-pattern": null,
+    "selector-not-notation": null,
+    "at-rule-empty-line-before": null
+  }
+}
