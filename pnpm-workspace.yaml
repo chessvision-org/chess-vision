@@ -1,2 +1,7 @@
+packages:
+  - 'ui/lib'
+  - 'ui/auth'
+  - 'modules/*'
+
 allowBuilds:
   esbuild: false
