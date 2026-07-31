@@ -12,19 +12,8 @@ const YAC_PIECE: Record<string, string> = {
   P: 'P'
 };
 const YAC_TYPE_RE = /^([KQRBN])([a-h][1-8])$/;
-const YAC_TEXT_FIELDS = 20;
-const YAC_CHECKBOX_DEFAULTS = [
-  '1',
-  '1',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0'
-];
+const YAC_TEXT_FIELDS = 14;
+const YAC_CHECKBOX_DEFAULTS = ['0', '0', '0', '0'];
 
 // Types
 interface YacEntry {
