@@ -38,3 +38,5 @@ coverage
 # Other
 *.min.js
 *.min.css
+public/
+src/

@@ -5,18 +5,16 @@ import ts from 'typescript';
 const projectRoot = fileURLToPath(new URL('..', import.meta.url));
 
 const ALIASES = [
-  { prefix: '@/', dir: 'src' },
-  { prefix: '@shared/', dir: 'src/shared' },
-  { prefix: '@components/', dir: 'src/components' },
-  { prefix: '@pages/', dir: 'src/pages' },
-  { prefix: '@contexts/', dir: 'src/shared/contexts', bare: '@contexts' },
-  { prefix: '@hooks/', dir: 'src/shared/hooks', bare: '@hooks' },
-  { prefix: '@utils/', dir: 'src/shared/utils', bare: '@utils' },
-  { prefix: '@constants/', dir: 'src/shared/constants', bare: '@constants' },
-  { prefix: '@app-types/', dir: 'src/shared/types', bare: '@app-types' }
+  { prefix: '@lib/css/', dir: 'ui/lib/css' },
+  { prefix: '@lib/assets/', dir: 'ui/lib/assets' },
+  { prefix: '@lib/', dir: 'ui/lib/src' },
+  { prefix: '@auth/', dir: 'ui/auth/src', bare: '@auth' },
+  { prefix: '@utils/', dir: 'ui/lib/src/utils', bare: '@utils' },
+  { prefix: '@constants/', dir: 'ui/lib/src/constants', bare: '@constants' },
+  { prefix: '@app-types/', dir: 'ui/lib/src/types', bare: '@app-types' }
 ];
 
-const EXTENSIONS = ['.ts', '.tsx', '.mts', '.js', '.jsx', '.mjs', '.json'];
+const EXTENSIONS = ['.ts', '.mts', '.js', '.mjs', '.json'];
 
 function resolveFile(absPath) {
   if (existsSync(absPath) && statSync(absPath).isFile()) return absPath;
