@@ -26,82 +26,82 @@
   color: b60205
   description: Security fix or vulnerability
 
-- name: 'status: waiting triage'
+- name: "status: waiting triage"
   color: d93f0b
   description: Needs review to confirm validity and reproduction
-- name: 'status: waiting review'
+- name: "status: waiting review"
   color: d93f0b
   description: Ready for maintainer code review
-- name: 'status: waiting update'
+- name: "status: waiting update"
   color: FBCA04
   description: Awaiting update or response from the author
-- name: 'status: PR in works'
+- name: "status: PR in works"
   color: 5319e7
   description: Work in progress — a fix or implementation is underway
-- name: 'status: blocked'
+- name: "status: blocked"
   color: b60205
   description: Cannot proceed — blocked on another issue or external dependency
-- name: 'status: discussing'
+- name: "status: discussing"
   color: 0052cc
   description: Under active discussion — no implementation started yet
-- name: 'status: on the roadmap'
+- name: "status: on the roadmap"
   color: 006400
   description: Planned for a future release
-- name: 'status: shipping'
+- name: "status: shipping"
   color: 9ed361
   description: Fixed and awaiting deployment
-- name: 'status: decayed'
+- name: "status: decayed"
   color: e99695
   description: Stale — closed for inactivity, needs follow-up to reopen
-- name: 'status: wontfix'
+- name: "status: wontfix"
   color: 000000
   description: Intentional — will not be addressed
 
-- name: 'scope: mobile'
+- name: "scope: mobile"
   color: 4969c1
   description: Affects mobile and touch viewports
-- name: 'scope: desktop'
+- name: "scope: desktop"
   color: 4969c1
   description: Affects desktop viewports only
-- name: 'scope: a11y'
+- name: "scope: a11y"
   color: 4969c1
   description: Keyboard navigation, ARIA, and screen reader support
-- name: 'scope: UI'
+- name: "scope: UI"
   color: 4969c1
   description: UX changes and improvements to the user interface
-- name: 'scope: breaking'
+- name: "scope: breaking"
   color: b60205
   description: Introduces a breaking change — requires major version bump
 
-- name: 'area: board'
+- name: "area: board"
   color: 59d683
   description: Board rendering and drag-and-drop
-- name: 'area: fen'
+- name: "area: fen"
   color: 59d683
   description: FEN parsing and input
-- name: 'area: export'
+- name: "area: export"
   color: 59d683
   description: Canvas and SVG export pipeline
-- name: 'area: auth'
+- name: "area: auth"
   color: 59d683
   description: Authentication, Supabase, and cloud sync
-- name: 'area: history'
+- name: "area: history"
   color: 59d683
   description: FEN history
-- name: 'area: ui'
+- name: "area: ui"
   color: 59d683
   description: Shared UI components, layout, and theming
-- name: 'area: settings'
+- name: "area: settings"
   color: 59d683
   description: Settings pages
-- name: 'area: ci'
+- name: "area: ci"
   color: 59d683
   description: CI pipelines, hooks, and tooling
 
-- name: 'DO NOT MERGE!'
+- name: "DO NOT MERGE!"
   color: b60205
-  description: ''
-- name: 'MERGE CONFLICT!'
+  description: ""
+- name: "MERGE CONFLICT!"
   color: b60205
   description: PR has a merge conflict and needs to be updated
 - name: spam
@@ -110,17 +110,17 @@
 - name: deprioritized
   color: e99695
   description: Deprioritized — lacks detail or ignores contribution guidelines
-- name: 'device specific'
+- name: "device specific"
   color: e99695
   description: Browser, device, or OS-specific issue
 
-- name: 'good first issue'
+- name: "good first issue"
   color: 7057ff
   description: Good for newcomers — small, well-scoped, and clearly defined
-- name: 'first timers only'
+- name: "first timers only"
   color: 5319e7
   description: Open for first-time contributors — no permission needed
-- name: 'help wanted'
+- name: "help wanted"
   color: 006400
   description: Open for contributions — no permission needed
 - name: duplicate
