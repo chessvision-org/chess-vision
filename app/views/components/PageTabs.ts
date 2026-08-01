@@ -50,17 +50,19 @@ export function PageTabs({
     if (group.label && isCollapsible) {
       heading = html` <button
         type="button"
-        class="group-toggle-btn ${hasActiveItem && !isExpanded
-          ? "group-toggle-active"
-          : "group-toggle-inactive"}"
-        @click="expanded = !expanded"
-        :aria-expanded="expanded ? 'true' : 'false'"
+        class="group-toggle-btn ${isExpanded ? "group-toggle-active" : "group-toggle-inactive"}"
+        data-group-toggle
+        aria-expanded="${isExpanded}"
       >
         <span class="group-toggle-label">
           ${GroupIcon ? raw(GroupIcon("group-icon")) : ""} ${group.label}
         </span>
-        <span x-show="expanded" style="display: flex">${raw(ChevronDown("group-chevron"))}</span>
-        <span x-show="!expanded" style="display: none">${raw(ChevronRight("group-chevron"))}</span>
+        <span data-chevron-open class="group-chevron-open" ${isExpanded ? "" : "hidden"}
+          >${raw(ChevronDown("group-chevron"))}</span
+        >
+        <span data-chevron-close class="group-chevron-close" ${isExpanded ? "hidden" : ""}
+          >${raw(ChevronRight("group-chevron"))}</span
+        >
       </button>`;
     } else if (group.label) {
       heading = html`<span aria-hidden="true" class="group-heading">${group.label}</span>`;
@@ -87,13 +89,15 @@ export function PageTabs({
       .join("");
 
     const itemsMarkup = isCollapsible
-      ? html`<div x-show="expanded" class="group-items-collapsible">${raw(items)}</div>`
+      ? html`<div data-group-items ${isExpanded ? "" : "hidden"} class="group-items-collapsible">
+          ${raw(items)}
+        </div>`
       : html`<div class="group-items">${raw(items)}</div>`;
 
     return html` <div
       key="${groupId}"
       class="${containerClass}"
-      ${isCollapsible ? html`x-data="{ expanded: ${isExpanded} }"` : ""}
+      ${isCollapsible ? html`data-collapsible-group data-expanded="${isExpanded}"` : ""}
     >
       ${heading} ${itemsMarkup}
     </div>`;

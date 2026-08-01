@@ -108,13 +108,14 @@ export function pieceKey(cell: string): string {
 
 export function pieceChar(key: string): string {
   if (!key || key.length !== 2) return "";
-  return key[0] === "w" ? key[1].toUpperCase() : key[1].toLowerCase();
+  const char = key[1] ?? "";
+  return key[0] === "w" ? char.toUpperCase() : char.toLowerCase();
 }
 
 export function pieceName(key: string): string {
   if (!key || key.length !== 2) return "Piece";
   const color = key[0] === "w" ? "White" : "Black";
-  const type = PIECE_NAMES[key[1].toUpperCase()] ?? "Piece";
+  const type = PIECE_NAMES[(key[1] ?? "").toUpperCase()] ?? "Piece";
   return `${color} ${type}`;
 }
 

@@ -12,14 +12,15 @@ export interface RenderPageOptions {
 
 export function renderPage(options: RenderPageOptions): string {
   const seo = options.seo ?? getRouteSeo(options.path);
+  const noindex = options.noindex ?? seo.noindex;
   return Layout({
     title: seo.name ?? "",
-    description: seo.description,
-    path: seo.path,
-    noindex: options.noindex ?? seo.noindex,
-    image: seo.image,
-    schemas: options.schemas,
-    rightSlot: options.rightSlot,
+    ...(seo.description !== undefined ? { description: seo.description } : {}),
+    ...(seo.path !== undefined ? { path: seo.path } : {}),
+    ...(noindex !== undefined ? { noindex } : {}),
+    ...(seo.image !== undefined ? { image: seo.image } : {}),
+    ...(options.schemas !== undefined ? { schemas: options.schemas } : {}),
+    ...(options.rightSlot !== undefined ? { rightSlot: options.rightSlot } : {}),
     children: options.children,
   });
 }

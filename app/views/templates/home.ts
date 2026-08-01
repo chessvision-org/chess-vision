@@ -1,5 +1,4 @@
-import { html, raw } from "../helpers/html";
-import { editorStateScript } from "../helpers/chessClient";
+import { html } from "../helpers/html";
 import {
   renderBoard,
   renderBoardOptions,
@@ -26,14 +25,9 @@ export function HomePage(options: HomePageOptions = {}): string {
       : null;
   const hasValidQuery = queryFen !== null && isValidFen(queryFen);
   const fen = hasValidQuery ? queryFen : STARTING_FEN;
-  const queryExpr = hasValidQuery ? queryFen : null;
-
-  const dataExpr = `editorState({ fen: '${fen}', queryFen: ${
-    queryExpr === null ? "null" : `'${queryExpr}'`
-  } })`;
 
   return html`
-    <div class="editor-root" x-data="${dataExpr}">
+    <div class="editor-root" data-editor data-fen="${fen}">
       <h1 class="sr-only">Free Chess Diagram Generator — FEN to PNG, JPEG &amp; SVG</h1>
 
       <header class="editor-head">
@@ -58,6 +52,7 @@ export function HomePage(options: HomePageOptions = {}): string {
       ${renderShareDialog()}
     </div>
 
-    ${raw(editorStateScript())}
+    <script src="/compiled/chess-viewer.js"></script>
+    <script src="/editor-state.js"></script>
   `;
 }

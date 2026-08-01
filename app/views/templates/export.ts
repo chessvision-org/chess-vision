@@ -1,5 +1,4 @@
-import { html, raw } from "../helpers/html";
-import { exportPageScript } from "../helpers/chessClient";
+import { html, raw, escapeHtml } from "../helpers/html";
 import { PageSidebarLayout } from "../components/PageSidebarLayout";
 import { Checkbox, ModalShell } from "../components/ui";
 import {
@@ -12,11 +11,8 @@ import {
   LayoutGrid,
   Palette,
   Pause,
-  Pencil,
   Play,
-  Plus,
   SlidersHorizontal,
-  Trash2,
   X,
   XCircle,
 } from "../components/icons";
@@ -28,10 +24,6 @@ export interface ExportPageOptions {
 
 const MAX_FEN_LENGTH = 80;
 
-function sanitizeFenForExpr(fen: string): string {
-  return fen.replace(/[^\s/0-9a-zA-Z-]/g, "");
-}
-
 function themeGrid(): string {
   return html`
     <div class="theme-picker">
@@ -41,12 +33,9 @@ function themeGrid(): string {
           <button
             type="button"
             role="tab"
+            data-theme-tab="main"
+            class="theme-tab theme-tab-active"
             aria-selected="true"
-            :aria-selected="themeTab === 'main' ? 'true' : 'false'"
-            @click="themeTab = 'main'; closePicker()"
-            :class="themeTab === 'main'
-              ? 'theme-tab theme-tab-active'
-              : 'theme-tab theme-tab-inactive'"
           >
             ${raw(Palette("theme-tab-icon"))} Presets
           </button>
@@ -54,115 +43,36 @@ function themeGrid(): string {
           <button
             type="button"
             role="tab"
-            :aria-selected="themeTab === 'custom' ? 'true' : 'false'"
-            @click="openLivePicker()"
-            :class="themeTab === 'custom'
-              ? 'theme-tab theme-tab-active'
-              : 'theme-tab theme-tab-inactive'"
+            data-theme-tab="custom"
+            class="theme-tab theme-tab-inactive"
+            aria-selected="false"
           >
             ${raw(SlidersHorizontal("theme-tab-icon"))} Custom
           </button>
         </div>
       </div>
 
-      <div x-show="themeTab === 'main'" x-cloak>
-        <ul
-          class="theme-grid"
-          :style="'grid-template-columns: repeat(' + themeCols + ', minmax(0, 1fr))'"
-          aria-label="Board themes"
-        >
-          <template x-for="tile in visibleThemes()" :key="tile.key">
-            <li class="theme-tile">
-              <button
-                type="button"
-                class="theme-swatch"
-                :class="themeIsSelected(tile.light, tile.dark)
-                  ? 'theme-swatch-selected'
-                  : ''"
-                @click="applyTheme(tile.light, tile.dark)"
-                :title="tile.name"
-                :aria-label="'Apply ' + tile.name + ' theme'"
-                :aria-pressed="themeIsSelected(tile.light, tile.dark)"
-              >
-                <span class="theme-swatch-half" :style="'background-color:' + tile.light"></span>
-                <span class="theme-swatch-half" :style="'background-color:' + tile.dark"></span>
-                <span
-                  x-show="themeIsSelected(tile.light, tile.dark)"
-                  class="theme-swatch-check"
-                  aria-hidden="true"
-                >
-                  ${raw(Check("theme-swatch-check-icon"))}
-                </span>
-              </button>
-              <template x-if="tile.custom !== null">
-                <div class="theme-tile-actions">
-                  <button
-                    type="button"
-                    class="theme-action-btn"
-                    @click="startEdit(tile)"
-                    :aria-label="'Edit ' + tile.name"
-                  >
-                    ${raw(Pencil("theme-action-icon"))}
-                  </button>
-                  <button
-                    type="button"
-                    class="theme-action-btn theme-action-btn-danger"
-                    @click="deleteTheme(tile.custom)"
-                    :aria-label="'Delete ' + tile.name"
-                  >
-                    ${raw(Trash2("theme-action-icon"))}
-                  </button>
-                </div>
-              </template>
-              <span class="theme-tile-name" x-text="tile.name"></span>
-            </li>
-          </template>
-          <li class="theme-tile" x-show="showThemeAdd">
-            <button
-              type="button"
-              class="theme-add"
-              @click="startAdd()"
-              aria-label="Create a custom theme"
-            >
-              ${raw(Plus("theme-add-icon"))}
-            </button>
-            <span class="theme-tile-name">Add</span>
-          </li>
-        </ul>
+      <div data-theme-panel="main">
+        <ul class="theme-grid" data-theme-grid aria-label="Board themes"></ul>
 
-        <div class="theme-pager" x-show="themePages > 1" x-cloak>
-          <button
-            type="button"
-            class="pager-btn"
-            @click="themePrev()"
-            :disabled="themePage === 0"
-            aria-label="Previous page"
-          >
+        <div class="theme-pager" data-theme-pager hidden>
+          <button type="button" class="pager-btn" data-theme-prev aria-label="Previous page">
             ${raw(ChevronLeft("pager-icon"))}
           </button>
-          <span class="pager-label" x-text="(themePage + 1) + ' / ' + themePages"></span>
-          <button
-            type="button"
-            class="pager-btn"
-            @click="themeNext()"
-            :disabled="themePage >= themePages - 1"
-            aria-label="Next page"
-          >
+          <span class="pager-label" data-theme-page-label></span>
+          <button type="button" class="pager-btn" data-theme-next aria-label="Next page">
             ${raw(ChevronRight("pager-icon"))}
           </button>
         </div>
       </div>
 
-      <div x-show="themeTab === 'custom'" x-cloak class="theme-custom">
+      <div data-theme-panel="custom" class="theme-custom" hidden>
         <div class="theme-custom-head">
-          <span
-            class="theme-custom-title"
-            x-text="pickerId !== null ? 'Edit theme' : 'New theme'"
-          ></span>
+          <span class="theme-custom-title" data-picker-title>New theme</span>
           <button
             type="button"
             class="theme-close-btn"
-            @click="closePicker()"
+            data-picker-close
             aria-label="Close and return to presets"
           >
             ${raw(X("theme-close-icon"))}
@@ -170,32 +80,26 @@ function themeGrid(): string {
         </div>
 
         <div class="square-grid">
-          <button
-            type="button"
-            class="square-btn"
-            :class="pickerActive === 'light'
-              ? 'square-btn-active'
-              : 'square-btn-inactive'"
-            @click="pickerSetSide('light')"
-          >
-            <span class="square-color-preview" :style="'background-color:' + pickerLight"></span>
+          <button type="button" class="square-btn square-btn-active" data-picker-side="light">
+            <span
+              class="square-color-preview"
+              data-picker-light-preview
+              style="background-color: #f0d9b5"
+            ></span>
             <span class="square-info">
               <span class="square-label">Light square</span>
-              <span class="square-hex" x-text="pickerLight"></span>
+              <span class="square-hex" data-picker-light></span>
             </span>
           </button>
-          <button
-            type="button"
-            class="square-btn"
-            :class="pickerActive === 'dark'
-              ? 'square-btn-active'
-              : 'square-btn-inactive'"
-            @click="pickerSetSide('dark')"
-          >
-            <span class="square-color-preview" :style="'background-color:' + pickerDark"></span>
+          <button type="button" class="square-btn square-btn-inactive" data-picker-side="dark">
+            <span
+              class="square-color-preview"
+              data-picker-dark-preview
+              style="background-color: #b58863"
+            ></span>
             <span class="square-info">
               <span class="square-label">Dark square</span>
-              <span class="square-hex" x-text="pickerDark"></span>
+              <span class="square-hex" data-picker-dark></span>
             </span>
           </button>
         </div>
@@ -203,46 +107,29 @@ function themeGrid(): string {
         <span class="section-eyebrow">Color Picker</span>
         <div
           class="sat-field"
-          x-ref="sat"
+          data-sat-field
           role="slider"
           aria-label="Saturation and brightness"
           tabindex="0"
-          :style="'background-color:' + pickerHueHex"
-          @pointerdown="satDown($event)"
-          @pointermove="satMove($event)"
-          @pointerup="satUp($event)"
-          @pointercancel="satUp($event)"
-          @keydown="satKey($event)"
         >
-          <span
-            class="sat-cursor"
-            :style="'left:' + (pickerS * 100) + '%;top:' + ((1 - pickerV) * 100) + '%'"
-          ></span>
+          <span class="sat-cursor" data-sat-cursor></span>
         </div>
 
         <div class="hue-container">
           <span class="section-eyebrow">Hue</span>
-          <input
-            type="range"
-            min="0"
-            max="360"
-            :value="Math.round(pickerH * 360)"
-            @input="hueInput($event)"
-            aria-label="Hue"
-            class="hue-input"
-          />
+          <input type="range" min="0" max="360" data-hue-input aria-label="Hue" class="hue-input" />
         </div>
 
         <div class="picker-save">
           <input
             type="text"
             class="input-field"
-            x-model="pickerName"
+            data-picker-name
             maxlength="10"
             placeholder="Name (optional)"
             aria-label="Theme name"
           />
-          <button type="button" class="btn btn-primary" @click="saveCustomTheme()">Save</button>
+          <button type="button" class="btn btn-primary" data-save-theme>Save</button>
         </div>
       </div>
     </div>
@@ -254,61 +141,20 @@ function pieceSetGrid(): string {
     <div class="piece-set">
       <div class="piece-set-head">
         <span class="section-eyebrow">Piece set</span>
-        <select
-          class="piece-sort"
-          x-model="pieceSort"
-          @change="piecePage = 0"
-          aria-label="Sort piece sets"
-        >
+        <select class="piece-sort" data-piece-sort aria-label="Sort piece sets">
           <option value="popular">Popular</option>
           <option value="name">Alphabetical</option>
         </select>
       </div>
 
-      <div
-        class="piece-grid"
-        :style="'grid-template-columns: repeat(' + pieceCols + ', minmax(0, 1fr))'"
-      >
-        <template x-for="set in visiblePieceSets()" :key="set.id">
-          <button
-            type="button"
-            class="piece-tile"
-            :class="pieceStyle === set.id ? 'piece-tile-active' : ''"
-            @click="setPieceStyle(set.id)"
-            :aria-pressed="pieceStyle === set.id"
-            :aria-label="set.name"
-          >
-            <img
-              class="piece-tile-img"
-              :src="'/piece/' + set.id + '/wN.svg'"
-              :alt="set.name"
-              width="44"
-              height="44"
-              loading="lazy"
-            />
-            <span class="piece-tile-name" x-text="set.name"></span>
-          </button>
-        </template>
-      </div>
+      <div class="piece-grid" data-piece-grid></div>
 
-      <div class="piece-pager" x-show="piecePages > 1" x-cloak>
-        <button
-          type="button"
-          class="pager-btn"
-          @click="piecePrev()"
-          :disabled="piecePage === 0"
-          aria-label="Previous page"
-        >
+      <div class="piece-pager" data-piece-pager hidden>
+        <button type="button" class="pager-btn" data-piece-prev aria-label="Previous page">
           ${raw(ChevronLeft("pager-icon"))}
         </button>
-        <span class="pager-label" x-text="(piecePage + 1) + ' / ' + piecePages"></span>
-        <button
-          type="button"
-          class="pager-btn"
-          @click="pieceNext()"
-          :disabled="piecePage >= piecePages - 1"
-          aria-label="Next page"
-        >
+        <span class="pager-label" data-piece-page-label></span>
+        <button type="button" class="pager-btn" data-piece-next aria-label="Next page">
           ${raw(ChevronRight("pager-icon"))}
         </button>
       </div>
@@ -318,28 +164,21 @@ function pieceSetGrid(): string {
 
 function boardStyleStep(): string {
   return html`
-    <div
-      id="panel-board-style"
-      role="tabpanel"
-      class="export-step"
-      x-show="tab === 'board-style'"
-      x-cloak
-    >
+    <div id="panel-board-style" role="tabpanel" class="export-step" data-step="board-style">
       <div class="board-style">
         <div class="board-style-board-col">
           <div class="board-preview">
             <div class="board-preview-frame">
               <img
-                class="board-preview-img"
-                :src="previewUrl"
-                :class="previewLoading ? 'board-preview-img-loading' : ''"
+                class="board-preview-img board-preview-img-loading"
+                data-preview-img
                 alt="Chess board preview"
                 aria-label="Board preview"
               />
-              <div class="board-preview-overlay" x-show="previewLoading" x-cloak>
+              <div class="board-preview-overlay" data-preview-loading hidden>
                 <div class="spinner" aria-hidden="true"></div>
               </div>
-              <div class="board-preview-error" x-show="!previewLoading && previewError" x-cloak>
+              <div class="board-preview-error" data-preview-error hidden>
                 <p>Invalid FEN</p>
               </div>
             </div>
@@ -347,16 +186,8 @@ function boardStyleStep(): string {
 
           <div class="display-options">
             <span class="section-eyebrow">Display Options</span>
-            ${Checkbox({
-              xModel: "showCoords",
-              onInput: "setShowCoords($event.target.checked)",
-              label: "Show Coordinates",
-            })}
-            ${Checkbox({
-              xModel: "showThinFrame",
-              onInput: "setShowThinFrame($event.target.checked)",
-              label: "Board Frame",
-            })}
+            ${Checkbox({ dataOption: "showCoords", label: "Show Coordinates" })}
+            ${Checkbox({ dataOption: "showThinFrame", label: "Board Frame" })}
           </div>
         </div>
 
@@ -372,20 +203,15 @@ function exportSettingsStep(): string {
   const formatBtn = (format: "jpeg" | "png" | "svg", label: string): string => html`
     <button
       type="button"
-      @click="toggleFormat('${format}')"
-      :class="selectedFormats.includes('${format}')
-          ? 'format-option format-option-active'
-          : 'format-option'"
-      class="format-option"
-      :aria-pressed="selectedFormats.includes('${format}')"
+      class="format-option ${format === "jpeg" ? "format-option-active" : ""}"
+      data-format="${format}"
+      aria-pressed="${format === "jpeg" ? "true" : "false"}"
     >
       <span
-        class="format-check"
-        :class="selectedFormats.includes('${format}')
-            ? 'format-check-active'
-            : ''"
+        class="format-check ${format === "jpeg" ? "format-check-active" : ""}"
+        data-format-check
       >
-        <span x-show="selectedFormats.includes('${format}')" x-cloak>
+        <span class="format-check-icon-wrap" data-format-check-icon hidden>
           ${raw(Check("format-check-icon"))}
         </span>
       </span>
@@ -396,22 +222,18 @@ function exportSettingsStep(): string {
   const resolutionBtn = (r: number): string => html`
     <button
       type="button"
-      @click="setResolutionValue(${r})"
-      :class="exportQuality === ${r}
-          ? 'settings-btn settings-btn-active'
-          : 'settings-btn settings-btn-inactive'"
+      data-quality="${r}"
+      class="settings-btn ${r === 2 ? "settings-btn-active" : "settings-btn-inactive"}"
     >
-      <span x-text="'${r}×'"></span>
+      ${r}×
     </button>
   `;
 
   const boardSizeBtn = (preset: number): string => html`
     <button
       type="button"
-      @click="selectBoardSizePreset(${preset})"
-      :class="boardSizePreset === ${preset}
-          ? 'settings-btn settings-btn-active'
-          : 'settings-btn settings-btn-inactive'"
+      data-size="${preset}"
+      class="settings-btn ${preset === 8 ? "settings-btn-active" : "settings-btn-inactive"}"
     >
       ${preset} cm
     </button>
@@ -422,8 +244,8 @@ function exportSettingsStep(): string {
       id="panel-export-settings"
       role="tabpanel"
       class="export-step export-settings"
-      x-show="tab === 'export-settings'"
-      x-cloak
+      data-step="export-settings"
+      hidden
     >
       <div class="settings-section">
         <span class="section-eyebrow">Format</span>
@@ -450,20 +272,14 @@ function exportSettingsStep(): string {
             min="4"
             max="8"
             step="0.5"
-            :value="customBoardSizeInput"
-            @focus="selectBoardSizePreset('custom')"
-            @input="updateCustomBoardSize($event)"
+            data-size-custom
+            value="8"
             placeholder="cm"
             aria-label="Custom board size in centimetres (4 to 8)"
-            :aria-invalid="customBoardSizeError ? 'true' : 'false'"
-            :class="boardSizePreset === 'custom'
-              ? 'board-size-input board-size-input-active'
-              : 'board-size-input'"
+            class="board-size-input"
           />
         </div>
-        <p class="field-error" x-show="customBoardSizeError" x-cloak>
-          <span x-text="customBoardSizeError"></span>
-        </p>
+        <p class="field-error" data-custom-size-error hidden></p>
       </div>
 
       <div class="settings-section">
@@ -471,14 +287,11 @@ function exportSettingsStep(): string {
         <input
           type="text"
           class="input-field"
-          :value="fileNamesInput"
-          @input="updateFileNames($event)"
+          data-file-names
           placeholder="e.g. Position1, Tactic2"
-          :aria-invalid="fileNameError ? 'true' : 'false'"
+          aria-label="File names for downloads"
         />
-        <p class="field-error" x-show="fileNameError" x-cloak>
-          <span x-text="fileNameError"></span>
-        </p>
+        <p class="field-error" data-file-name-error hidden></p>
         <div class="pro-tips">
           <span class="pro-tips-title">Pro Tips</span>
           <ul class="pro-tips-list">
@@ -495,12 +308,7 @@ function exportSettingsStep(): string {
       </div>
 
       <div class="download-row">
-        <button
-          type="button"
-          @click="download()"
-          :disabled="selectedFormats.length === 0"
-          class="btn btn-primary download-btn"
-        >
+        <button type="button" data-download class="btn btn-primary download-btn">
           ${raw(Download("download-btn-icon"))} Download
         </button>
       </div>
@@ -509,67 +317,59 @@ function exportSettingsStep(): string {
 }
 
 function exportProgressModal(): string {
-  return html`
-    ${ModalShell({
-      isOpenExpr: "isExporting",
-      onCloseExpr: "void 0",
-      title: "Export Progress",
-      icon: FileImage,
-      iconColor: "var(--color-text-secondary)",
-      maxWidth: "28rem",
-      showCloseButton: false,
-      disableBackdropClick: true,
-      children: html`
-        <div class="space-y-5">
-          <p class="text-sm text-text-secondary">
-            <span x-text="isPaused ? 'Paused' : 'Creating image...'"></span>
-          </p>
-          <div class="progress-info">
-            <span>Format:</span>
-            <strong x-text="String(currentFormat || '').toUpperCase()"></strong>
-          </div>
-          <div class="space-y-3">
-            <div
-              class="progress-bar"
-              role="progressbar"
-              :aria-valuenow="displayProgress"
-              aria-valuemin="0"
-              aria-valuemax="100"
-            >
-              <div class="progress-bar-fill" :style="'width:' + displayProgress + '%'"></div>
-            </div>
-            <p class="progress-percent" x-text="Math.round(displayProgress) + '% complete'"></p>
-          </div>
-          <div class="progress-actions">
-            <button
-              type="button"
-              class="btn btn-secondary progress-btn"
-              @click="isPaused ? resumeExport() : pauseExport()"
-              :aria-label="isPaused ? 'Resume export' : 'Pause export'"
-            >
-              <span x-show="isPaused" x-cloak class="progress-btn-inner">
-                ${raw(Play("progress-btn-icon"))} <span>Resume</span>
-              </span>
-              <span x-show="!isPaused" x-cloak class="progress-btn-inner">
-                ${raw(Pause("progress-btn-icon"))} <span>Pause</span>
-              </span>
-            </button>
-            <button type="button" class="btn btn-danger progress-btn" @click="cancelExport()">
-              ${raw(XCircle("progress-btn-icon"))} <span>Cancel</span>
-            </button>
-          </div>
+  return ModalShell({
+    id: "export-progress",
+    title: "Export Progress",
+    icon: FileImage,
+    iconColor: "var(--color-text-secondary)",
+    maxWidth: "28rem",
+    showCloseButton: false,
+    disableBackdropClick: true,
+    children: html`
+      <div class="space-y-5">
+        <p class="text-sm text-text-secondary" data-export-status>Creating image...</p>
+        <div class="progress-info">
+          <span>Format:</span>
+          <strong data-export-format></strong>
         </div>
-      `,
-    })}
-  `;
+        <div class="space-y-3">
+          <div
+            class="progress-bar"
+            role="progressbar"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+            data-progress-bar
+          >
+            <div class="progress-bar-fill" data-progress-fill style="width: 0%"></div>
+          </div>
+          <p class="progress-percent" data-progress-percent>0% complete</p>
+        </div>
+        <div class="progress-actions">
+          <button
+            type="button"
+            class="btn btn-secondary progress-btn"
+            data-pause-btn
+            aria-label="Pause export"
+          >
+            <span class="progress-btn-inner" data-pause-state>
+              ${raw(Pause("progress-btn-icon"))} <span>Pause</span>
+            </span>
+            <span class="progress-btn-inner" data-resume-state hidden>
+              ${raw(Play("progress-btn-icon"))} <span>Resume</span>
+            </span>
+          </button>
+          <button type="button" class="btn btn-danger progress-btn" data-cancel-export>
+            ${raw(XCircle("progress-btn-icon"))} <span>Cancel</span>
+          </button>
+        </div>
+      </div>
+    `,
+  });
 }
 
 export function ExportPage(options: ExportPageOptions = {}): string {
-  const tab = options.tab === "export-settings" ? "export-settings" : "board-style";
-  const rawFen =
-    options.fen && options.fen.trim().length > 0 ? options.fen.trim().slice(0, MAX_FEN_LENGTH) : "";
-  const fenExpr = rawFen ? `'${sanitizeFenForExpr(rawFen)}'` : "null";
-  const dataExpr = `exportPage({ tab: '${tab}', fen: ${fenExpr} })`;
+  const fen = options.fen ? options.fen.trim().slice(0, MAX_FEN_LENGTH) : "";
 
   const tabs = html`
     <nav aria-label="Export Studio sections" class="tabs-nav">
@@ -585,38 +385,22 @@ export function ExportPage(options: ExportPageOptions = {}): string {
               type="button"
               role="tab"
               aria-controls="panel-board-style"
-              :aria-selected="tab === 'board-style' ? 'true' : 'false'"
-              @click="setTab('board-style')"
-              :class="tab === 'board-style'
-                ? 'tab-btn tab-btn-normal tab-btn-active'
-                : 'tab-btn tab-btn-normal tab-btn-inactive'"
+              data-tab-btn="board-style"
+              aria-selected="true"
+              class="tab-btn tab-btn-normal tab-btn-active"
             >
-              <span
-                aria-hidden="true"
-                class="tab-indicator"
-                :class="tab === 'board-style'
-                  ? 'tab-indicator-active'
-                  : 'tab-indicator-inactive'"
-              ></span>
+              <span aria-hidden="true" class="tab-indicator tab-indicator-active"></span>
               ${raw(LayoutGrid("tab-icon"))} Board Style
             </button>
             <button
               type="button"
               role="tab"
               aria-controls="panel-export-settings"
-              :aria-selected="tab === 'export-settings' ? 'true' : 'false'"
-              @click="setTab('export-settings')"
-              :class="tab === 'export-settings'
-                ? 'tab-btn tab-btn-normal tab-btn-active'
-                : 'tab-btn tab-btn-normal tab-btn-inactive'"
+              data-tab-btn="export-settings"
+              aria-selected="false"
+              class="tab-btn tab-btn-normal tab-btn-inactive"
             >
-              <span
-                aria-hidden="true"
-                class="tab-indicator"
-                :class="tab === 'export-settings'
-                  ? 'tab-indicator-active'
-                  : 'tab-indicator-inactive'"
-              ></span>
+              <span aria-hidden="true" class="tab-indicator tab-indicator-inactive"></span>
               ${raw(Download("tab-icon"))} Export Settings
             </button>
           </div>
@@ -632,10 +416,10 @@ export function ExportPage(options: ExportPageOptions = {}): string {
   });
 
   return html`
-    <div class="export-root" x-data="${dataExpr}">
+    <div class="export-root" data-export-page data-fen="${escapeHtml(fen)}">
       <h1 class="sr-only">Export Chess Diagram</h1>
 
-      <div class="export-empty" x-show="!hasConfig" x-cloak>
+      <div class="export-empty" data-export-empty hidden>
         <div class="export-empty-icon">${raw(Download("export-empty-icon-img"))}</div>
         <p class="export-empty-title">No board loaded</p>
         <p class="export-empty-text">
@@ -646,9 +430,9 @@ export function ExportPage(options: ExportPageOptions = {}): string {
         </a>
       </div>
 
-      <div x-show="hasConfig" x-cloak>${sidebar} ${exportProgressModal()}</div>
+      <div data-export-content>${sidebar} ${exportProgressModal()}</div>
     </div>
 
-    ${raw(exportPageScript())}
+    <script src="/export-page.js"></script>
   `;
 }

@@ -223,9 +223,19 @@
   border: none;
   cursor: pointer;
   font: inherit;
+  color: var(--color-text-secondary);
   transition:
     background-color 0.2s var(--animation-curve),
     color 0.2s var(--animation-curve);
+
+  &:hover {
+    color: var(--color-text-primary);
+    background-color: var(--color-surface-hover);
+  }
+
+  &:active {
+    background-color: var(--color-surface-elevated);
+  }
 
   &:focus-visible {
     outline: none;
@@ -236,14 +246,9 @@
 .toggle-btn-open {
   background-color: var(--color-surface-elevated);
   color: var(--color-accent);
-}
-
-.toggle-btn-closed {
-  color: var(--color-text-secondary);
 
   &:hover {
-    color: var(--color-text-primary);
-    background-color: var(--color-surface-hover);
+    background-color: var(--color-surface-elevated);
   }
 
   &:active {
@@ -264,6 +269,11 @@
   }
 }
 
+.toggle-icon.hidden,
+.toggle-icon[hidden] {
+  display: none;
+}
+
 // ===== Menu items =====
 .menu-item {
   width: 100%;
@@ -280,7 +290,9 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  transition: background-color 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
 
   &:hover {
     background-color: var(--color-surface-hover);
@@ -303,7 +315,9 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  transition: background-color 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
 
   &:hover {
     background-color: color-mix(in srgb, var(--color-error) 10%, transparent);
@@ -326,18 +340,20 @@
   }
 }
 
+.menu-icon-lg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
 .menu-icon-danger {
   color: var(--color-error);
 }
 
-.px-2 {
-  padding-inline: 0.5rem;
-}
-.pb-1 {
-  padding-bottom: 0.25rem;
-}
-.my-3 {
-  margin-block: 0.75rem;
+// ===== Dropdown link sections =====
+.dropdown-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 // ===== Profile header =====

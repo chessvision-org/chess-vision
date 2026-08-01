@@ -1,6 +1,7 @@
 import { html, raw } from "../helpers/html";
 import { Navbar } from "../components/Navbar";
-import { NotificationContainer, notificationsScript } from "../components/ui";
+import { NotificationContainer } from "../components/ui";
+import { inlineStylesheet } from "../helpers/styles";
 import {
   DEFAULT_DESCRIPTION,
   DEFAULT_OG_IMAGE,
@@ -19,8 +20,6 @@ interface LayoutProps {
   rightSlot?: string;
   children: string;
 }
-
-const ALPINE_CDN = "https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js";
 
 function serializeSchema(obj: Record<string, unknown>): string {
   return JSON.stringify(obj).replace(/</g, "\\u003c");
@@ -82,7 +81,7 @@ export function Layout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
 
-        <link rel="stylesheet" href="/styles/main.css" />
+        <style>${raw(inlineStylesheet())}</style>
         <link
           rel="preload"
           href="/fonts/inter/inter-latin-wght-normal.woff2"
@@ -90,11 +89,12 @@ export function Layout({
           type="font/woff2"
           crossorigin
         />
+        <link rel="preload" as="image" href="/logo.png" fetchpriority="high" />
         <script src="/theme-init.js"></script>
-        <script defer src="${ALPINE_CDN}"></script>
+        <script src="/init.js"></script>
       </head>
       <body>
-        <div class="page-layout" x-data="layoutState()" @keydown.escape.window="closeAll()">
+        <div class="page-layout">
           <a href="#main-content" class="skiplink">Skip to main content</a>
 
           ${Navbar({ isAuthenticated: false, rightSlot })}
@@ -106,33 +106,8 @@ export function Layout({
           ${NotificationContainer()}
         </div>
 
-        <script>
-          document.addEventListener("alpine:init", () => {
-            Alpine.data("layoutState", () => ({
-              isMobileMenuOpen: false,
-              isDesktopDropdownOpen: false,
-              toggleMobile() {
-                this.isMobileMenuOpen = !this.isMobileMenuOpen;
-                this.isDesktopDropdownOpen = false;
-              },
-              toggleDesktop() {
-                this.isDesktopDropdownOpen = !this.isDesktopDropdownOpen;
-              },
-              closeAll() {
-                this.isMobileMenuOpen = false;
-                this.isDesktopDropdownOpen = false;
-              },
-              async signOut() {
-                try {
-                  await fetch("/auth/sign-out", { method: "POST" });
-                } catch {}
-                window.location.reload();
-              },
-            }));
-          });
-        </script>
-
-        ${raw(notificationsScript())}
+        <script src="/layout-state.js"></script>
+        <script src="/notifications.js"></script>
       </body>
     </html>
   `;

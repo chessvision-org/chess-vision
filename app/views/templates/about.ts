@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
-import { join } from "node:path";
 
 import { html, raw } from "../helpers/html";
+import { CHANGELOG_PATH } from "../../config";
 import { PageSidebarLayout } from "../components/PageSidebarLayout";
 import { PageTabs, type PageTabGroup } from "../components/PageTabs";
 import {
@@ -93,7 +93,7 @@ let changelogYears: ChangelogYear[] | null = null;
 function getChangelogYears(): ChangelogYear[] {
   if (changelogYears === null) {
     try {
-      const source = readFileSync(join(process.cwd(), "CHANGELOG.md"), "utf8");
+      const source = readFileSync(CHANGELOG_PATH, "utf8");
       changelogYears = parseChangelog(source);
     } catch {
       changelogYears = [];
@@ -264,21 +264,17 @@ function ChangelogSection(year?: string): string {
   };
 
   const newerLink = (index: number): string => {
-    if (index === 0) {
-      return html`<span class="changelog-nav-btn" aria-disabled="true">Newer</span>`;
-    }
-    return html`<a href="?tab=changelog&year=${years[index - 1].year}" class="changelog-nav-btn"
-      >Newer</a
-    >`;
+    if (index === 0) return html`<span class="changelog-nav-btn" aria-disabled="true">Newer</span>`;
+    const prev = years[index - 1];
+    return html`<a href="?tab=changelog&year=${prev?.year}" class="changelog-nav-btn">Newer</a>`;
   };
 
   const olderLink = (index: number): string => {
     if (index === years.length - 1) {
       return html`<span class="changelog-nav-btn" aria-disabled="true">Older</span>`;
     }
-    return html`<a href="?tab=changelog&year=${years[index + 1].year}" class="changelog-nav-btn"
-      >Older</a
-    >`;
+    const next = years[index + 1];
+    return html`<a href="?tab=changelog&year=${next?.year}" class="changelog-nav-btn">Older</a>`;
   };
 
   return html` <div class="about-section">
@@ -542,7 +538,7 @@ function ContributeSection(): string {
 }
 
 function DonateSection(): string {
-  return html` <div x-data="donateState()" class="about-section">
+  return html` <div class="about-section" data-donate-section>
     <div class="about-block">
       ${SectionHeading({ icon: Heart, title: "Donate" })}
       ${Lead({
@@ -570,10 +566,10 @@ function DonateSection(): string {
           ${Callout({
             children: `
               <div class="flex items-stretch gap-2">
-                <code class="min-w-0 flex-1 select-all break-all rounded-xl border border-border bg-surface px-4 py-3 font-mono text-base text-text-primary">${CRYPTO_WALLET_ADDRESS}</code>
+                <code data-wallet="${CRYPTO_WALLET_ADDRESS}" class="min-w-0 flex-1 select-all break-all rounded-xl border border-border bg-surface px-4 py-3 font-mono text-base text-text-primary">${CRYPTO_WALLET_ADDRESS}</code>
                 <button
                   type="button"
-                  @click="copyWallet()"
+                  data-copy-wallet
                   class="inline-flex shrink-0 items-center gap-2 rounded-xl border border-border bg-surface px-4 py-3 text-sm font-semibold text-text-primary transition-colors hover:bg-surface-hover"
                   aria-label="Copy crypto wallet address to clipboard"
                   title="Copy wallet address"
@@ -582,7 +578,7 @@ function DonateSection(): string {
                   <span class="hidden sm-inline">Copy</span>
                 </button>
               </div>
-              <p x-show="copied" x-transition class="mt-2 text-sm text-success"
+              <p data-copied-msg hidden class="mt-2 text-sm text-success"
                 >Wallet address copied</p
               >
             `,
@@ -773,21 +769,6 @@ export function AboutPage(activeTab: string, year?: string): string {
                               })}
     </div>
 
-    <script>
-      document.addEventListener("alpine:init", () => {
-        Alpine.data("donateState", () => ({
-          copied: false,
-          copyWallet() {
-            navigator.clipboard
-              .writeText("${CRYPTO_WALLET_ADDRESS}")
-              .then(() => {
-                this.copied = true;
-                setTimeout(() => (this.copied = false), 2000);
-              })
-              .catch(() => {});
-          },
-        }));
-      });
-    </script>
+    <script src="/donate-state.js"></script>
   `;
 }

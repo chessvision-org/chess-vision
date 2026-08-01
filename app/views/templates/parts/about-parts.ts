@@ -102,17 +102,12 @@ export function MailButton({
 }
 
 export function FAQItem({ q, a }: { q: string; a: string }): string {
-  return html`<div class="faq-item" x-data="{ open: false }">
-    <button
-      type="button"
-      @click="open = !open"
-      class="faq-button"
-      :aria-expanded="open ? 'true' : 'false'"
-    >
+  return html`<div class="faq-item">
+    <button type="button" data-faq-toggle aria-expanded="false" class="faq-button">
       <span class="faq-text">${q}</span>
-      <span class="faq-icon" :class="open ? 'faq-icon-open' : ''">${raw(ChevronDown(""))}</span>
+      <span class="faq-icon">${raw(ChevronDown(""))}</span>
     </button>
-    <div x-show="open" x-transition>
+    <div data-faq-body hidden>
       <div class="faq-body-text">${raw(a)}</div>
     </div>
   </div>`;

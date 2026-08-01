@@ -13,8 +13,8 @@ importers:
   .:
     dependencies:
       '@chessviewer-org/chess-viewer':
-        specifier: ^1.1.0
-        version: 1.1.0
+        specifier: ^1.2.0
+        version: 1.2.0
       express:
         specifier: ^5.2.1
         version: 5.2.1
@@ -134,6 +134,10 @@ packages:
 
   '@chessviewer-org/chess-viewer@1.1.0':
     resolution: {integrity: sha512-1yMr8kxJr7jYBfrBQB9oFYctfxfpDOT/lNJHLXssKN8VYIJwh/vPiqCf7wmKR7AwkLBmJ+0HUJqjGY3/JQ3fmQ==}
+    engines: {node: '>=18'}
+
+  '@chessviewer-org/chess-viewer@1.2.0':
+    resolution: {integrity: sha512-RxJSeEFldznrthoaulnIPLUZ8aSDDSZsnPUaCqx7qjD2UFcTKtgIaaw2vP+OOiS6uYWqgd7Z3hLeq+1S3CJrKg==}
     engines: {node: '>=18'}
 
   '@commitlint/cli@21.1.0':
@@ -2298,6 +2302,8 @@ snapshots:
       keyv: 5.6.0
 
   '@chessviewer-org/chess-viewer@1.1.0': {}
+
+  '@chessviewer-org/chess-viewer@1.2.0': {}
 
   '@commitlint/cli@21.1.0(@types/node@25.9.1)(conventional-commits-filter@5.0.0)(conventional-commits-parser@6.4.0)(typescript@6.0.3)':
     dependencies:

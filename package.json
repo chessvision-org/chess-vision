@@ -3,10 +3,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm build:css && tsx watch app/server.ts",
+    "dev": "pnpm build:css && node scripts/build-lib.mjs && tsx watch app/server.ts",
     "start": "tsx app/server.ts",
     "build:css": "sass app/styles/main.scss public/styles/main.css --no-source-map",
-    "build": "pnpm build:css && pnpm typecheck",
+    "build:lib": "node scripts/build-lib.mjs",
+    "build": "pnpm build:css && node scripts/build-lib.mjs && pnpm typecheck",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.server.json --noEmit",
     "lint": "pnpm lint:code && pnpm lint:style",
     "lint:code": "oxlint",
@@ -19,7 +20,7 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@chessviewer-org/chess-viewer": "^1.1.0",
+    "@chessviewer-org/chess-viewer": "^1.2.0",
     "express": "^5.2.1",
     "fflate": "^0.8.3",
     "uqr": "^0.1.3"

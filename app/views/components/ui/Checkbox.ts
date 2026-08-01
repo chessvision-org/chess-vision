@@ -8,8 +8,7 @@ interface CheckboxProps {
   value?: string;
   disabled?: boolean;
   className?: string;
-  xModel?: string;
-  onInput?: string;
+  dataOption?: string;
 }
 
 let checkboxUid = 0;
@@ -22,8 +21,7 @@ export function Checkbox({
   value,
   disabled = false,
   className = "",
-  xModel,
-  onInput,
+  dataOption,
 }: CheckboxProps): string {
   const id = providedId ?? `checkbox-${++checkboxUid}`;
   const nameAttr = name !== undefined ? html`name="${name}"` : "";
@@ -41,8 +39,7 @@ export function Checkbox({
       ${checked ? "checked" : ""}
       ${disabled ? "disabled" : ""}
       class="checkbox-input"
-      ${xModel ? html`x-model="${xModel}"` : ""}
-      ${onInput ? html`@change="${onInput}"` : ""}
+      ${dataOption ? html`data-option="${dataOption}"` : ""}
     />
     <span class="checkbox-text">${label}</span>
   </label>`;

@@ -126,6 +126,26 @@
   width: 100%;
 }
 
+.group-items-collapsible[hidden] {
+  display: none;
+}
+
+.group-toggle-btn[aria-expanded="true"] .group-chevron-open {
+  display: flex;
+}
+
+.group-toggle-btn[aria-expanded="true"] .group-chevron-close {
+  display: none;
+}
+
+.group-toggle-btn[aria-expanded="false"] .group-chevron-open {
+  display: none;
+}
+
+.group-toggle-btn[aria-expanded="false"] .group-chevron-close {
+  display: flex;
+}
+
 .tab-btn {
   position: relative;
   display: flex;

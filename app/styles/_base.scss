@@ -93,9 +93,17 @@ img {
   color: var(--color-text-primary);
 }
 
-// ===== Alpine.js pre-init hiding =====
-[x-cloak] {
-  display: none !important;
+// ===== Hidden modal state =====
+.modal-backdrop[data-state="closed"],
+.modal-overlay[data-state="closed"] {
+  display: none;
+}
+
+// ===== Hidden state for panels that override `hidden` via flex =====
+.theme-pager[hidden],
+.theme-custom[hidden],
+.export-step[hidden] {
+  display: none;
 }
 
 // ===== Scroll lock (modals / drawers) =====

@@ -45,6 +45,7 @@
     }
   },
   "include": [
+    "app",
     "ui/lib/src/utils/a11yUtils.ts",
     "ui/lib/src/utils/canvasExporter.ts",
     "ui/lib/src/utils/canvasRenderer.ts",

@@ -1,6 +1,6 @@
 {
   "extends": ["stylelint-config-standard-scss"],
-  "ignorePatterns": [
+  "ignoreFiles": [
     "node_modules",
     "dist",
     "build",

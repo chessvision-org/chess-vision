@@ -5,13 +5,11 @@ import { AlertTriangle, Info, X, XCircle } from "../icons";
 export type ModalType = "warning" | "info" | "danger";
 
 interface ModalProps {
-  isOpenExpr: string;
+  id: string;
   title: string;
   message?: string;
   children?: string;
   type?: ModalType;
-  onConfirmExpr: string;
-  onCancelExpr: string;
 }
 
 const MODAL_TYPE_ICON: Record<ModalType, IconFn> = {
@@ -32,30 +30,15 @@ const MODAL_TYPE_CONFIRM: Record<ModalType, string> = {
   danger: "btn-danger",
 };
 
-export function Modal({
-  isOpenExpr,
-  title,
-  message,
-  children,
-  type = "info",
-  onConfirmExpr,
-  onCancelExpr,
-}: ModalProps): string {
+export function Modal({ id, title, message, children, type = "info" }: ModalProps): string {
   const Icon = MODAL_TYPE_ICON[type];
 
-  return html`<div
-    class="modal-backdrop"
-    x-show="${isOpenExpr}"
-    x-cloak
-    x-effect="document.body.classList.toggle('modal-open', ${isOpenExpr})"
-    @click.self="${onCancelExpr}"
-    @keydown.escape.window="${onCancelExpr}"
-  >
+  return html`<div class="modal-backdrop" id="${id}" data-state="closed" data-backdrop-close>
     <div
       role="dialog"
       aria-modal="true"
-      aria-labelledby="modal-title"
-      aria-describedby="modal-description"
+      aria-labelledby="${id}-title"
+      aria-describedby="${id}-description"
       tabindex="-1"
       class="modal-container"
       style="max-width: 28rem"
@@ -66,24 +49,19 @@ export function Modal({
             ${raw(Icon("w-6 h-6", true))}
           </div>
           <div class="flex-1 min-w-0">
-            <h3 id="modal-title" class="text-lg font-bold text-text-primary mb-1">${title}</h3>
-            <div id="modal-description" class="text-sm text-text-secondary leading-relaxed">
+            <h3 id="${id}-title" class="text-lg font-bold text-text-primary mb-1">${title}</h3>
+            <div id="${id}-description" class="text-sm text-text-secondary leading-relaxed">
               ${children ?? message}
             </div>
           </div>
-          <button
-            type="button"
-            @click="${onCancelExpr}"
-            aria-label="Close dialog"
-            class="modal-close-btn"
-          >
+          <button type="button" data-modal-close aria-label="Close dialog" class="modal-close-btn">
             ${raw(X("w-5 h-5"))}
           </button>
         </div>
 
         <div class="mt-8 flex items-center justify-end gap-3">
-          <button type="button" @click="${onCancelExpr}" class="btn btn-secondary">Cancel</button>
-          <button type="button" @click="${onConfirmExpr}" class="btn ${MODAL_TYPE_CONFIRM[type]}">
+          <button type="button" data-modal-cancel class="btn btn-secondary">Cancel</button>
+          <button type="button" data-modal-confirm class="btn ${MODAL_TYPE_CONFIRM[type]}">
             Confirm
           </button>
         </div>
@@ -93,8 +71,7 @@ export function Modal({
 }
 
 interface ModalShellProps {
-  isOpenExpr: string;
-  onCloseExpr: string;
+  id: string;
   title: string;
   icon?: IconFn;
   iconColor?: string;
@@ -102,14 +79,10 @@ interface ModalShellProps {
   maxWidth?: string;
   showCloseButton?: boolean;
   disableBackdropClick?: boolean;
-  id?: string;
 }
 
-let shellUid = 0;
-
 export function ModalShell({
-  isOpenExpr,
-  onCloseExpr,
+  id,
   title,
   icon,
   iconColor = "var(--color-accent)",
@@ -117,24 +90,17 @@ export function ModalShell({
   maxWidth = "32rem",
   showCloseButton = true,
   disableBackdropClick = false,
-  id: providedId,
 }: ModalShellProps): string {
-  const id = providedId ?? `modal-shell-${++shellUid}`;
-  const titleId = `${id}-title`;
-  const backdropClick = disableBackdropClick ? "" : html`@click.self="${onCloseExpr}"`;
-
   return html`<div
     class="modal-backdrop"
-    x-show="${isOpenExpr}"
-    x-cloak
-    x-effect="document.body.classList.toggle('modal-open', ${isOpenExpr})"
-    ${backdropClick}
-    @keydown.escape.window="${onCloseExpr}"
+    id="${id}"
+    data-state="closed"
+    ${disableBackdropClick ? "" : html`data-backdrop-close`}
   >
     <div
       role="dialog"
       aria-modal="true"
-      aria-labelledby="${titleId}"
+      aria-labelledby="${id}-title"
       tabindex="-1"
       class="modal-container"
       style="max-width: ${maxWidth}"
@@ -146,12 +112,12 @@ export function ModalShell({
                 >${raw(icon("w-5 h-5"))}</span
               >`
             : ""}
-          <h3 id="${titleId}" class="modal-title">${title}</h3>
+          <h3 id="${id}-title" class="modal-title">${title}</h3>
         </div>
         ${showCloseButton
           ? html`<button
               type="button"
-              @click="${onCloseExpr}"
+              data-modal-close
               aria-label="Close dialog"
               class="modal-close-btn"
             >

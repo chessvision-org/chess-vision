@@ -12,15 +12,18 @@ interface NavbarProps {
 
 function ProfileHeader({
   displayName,
+  isAuthenticated,
   avatarSize,
 }: {
   displayName: string;
+  isAuthenticated: boolean;
   avatarSize: "sm" | "md";
 }) {
+  const fallbackName = isAuthenticated ? "ChessViewer user" : "Local user";
   return html`<div class="profile-header">
     ${AvatarInitial({ displayName, size: avatarSize })}
     <div class="profile-info">
-      <p class="profile-name">${displayName || "Local user"}</p>
+      <p class="profile-name">${displayName || fallbackName}</p>
       ${MembershipBadge({ tier: NONE_TIER, variant: "plain" })}
     </div>
   </div>`;
@@ -30,20 +33,28 @@ function NavLink({
   href,
   icon,
   label,
+  iconClass,
 }: {
   href: string;
   icon: (className?: string) => string;
   label: string;
+  iconClass: string;
 }) {
-  return html`<a href="${href}" @click="closeAll()" class="menu-item"
-    ><span class="menu-icon">${icon()}</span><span>${label}</span></a
+  return html`<a href="${href}" class="menu-item"
+    ><span class="${iconClass}">${icon()}</span><span>${label}</span></a
   >`;
 }
 
-function AuthActions({ isAuthenticated }: { isAuthenticated: boolean }) {
+function AuthActions({
+  isAuthenticated,
+  iconClass,
+}: {
+  isAuthenticated: boolean;
+  iconClass: string;
+}) {
   if (isAuthenticated) {
-    return html`<button type="button" @click="signOut()" class="menu-item-danger">
-      <span class="menu-icon menu-icon-danger">${LogOut()}</span
+    return html`<button type="button" data-signout class="menu-item-danger">
+      <span class="${iconClass} menu-icon-danger">${LogOut()}</span
       ><span class="text-error">Sign Out</span>
     </button>`;
   }
@@ -52,8 +63,14 @@ function AuthActions({ isAuthenticated }: { isAuthenticated: boolean }) {
     href: "/auth/sign-in",
     icon: LogIn,
     label: "Sign In",
+    iconClass,
   })}
-  ${NavLink({ href: "/auth/sign-up", icon: UserPlus, label: "Sign Up" })}`;
+  ${NavLink({
+    href: "/auth/sign-up",
+    icon: UserPlus,
+    label: "Sign Up",
+    iconClass,
+  })}`;
 }
 
 export function Navbar({
@@ -74,40 +91,42 @@ export function Navbar({
 
           <div class="desktop-menu-wrap">
             ${rightSlot}
-            <div class="desktop-dropdown-wrap" @click.outside="isDesktopDropdownOpen = false">
+            <div class="desktop-dropdown-wrap" id="desktop-dropdown-wrap">
               <button
                 type="button"
-                @click="isDesktopDropdownOpen = !isDesktopDropdownOpen"
-                :class="isDesktopDropdownOpen ? 'dropdown-toggle dropdown-toggle-active' : 'dropdown-toggle'"
+                id="desktop-dropdown-toggle"
+                class="dropdown-toggle"
                 aria-label="Account menu"
-                :aria-expanded="isDesktopDropdownOpen"
+                aria-expanded="false"
                 aria-haspopup="menu"
               >
-                <template x-if="isDesktopDropdownOpen"
-                  ><span class="toggle-icon">${X()}</span></template
-                >
-                <template x-if="!isDesktopDropdownOpen"
-                  ><span class="toggle-icon">${UserCircle()}</span></template
-                >
+                <span class="toggle-icon" data-nav-icon="open">${UserCircle()}</span>
+                <span class="toggle-icon hidden" data-nav-icon="close">${X()}</span>
               </button>
 
-              <div
-                class="dropdown-panel dropdown-panel-anim"
-                :data-state="isDesktopDropdownOpen ? 'open' : 'closed'"
-                role="menu"
-              >
-                <div class="px-2 pb-1">${ProfileHeader({ displayName, avatarSize: "md" })}</div>
+              <div class="dropdown-panel dropdown-panel-anim" data-state="closed" role="menu">
+                <div class="px-2 pb-1">
+                  ${ProfileHeader({ displayName, isAuthenticated, avatarSize: "md" })}
+                </div>
                 <div class="h-px bg-border my-3"></div>
-                <div class="dropdown-section">
+                <div class="dropdown-links">
                   ${NavLink({
                     href: "/settings?tab=profile",
                     icon: Settings,
                     label: "Settings",
+                    iconClass: "menu-icon",
                   })}
-                  ${NavLink({ href: "/about", icon: Info, label: "About" })}
+                  ${NavLink({
+                    href: "/about",
+                    icon: Info,
+                    label: "About",
+                    iconClass: "menu-icon",
+                  })}
                 </div>
                 <div class="h-px bg-border my-3"></div>
-                <div class="dropdown-section">${AuthActions({ isAuthenticated })}</div>
+                <div class="dropdown-links">
+                  ${AuthActions({ isAuthenticated, iconClass: "menu-icon" })}
+                </div>
               </div>
             </div>
           </div>
@@ -116,44 +135,50 @@ export function Navbar({
             ${rightSlot}
             <button
               type="button"
-              @click="isMobileMenuOpen = !isMobileMenuOpen; isDesktopDropdownOpen = false"
-              :class="isMobileMenuOpen ? 'toggle-btn toggle-btn-open' : 'toggle-btn toggle-btn-closed'"
+              id="mobile-toggle"
+              class="toggle-btn"
               aria-label="Account menu"
-              :aria-expanded="isMobileMenuOpen"
+              aria-expanded="false"
               aria-haspopup="menu"
             >
-              <template x-if="isMobileMenuOpen"><span class="toggle-icon">${X()}</span></template>
-              <template x-if="!isMobileMenuOpen"
-                ><span class="toggle-icon">${UserCircle()}</span></template
-              >
+              <span class="toggle-icon" data-nav-icon="open">${UserCircle()}</span>
+              <span class="toggle-icon hidden" data-nav-icon="close">${X()}</span>
             </button>
           </div>
         </div>
       </div>
     </div>
 
-    <div
-      class="mobile-backdrop"
-      :data-state="isMobileMenuOpen ? 'open' : 'closed'"
-      aria-hidden="true"
-      @click="isMobileMenuOpen = false"
-    ></div>
+    <div class="mobile-backdrop" id="mobile-backdrop" data-state="closed" aria-hidden="true"></div>
 
-    <div class="mobile-panel" :data-state="isMobileMenuOpen ? 'open' : 'closed'">
+    <div class="mobile-panel" id="mobile-panel" data-state="closed">
       <div class="page-container">
         <div class="mobile-content">
-          <div class="menu-section">${ProfileHeader({ displayName, avatarSize: "sm" })}</div>
+          <div class="menu-section">
+            ${ProfileHeader({ displayName, isAuthenticated, avatarSize: "sm" })}
+          </div>
           <div class="menu-divider"></div>
           <div class="menu-section">
             ${NavLink({
               href: "/settings?tab=profile",
               icon: Settings,
               label: "Settings",
+              iconClass: "menu-icon menu-icon-lg",
             })}
-            ${NavLink({ href: "/about", icon: Info, label: "About" })}
+            ${NavLink({
+              href: "/about",
+              icon: Info,
+              label: "About",
+              iconClass: "menu-icon menu-icon-lg",
+            })}
           </div>
           <div class="menu-divider"></div>
-          <div class="menu-section">${AuthActions({ isAuthenticated })}</div>
+          <div class="menu-section">
+            ${AuthActions({
+              isAuthenticated,
+              iconClass: "menu-icon menu-icon-lg",
+            })}
+          </div>
         </div>
       </div>
     </div>

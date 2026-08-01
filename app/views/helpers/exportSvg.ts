@@ -8,7 +8,7 @@ import {
   sanitizeInput,
 } from "@chessviewer-org/chess-viewer";
 
-import { PUBLIC_DIR } from "../../paths";
+import { PUBLIC_DIR } from "../../config";
 
 // Constants
 const SVG_BOARD_PX = 800;

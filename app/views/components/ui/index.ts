@@ -1,11 +1,8 @@
 export { Checkbox } from "./Checkbox";
-export { CustomSelect } from "./CustomSelect";
-export type { CustomSelectOption } from "./CustomSelect";
 export { Modal, ModalShell } from "./Modal";
 export type { ModalType } from "./Modal";
-export { NotificationContainer, notificationsScript } from "./NotificationContainer";
+export { NotificationContainer } from "./NotificationContainer";
 export { Pagination } from "./Pagination";
 export type { PaginationProps } from "./Pagination";
 export { getSlots } from "./getSlots";
 export { Logo } from "./Logo";
-export { Switch } from "./Switch";

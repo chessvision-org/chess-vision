@@ -10,7 +10,7 @@ import {
 } from "../views/helpers/seo";
 
 export function index(req: Request, res: Response): void {
-  const q = req.query.fen;
+  const q = req.query["fen"];
   const fenParam = typeof q === "string" ? q : undefined;
 
   res.send(
@@ -18,7 +18,7 @@ export function index(req: Request, res: Response): void {
       path: "/",
       schemas: [ORGANIZATION_SCHEMA, WEBSITE_SCHEMA, SOFTWARE_APP_SCHEMA, HOME_FAQ_SCHEMA],
       children: HomePage({
-        fen: fenParam,
+        fen: fenParam ?? null,
         queryFen: fenParam ?? null,
       }),
     }),

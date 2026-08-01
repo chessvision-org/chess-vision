@@ -2,7 +2,7 @@ import { html } from "../helpers/html";
 
 export function SettingsPage(): string {
   return html`
-    <div class="settings-root" x-data="settingsPage()">
+    <div class="settings-root" data-settings-root>
       <h1>Settings</h1>
       <p class="subtitle">Customize your ChessViewer experience.</p>
 
@@ -15,14 +15,14 @@ export function SettingsPage(): string {
               <span class="setting-name">Show Coordinates</span
               ><span class="setting-desc">Display rank and file labels around the board</span>
             </div>
-            <input type="checkbox" x-model="showCoords" class="toggle" />
+            <input type="checkbox" data-setting="showCoords" class="toggle" />
           </label>
           <label class="setting-row">
             <div class="setting-info">
               <span class="setting-name">Board Frame</span
               ><span class="setting-desc">Add a thin decorative border around the board</span>
             </div>
-            <input type="checkbox" x-model="showFrame" class="toggle" />
+            <input type="checkbox" data-setting="showFrame" class="toggle" />
           </label>
         </div>
       </section>
@@ -37,8 +37,15 @@ export function SettingsPage(): string {
               ><span class="setting-desc">Board size in centimeters for export</span>
             </div>
             <div class="setting-control">
-              <input type="range" min="3" max="30" x-model="boardSize" class="range" />
-              <span class="range-val" x-text="boardSize + ' cm'"></span>
+              <input
+                type="range"
+                min="3"
+                max="30"
+                data-setting="boardSize"
+                class="range"
+                aria-label="Board size in centimeters"
+              />
+              <span class="range-val" data-board-size-val></span>
             </div>
           </div>
         </div>
@@ -58,21 +65,39 @@ export function SettingsPage(): string {
               ["#FFCF9A", "#D08A4E", "Warm"],
             ]
               .map(
-                ([light, dark, name]) => `
-            <button class="theme-preset" @click="setColors('${light}', '${dark}')"
-              :class="{ active: lightSquare === '${light}' }" title="${name}">
-              <span class="theme-swatch" style="background:linear-gradient(135deg,${light} 50%,${dark} 50%)"></span>
-              <span class="theme-name">${name}</span>
-            </button>`,
+                ([light, dark, name]) => html` <button
+                  type="button"
+                  class="theme-preset"
+                  data-theme-light="${light}"
+                  data-theme-dark="${dark}"
+                  title="${name}"
+                  aria-pressed="false"
+                >
+                  <span
+                    class="theme-swatch"
+                    style="background:linear-gradient(135deg,${light} 50%,${dark} 50%)"
+                  ></span>
+                  <span class="theme-name">${name}</span>
+                </button>`,
               )
               .join("")}
           </div>
           <div class="color-custom">
             <label class="color-pick"
-              ><span>Light</span><input type="color" x-model="lightSquare" class="color-input"
+              ><span>Light</span
+              ><input
+                type="color"
+                data-color="light"
+                class="color-input"
+                aria-label="Light square color"
             /></label>
             <label class="color-pick"
-              ><span>Dark</span><input type="color" x-model="darkSquare" class="color-input"
+              ><span>Dark</span
+              ><input
+                type="color"
+                data-color="dark"
+                class="color-input"
+                aria-label="Dark square color"
             /></label>
           </div>
         </div>
@@ -234,17 +259,6 @@ export function SettingsPage(): string {
       }
     </style>
 
-    <script>
-      document.addEventListener('alpine:init', () => {
-        Alpine.data('settingsPage', () => ({
-          showCoords: true,
-          showFrame: false,
-          boardSize: 10,
-          lightSquare: '#F0D9B5',
-          darkSquare: '#B58863',
-          setColors(l: string, d: string) { this.lightSquare = l; this.darkSquare = d; },
-        }));
-      });
-    </script>
+    <script src="/settings-page.js"></script>
   `;
 }
