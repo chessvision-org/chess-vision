@@ -80,7 +80,7 @@
 .nav-inner {
   position: relative;
   z-index: 50;
-  background-color: var(--color-surface);
+  background-color: var(--color-bg);
 }
 
 .nav-container {
@@ -482,7 +482,6 @@
   display: grid;
   grid-template-rows: 0fr;
   overflow: hidden;
-  border-bottom: 1px solid transparent;
   background-color: var(--color-surface);
   box-shadow: var(--shadow-sm);
   pointer-events: none;

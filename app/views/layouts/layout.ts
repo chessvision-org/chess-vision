@@ -108,6 +108,7 @@ export function Layout({
 
         <script src="/layout-state.js"></script>
         <script src="/notifications.js"></script>
+        <script src="/navbar-height.js" defer></script>
       </body>
     </html>
   `;

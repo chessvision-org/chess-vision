@@ -1,6 +1,7 @@
 import { html, raw, escapeHtml } from "../../helpers/html";
 import { Checkbox, ModalShell } from "../ui";
 import {
+  AlertCircle,
   ArrowUpRight,
   BookOpen,
   ChessKing,
@@ -9,6 +10,7 @@ import {
   Database,
   Download,
   Eraser,
+  FilledStar,
   Globe,
   History,
   Library,
@@ -100,83 +102,107 @@ export function renderCommandBar(): string {
 
 export function renderFenToolbar(fen: string): string {
   return html`<div class="fen-toolbar">
-    <div class="fen-header">
-      <div class="fen-title">
-        <h2 class="fen-label">FEN Notation</h2>
-        <span class="fen-hint">Edit the position or click pieces on the board.</span>
+    <div class="fen-toolbar-inner">
+      <div class="fen-toolbar-header">
+        <label class="fen-toolbar-label">FEN Notation</label>
+        <div class="fen-toolbar-actions">
+          <a href="/advanced-fen" class="action-btn" title="Advanced FEN Input">
+            ${raw(ListPlus("action-btn-icon"))}<span class="action-btn-label">Advanced</span></a
+          >
+          <a href="/fen-history" class="action-btn" title="FEN History">
+            ${raw(History("action-btn-icon"))}<span class="action-btn-label">History</span></a
+          >
+        </div>
       </div>
-      <div class="fen-actions">
-        <a href="/advanced-fen" class="btn btn-outline btn-sm" title="Advanced FEN Input"
-          >${raw(Plus("h-3.5 w-3.5"))}<span class="hide-sm">Advanced</span></a
-        >
-        <a href="/fen-history" class="btn btn-outline btn-sm" title="FEN History"
-          >${raw(History("h-3.5 w-3.5"))}<span class="hide-sm">History</span></a
-        >
+      <div class="fen-input-container">
+        <div class="fen-input-wrapper" data-fen-wrap>
+          <div class="fen-input-toolbar">
+            <div class="btn-group">
+              <button
+                type="button"
+                class="toolbar-btn toolbar-btn-neutral"
+                data-action="paste"
+                title="Paste FEN from clipboard"
+                aria-label="Paste FEN from clipboard"
+              >
+                ${raw(Clipboard("toolbar-btn-icon"))}
+                <span class="sr-only">Paste</span>
+              </button>
+            </div>
+            <span class="group-divider" aria-hidden="true"></span>
+            <div class="btn-group">
+              <button
+                type="button"
+                class="toolbar-btn toolbar-btn-neutral"
+                data-action="batch"
+                title="Add to batch (no redirect)"
+                aria-label="Add to batch"
+              >
+                ${raw(Plus("toolbar-btn-icon"))}<span>Add</span>
+              </button>
+              <button
+                type="button"
+                class="toolbar-btn toolbar-btn-neutral"
+                data-action="favorite"
+                data-favorite-btn
+                title="Add to favorites"
+                aria-label="Add to favorites"
+                aria-pressed="false"
+              >
+                ${raw(Star("toolbar-btn-icon fen-star-outline"))}
+                ${raw(FilledStar("toolbar-btn-icon fen-star-filled"))}
+                <span data-fav-label>Save</span>
+              </button>
+            </div>
+            <span class="group-divider" aria-hidden="true"></span>
+            <div class="btn-group">
+              <button
+                type="button"
+                class="toolbar-btn toolbar-btn-neutral"
+                data-action="reset"
+                title="Load the starting position"
+                aria-label="Load starting position"
+              >
+                ${raw(RotateCcw("toolbar-btn-icon"))}<span>Reset</span>
+              </button>
+              <button
+                type="button"
+                class="toolbar-btn toolbar-btn-clear"
+                data-action="clear"
+                title="Clear the board (empty position)"
+                aria-label="Clear board"
+              >
+                ${raw(Eraser("toolbar-btn-icon"))}<span>Clear</span>
+              </button>
+            </div>
+          </div>
+          <div class="fen-textarea-wrap">
+            <textarea
+              id="fen-input"
+              class="fen-textarea"
+              rows="1"
+              maxlength="80"
+              wrap="off"
+              spellcheck="false"
+              autocomplete="off"
+              aria-label="FEN notation input"
+              aria-describedby="fen-error"
+              aria-invalid="false"
+              placeholder="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+              value="${escapeHtml(fen)}"
+            ></textarea>
+          </div>
+        </div>
+        <div class="fen-error" id="fen-error" role="alert">
+          <div class="fen-error-inner">
+            <div class="fen-error-content">
+              ${raw(AlertCircle("fen-error-icon"))}
+              <span data-fen-error-text></span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="fen-input-wrap" data-fen-wrap>
-      <div class="fen-input-row">
-        <button
-          type="button"
-          class="btn-icon"
-          data-action="paste"
-          title="Paste FEN from clipboard"
-          aria-label="Paste FEN"
-        >
-          ${raw(Clipboard("h-4 w-4"))}
-        </button>
-        <span class="sep"></span>
-        <button
-          type="button"
-          class="btn-icon"
-          data-action="favorite"
-          data-favorite-btn
-          title="Save position to favorites"
-          aria-label="Save position to favorites"
-        >
-          ${raw(Star("h-4 w-4"))}
-        </button>
-        <button
-          type="button"
-          class="btn-icon"
-          data-action="batch"
-          title="Add position to batch"
-          aria-label="Add position to batch"
-        >
-          ${raw(ListPlus("h-4 w-4"))}
-        </button>
-        <span class="sep"></span>
-        <button
-          type="button"
-          class="btn-icon"
-          data-action="reset"
-          title="Reset to starting position"
-          aria-label="Reset to starting position"
-        >
-          ${raw(RotateCcw("h-4 w-4"))}
-        </button>
-        <button
-          type="button"
-          class="btn-icon"
-          data-action="clear"
-          title="Clear the board"
-          aria-label="Clear the board"
-        >
-          ${raw(Eraser("h-4 w-4"))}
-        </button>
-      </div>
-      <textarea
-        id="fen-input"
-        class="fen-textarea"
-        rows="1"
-        maxlength="80"
-        spellcheck="false"
-        autocomplete="off"
-        placeholder="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-        value="${escapeHtml(fen)}"
-      ></textarea>
-    </div>
-    <div class="fen-error" id="fen-error" hidden></div>
   </div>`;
 }
 

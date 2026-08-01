@@ -67,6 +67,102 @@
     return true;
   }
 
+  var fenDebounceTimer = null;
+
+  function validateFenDetailed(fen) {
+    var PIECES = { p: 1, n: 1, b: 1, r: 1, q: 1, k: 1, P: 1, N: 1, B: 1, R: 1, Q: 1, K: 1 };
+    var DIGITS = { 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1 };
+    if (!fen || typeof fen !== 'string') {
+      return { isValid: false, errorMessage: 'Error: FEN string is empty or has an invalid format.' };
+    }
+    if (fen.length > MAX_LEN) {
+      return { isValid: false, errorMessage: 'Error: FEN string is too long.' };
+    }
+    var trimmed = fen.trim();
+    var parts = trimmed.split(/\s+/);
+    if (parts.length !== 6) {
+      return {
+        isValid: false,
+        errorMessage:
+          'Error: A valid FEN must have exactly 6 parts. You provided ' + parts.length + '.'
+      };
+    }
+    var position = parts[0];
+    var activeColor = parts[1];
+    var castling = parts[2];
+    var enPassant = parts[3];
+    var halfmove = parts[4];
+    var fullmove = parts[5];
+    if (!position || !activeColor || !castling || !enPassant || !halfmove || !fullmove) {
+      return { isValid: false, errorMessage: 'Error: Missing FEN parts.' };
+    }
+    var rows = position.split('/');
+    if (rows.length !== 8) {
+      return {
+        isValid: false,
+        errorMessage: 'Error: The board must have 8 ranks, but yours has ' + rows.length + '.'
+      };
+    }
+    for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+      var row = rows[rowIndex];
+      if (row === undefined) continue;
+      var count = 0;
+      for (var ci = 0; ci < row.length; ci++) {
+        var ch = row[ci];
+        if (DIGITS[ch]) count += parseInt(ch, 10);
+        else if (PIECES[ch]) count++;
+        else {
+          return {
+            isValid: false,
+            errorMessage: "Error: Invalid character '" + ch + "' in the piece placement field."
+          };
+        }
+      }
+      if (count !== 8) {
+        return {
+          isValid: false,
+          errorMessage: 'Error: Rank ' + (rowIndex + 1) + ' has ' + count + ' squares instead of 8.'
+        };
+      }
+    }
+    if (activeColor !== 'w' && activeColor !== 'b') {
+      return { isValid: false, errorMessage: "Error: Active color must be 'w' (white) or 'b' (black)." };
+    }
+    if (castling !== '-') {
+      if (!/^[KQkq]{1,4}$/.test(castling)) {
+        return { isValid: false, errorMessage: 'Error: Castling field is invalid.' };
+      }
+      var unique = {};
+      var dup = false;
+      for (var j = 0; j < castling.length; j++) {
+        if (unique[castling[j]]) {
+          dup = true;
+          break;
+        }
+        unique[castling[j]] = true;
+      }
+      if (dup) {
+        return { isValid: false, errorMessage: 'Error: Castling field contains duplicate characters.' };
+      }
+    }
+    if (enPassant !== '-' && !/^[a-h][36]$/.test(enPassant)) {
+      return {
+        isValid: false,
+        errorMessage: 'Error: En passant square is invalid (must be a file a-h on rank 3 or 6).'
+      };
+    }
+    if (!/^\d+$/.test(halfmove) || !/^\d+$/.test(fullmove)) {
+      return {
+        isValid: false,
+        errorMessage: 'Error: Halfmove clock and fullmove number must be non-negative integers.'
+      };
+    }
+    if (parseInt(fullmove, 10) < 1) {
+      return { isValid: false, errorMessage: 'Error: Fullmove number must be at least 1.' };
+    }
+    return { isValid: true, errorMessage: null };
+  }
+
   function parse(p) {
     var ranks = p.split('/');
     var board = [];
@@ -230,9 +326,12 @@
   }
 
   function renderError() {
-    els.fenError.textContent = state.error;
-    els.fenError.hidden = !state.error;
-    els.fenWrap.classList.toggle('fen-input-error', !!state.error);
+    var hasError = !!state.error;
+    els.fenErrorText.textContent = state.error;
+    els.fenError.classList.toggle('fen-error-visible', hasError);
+    els.fenWrap.classList.toggle('fen-input-error', hasError);
+    els.fenInput.classList.toggle('fen-textarea-error', hasError);
+    els.fenInput.setAttribute('aria-invalid', hasError ? 'true' : 'false');
   }
 
   function renderDbLinks() {
@@ -243,8 +342,12 @@
   }
 
   function renderFavorite() {
-    els.favBtn.classList.toggle('btn-icon-active', state.isFavorite);
-    els.favBtn.title = state.isFavorite ? 'Remove from favorites' : 'Save position to favorites';
+    var fav = state.isFavorite;
+    els.favBtn.classList.toggle('toolbar-btn-fav-active', fav);
+    els.favBtn.classList.toggle('toolbar-btn-neutral', !fav);
+    els.favBtn.setAttribute('aria-pressed', String(fav));
+    els.favBtn.title = fav ? 'Remove from favorites' : 'Add to favorites';
+    els.favLabel.textContent = fav ? 'Saved' : 'Save';
   }
 
   function renderCmdBar() {
@@ -327,21 +430,51 @@
   }
 
   function onFenInput(value) {
-    var v = String(value || state.fen || '').trim();
-    if (v.length > MAX_LEN) {
-      state.error = 'FEN too long (max 80 characters).';
+    var v = String(value || '').trim();
+    if (fenDebounceTimer) clearTimeout(fenDebounceTimer);
+    if (!v) {
+      state.error = '';
       renderError();
       return;
     }
-    var p = placement(v);
-    if (!validPlacement(p)) {
-      state.error = 'Invalid FEN notation.';
+    fenDebounceTimer = setTimeout(function () {
+      var result = validateFenDetailed(v);
+      if (!result.isValid) {
+        state.error = result.errorMessage;
+        renderError();
+        return;
+      }
+      state.error = '';
+      clearSelection();
+      loadFen(v, false);
+      renderAll();
+    }, 300);
+  }
+
+  function onFenKeydown(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      els.fenInput.blur();
+    }
+  }
+
+  function onFenBlur() {
+    if (fenDebounceTimer) {
+      clearTimeout(fenDebounceTimer);
+      fenDebounceTimer = null;
+    }
+    var v = String(els.fenInput.value || '').trim();
+    var result = validateFenDetailed(v);
+    if (!result.isValid) {
+      state.error = result.errorMessage;
       renderError();
       return;
     }
     state.error = '';
-    clearSelection();
-    loadFen(v, false);
+    if (v !== state.fen) {
+      clearSelection();
+      loadFen(v, false);
+    }
     saveHistory(state.fen, 'manual');
     renderAll();
   }
@@ -449,13 +582,15 @@
     navigator.clipboard
       .readText()
       .then(function (text) {
-        var v = String(text || '')
-          .trim()
-          .replace(/\s+/g, ' ')
-          .slice(0, MAX_LEN);
+        var v = String(text || '').trim();
         if (!v) return;
-        onFenInput(v);
-        notify('success', 'FEN pasted from clipboard.');
+        var pastedFen = v.length > MAX_LEN ? v.slice(0, MAX_LEN) : v;
+        onFenInput(pastedFen);
+        if (v.length > MAX_LEN) {
+          notify('warning', 'FEN too long — truncated to 80 chars');
+        } else {
+          notify('success', 'FEN pasted successfully');
+        }
       })
       .catch(function () {});
   }
@@ -514,55 +649,54 @@
   }
 
   function toggleFavorite() {
-    var p = placement(state.fen);
-    if (!p) {
-      notify('error', 'No position to save.');
+    var v = String(state.fen || '').trim();
+    if (!v) {
+      notify('error', 'FEN is empty');
       return;
     }
-    var isFav = !!state.favorites[p];
-    if (isFav) {
-      delete state.favorites[p];
-      notify('info', 'Removed from favorites.');
-    } else {
-      var favCount = Object.keys(state.favorites).length;
-      if (favCount >= 10) {
-        notify('error', 'Favorite limit (10) reached.');
-        return;
-      }
-      state.favorites[p] = true;
-      notify('success', 'Position saved to favorites.');
+    if (!validateFenDetailed(v).isValid) {
+      notify('error', 'Invalid FEN - cannot favorite');
+      return;
     }
+    var isFav = !!state.favorites[v];
+    if (isFav) delete state.favorites[v];
+    else state.favorites[v] = true;
     try {
       localStorage.setItem('favoriteFens', JSON.stringify(state.favorites));
     } catch (e) {}
-    syncFavorite();
-    saveHistory(state.fen, 'manual');
+    state.isFavorite = !isFav;
+    notify('success', isFav ? 'Removed from favorites' : 'Added to favorites');
     renderFavorite();
   }
 
   function addToBatch() {
-    var p = placement(state.fen);
-    if (!p) {
-      notify('error', 'No position to add.');
+    var v = String(state.fen || '').trim();
+    if (!v) {
+      notify('error', 'FEN is empty');
+      return;
+    }
+    if (!validateFenDetailed(v).isValid) {
+      notify('error', 'Invalid FEN - cannot add to batch');
       return;
     }
     var batch = [];
     try {
-      batch = JSON.parse(localStorage.getItem('chess-fen-batch') || '[]') || [];
+      batch = JSON.parse(localStorage.getItem('fenBatchList') || '[]') || [];
     } catch (e) {}
-    if (batch.indexOf(p) !== -1) {
-      notify('info', 'Position is already in your batch.');
+    if (!Array.isArray(batch)) batch = [];
+    if (batch.some(function (f) { return String(f).trim() === v; })) {
+      notify('warning', 'FEN already in batch');
       return;
     }
     if (batch.length >= 10) {
-      notify('error', 'Batch limit (10) reached.');
+      notify('error', 'Maximum limit of 10 FENs reached');
       return;
     }
-    batch.push(p);
+    batch.push(v);
     try {
-      localStorage.setItem('chess-fen-batch', JSON.stringify(batch));
+      localStorage.setItem('fenBatchList', JSON.stringify(batch));
     } catch (e) {}
-    notify('success', 'Position added to your batch.');
+    notify('success', 'Added to batch');
   }
 
   function exportImage() {
@@ -662,8 +796,7 @@
   }
 
   function syncFavorite() {
-    var p = placement(state.fen);
-    state.isFavorite = !!state.favorites[p];
+    state.isFavorite = !!state.favorites[state.fen];
   }
 
   // --- drag and drop ---
@@ -962,6 +1095,8 @@
       btn.addEventListener('click', onActionClick);
     });
     els.fenInput.addEventListener('input', onFenInputEvent);
+    els.fenInput.addEventListener('keydown', onFenKeydown);
+    els.fenInput.addEventListener('blur', onFenBlur);
     document.addEventListener('keydown', onKeydown);
     els.shareDialog.addEventListener('click', onShareBackdrop);
     els.shareCopy.addEventListener('click', copyShareUrl);
@@ -976,7 +1111,9 @@
     els.fenWrap = els.root.querySelector('[data-fen-wrap]');
     els.fenInput = els.root.querySelector('#fen-input');
     els.fenError = els.root.querySelector('#fen-error');
+    els.fenErrorText = els.root.querySelector('[data-fen-error-text]');
     els.favBtn = els.root.querySelector('[data-favorite-btn]');
+    els.favLabel = els.root.querySelector('[data-fav-label]');
     els.undoBtn = els.root.querySelector('[data-action="undo"]');
     els.redoBtn = els.root.querySelector('[data-action="redo"]');
     els.dbRows = els.root.querySelectorAll('[data-provider]');
