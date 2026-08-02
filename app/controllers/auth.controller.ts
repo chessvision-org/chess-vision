@@ -1,30 +1,39 @@
 import type { Request, Response } from "express";
 
 import { renderPage } from "../views/render";
+import {
+  ForgotPasswordPage,
+  MfaChallengePage,
+  SignInPage,
+  SignUpPage,
+} from "../views/templates/auth";
 
 type AuthPageName = "sign-in" | "sign-up" | "forgot-password" | "mfa";
 
-const PAGE_TITLES: Record<AuthPageName, { path: string; title: string }> = {
-  "sign-in": { path: "/auth/sign-in", title: "Sign In" },
-  "sign-up": { path: "/auth/sign-up", title: "Create Account" },
-  "forgot-password": { path: "/auth/forgot-password", title: "Reset Password" },
-  mfa: { path: "/auth/mfa", title: "Two-Factor Auth" },
-};
+const SUPABASE_URL = process.env["SUPABASE_URL"] ?? process.env["VITE_SUPABASE_URL"] ?? "";
+const SUPABASE_ANON_KEY =
+  process.env["SUPABASE_ANON_KEY"] ?? process.env["VITE_SUPABASE_ANON_KEY"] ?? "";
 
-function authPage(page: AuthPageName): string {
-  const { path, title } = PAGE_TITLES[page];
+function authPage(pageName: AuthPageName): string {
+  const path = `/auth/${pageName}`;
+  const render = {
+    "sign-in": SignInPage,
+    "sign-up": SignUpPage,
+    "forgot-password": ForgotPasswordPage,
+    mfa: MfaChallengePage,
+  }[pageName];
+
+  const children = [
+    `<div class="auth-root" data-auth-root data-supabase-url="${SUPABASE_URL}" data-supabase-anon-key="${SUPABASE_ANON_KEY}">`,
+    render(path),
+    "</div>",
+    '<script src="/auth.js"></script>',
+  ].join("");
+
   return renderPage({
     path,
     noindex: true,
-    children: `
-      <div class="auth-page">
-        <div class="card-elevated auth-card">
-          <h1 class="auth-heading">${title}</h1>
-          <p class="auth-subtitle">Coming soon — auth pages are being migrated.</p>
-          <a class="btn btn-primary" href="/">Back to board</a>
-        </div>
-      </div>
-    `,
+    children,
   });
 }
 

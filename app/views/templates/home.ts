@@ -26,12 +26,11 @@ export function HomePage(options: HomePageOptions = {}): string {
   const hasValidQuery = queryFen !== null && isValidFen(queryFen);
   const fen = hasValidQuery ? queryFen : STARTING_FEN;
 
-return html`
+  return html`
     <div class="editor-root" data-editor data-fen="${fen}">
       <h1 class="sr-only">Free Chess Diagram Generator — FEN to PNG, JPEG & SVG</h1>
 
-      <header class="editor-head">
-      </header>
+      <header class="editor-head"></header>
 
       ${renderFenToolbar(fen)}
 

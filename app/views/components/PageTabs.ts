@@ -7,6 +7,7 @@ export interface PageTab {
   id: string;
   label: string;
   icon: IconFn;
+  authRequired?: boolean;
 }
 
 export interface PageTabGroup {
@@ -69,7 +70,7 @@ export function PageTabs({
     }
 
     const items = group.items
-      .map(({ id, label, icon: Icon }) => {
+      .map(({ id, label, icon: Icon, authRequired }) => {
         const isActive = id === activeId;
         const indentClass = isCollapsible ? "tab-btn-collapsible" : "tab-btn-normal";
         const indicatorClass = isActive
@@ -81,6 +82,7 @@ export function PageTabs({
           aria-selected="${isActive}"
           aria-controls="panel-${id}"
           class="tab-btn ${indentClass} ${isActive ? "tab-btn-active" : "tab-btn-inactive"}"
+          ${authRequired ? html`data-auth-tab` : ""}
         >
           <span aria-hidden="true" class="${indicatorClass}"></span>
           ${raw(Icon("tab-icon"))} ${label}
