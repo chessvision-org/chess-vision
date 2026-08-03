@@ -123,6 +123,9 @@ export function getCachedPieceStyle(
 const MAX_DATA_URL_CACHE = 48;
 const pieceDataUrlCache = new Map<string, string>();
 
+const MIN_PIECE_INTRINSIC_PX = 64;
+const MAX_PIECE_INTRINSIC_PX = 2048;
+
 const FALLBACK_PIECE_SVG =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45">' +
   '<circle cx="22.5" cy="11" r="7" fill="#555"/>' +
@@ -193,14 +196,49 @@ function toBase64Utf8(text: string): string {
   return btoa(binary);
 }
 
+export function intrinsicPxOf(svgText: string): number {
+  const rootMatch = /<svg([^>]*)>/i.exec(svgText);
+  if (!rootMatch) return 0;
+  const rootAttrs = rootMatch[1] ?? '';
+  let maxPx = 0;
+  const re = /\b(?:width|height)\s*=\s*"([0-9.]+)\s*(px|mm|cm|pt)?"/gi;
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(rootAttrs))) {
+    const value = parseFloat(match[1] ?? '');
+    if (!Number.isFinite(value)) continue;
+    const unit = (match[2] ?? 'px').toLowerCase();
+    let px = value;
+    if (unit === 'mm') px = (value / 25.4) * 96;
+    else if (unit === 'cm') px = (value / 2.54) * 96;
+    else if (unit === 'pt') px = (value / 72) * 96;
+    maxPx = Math.max(maxPx, px);
+  }
+  return Math.round(maxPx);
+}
+
+function resizePieceSvg(svgText: string, targetPx: number): string {
+  const size = String(Math.round(targetPx));
+  const resized = svgText.replace(/<svg([^>]*?)>/i, (_match, attrs: string) => {
+    let next = attrs;
+    next = next.replace(/\s+width\s*=\s*"[^"]*"/i, ` width="${size}"`);
+    next = next.replace(/\s+height\s*=\s*"[^"]*"/i, ` height="${size}"`);
+    if (!/\swidth\s*=/.test(next)) next += ` width="${size}"`;
+    if (!/\sheight\s*=/.test(next)) next += ` height="${size}"`;
+    return `<svg${next}>`;
+  });
+  return resized === svgText ? svgText : resized;
+}
+
 export async function imageToEmbeddableDataURL(
-  img: HTMLImageElement
+  img: HTMLImageElement,
+  targetSize: number = 0
 ): Promise<string> {
   if (!img) return '';
   const src = img.currentSrc || img.src || '';
   if (!src) return '';
 
-  const cached = pieceDataUrlCache.get(src);
+  const cacheKey = targetSize > 0 ? `${src}|${targetSize}` : src;
+  const cached = pieceDataUrlCache.get(cacheKey);
   if (cached) return cached;
 
   let dataUrl = '';
@@ -237,7 +275,17 @@ export async function imageToEmbeddableDataURL(
           signal: controller.signal
         });
         if (response.ok) {
-          const svgText = await response.text();
+          let svgText = await response.text();
+          if (targetSize > 0) {
+            const intrinsic = intrinsicPxOf(svgText);
+            const target = Math.min(
+              MAX_PIECE_INTRINSIC_PX,
+              Math.max(MIN_PIECE_INTRINSIC_PX, intrinsic, targetSize)
+            );
+            if (target > intrinsic) {
+              svgText = resizePieceSvg(svgText, target);
+            }
+          }
           dataUrl = `data:image/svg+xml;base64,${toBase64Utf8(svgText)}`;
         }
       } catch (err: unknown) {
@@ -251,7 +299,7 @@ export async function imageToEmbeddableDataURL(
   if (!dataUrl) dataUrl = await imageToDataURL(img);
   if (!dataUrl) dataUrl = FALLBACK_PIECE_DATA_URL;
 
-  pieceDataUrlCache.set(src, dataUrl);
+  pieceDataUrlCache.set(cacheKey, dataUrl);
   evictOldest(pieceDataUrlCache, MAX_DATA_URL_CACHE);
   return dataUrl;
 }
