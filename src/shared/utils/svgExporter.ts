@@ -88,10 +88,12 @@ export async function generateBoardSVG(
     Object.values(pieceImages).map((img) => waitForPieceImage(img))
   );
 
+  const pieceOutputPx = Math.ceil((boardSize * 1200) / 20.32);
+
   await Promise.all(
     Object.entries(pieceImages).map(async ([key, img]) => {
       if (img && img.complete && img.naturalWidth > 0) {
-        pieceDataURLs[key] = await imageToEmbeddableDataURL(img);
+        pieceDataURLs[key] = await imageToEmbeddableDataURL(img, pieceOutputPx);
       }
     })
   );
