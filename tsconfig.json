@@ -79,4 +79,7 @@
     "ui/lib/src/utils/index.ts",
     "ui/lib/src/utils/svgRasterWorker.ts"
   ]
+  "include": ["src", "tests"],
+  "exclude": ["supabase", "node_modules", "dist", "build"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }
