@@ -19,14 +19,22 @@
     favorites: {},
     isFavorite: false,
     showCoords: true,
+    showCoordinateBorder: true,
     showThinFrame: false,
     flipped: false,
     pieceStyle: 'cburnett',
     lightColor: '#f0d9b5',
     darkColor: '#b58863',
+    boardSize: 4,
+    fileName: 'chess-position',
+    exportQuality: 16,
     shareOpen: false,
     shareUrl: '',
     history: [],
+    slowDbNotified: false,
+    // keyboard navigation
+    cursor: null,
+    keyHeld: null,
     // drag state
     dragData: null,
     dragGhost: null,
@@ -341,6 +349,19 @@
     }
   }
 
+  function notifySlowDb(provider) {
+    if (state.slowDbNotified) return;
+    if (provider !== 'pdb' && provider !== 'yacpdb') return;
+    state.slowDbNotified = true;
+    notify('warning', 'PDB/YACPDB are slow databases — this lookup can take up to ~40 seconds.');
+  }
+
+  function onDbRowClick(e) {
+    var a = e.target.closest('[data-provider]');
+    if (!a) return;
+    notifySlowDb(a.getAttribute('data-provider'));
+  }
+
   function renderFavorite() {
     var fav = state.isFavorite;
     els.favBtn.classList.toggle('toolbar-btn-fav-active', fav);
@@ -369,6 +390,21 @@
     }
   }
 
+  function renderPaletteImages() {
+    if (!els.paletteStyle) return;
+    els.paletteStyle.setAttribute('data-palette-style', state.pieceStyle);
+    for (var i = 0; i < els.paletteBtns.length; i++) {
+      var btn = els.paletteBtns[i];
+      var key = btn.getAttribute('data-palette');
+      var img = btn.querySelector('img');
+      if (key && img) img.src = pieceSrcFor(key, state.pieceStyle);
+    }
+  }
+
+  function pieceSrcFor(key, style) {
+    return '/piece/' + style + '/' + key + '.svg';
+  }
+
   function renderTrash() {
     var held = !!state.held || !!state.palettePiece;
     els.trashEmpty.hidden = held;
@@ -388,6 +424,9 @@
   function renderShare() {
     els.shareDialog.dataset.state = state.shareOpen ? 'open' : 'closed';
     document.body.classList.toggle('modal-open', state.shareOpen);
+    if (state.shareOpen) {
+      els.shareFen.textContent = state.fen;
+    }
   }
 
   function renderAll() {
@@ -399,10 +438,12 @@
     renderFavorite();
     renderCmdBar();
     renderPalette();
+    renderPaletteImages();
     renderTrash();
     renderFrame();
     renderOptions();
     renderShare();
+    renderCursor();
   }
 
   // --- state operations ---
@@ -484,6 +525,110 @@
     state.palettePiece = null;
     cancelDrag();
     syncSelection();
+  }
+
+  // --- keyboard navigation (ported from React useBoardKeyboard) ---
+
+  function squareNameOf(dr, dc) {
+    return FILES[dc] + (8 - dr);
+  }
+
+  function pieceNameOf(piece) {
+    var up = String(piece || '').toUpperCase();
+    return (piece === up ? 'White ' : 'Black ') + (PIECE_NAMES[up] || 'Piece');
+  }
+
+  function announce(msg) {
+    if (!els.announce) return;
+    els.announce.textContent = msg;
+  }
+
+  function moveCursor(dRow, dCol) {
+    if (!state.cursor) {
+      state.cursor = [state.flipped ? 7 : 0, state.flipped ? 7 : 0];
+    } else {
+      var dispRow = state.flipped ? 7 - state.cursor[0] : state.cursor[0];
+      var dispCol = state.flipped ? 7 - state.cursor[1] : state.cursor[1];
+      var nextDispRow = Math.min(7, Math.max(0, dispRow + dRow));
+      var nextDispCol = Math.min(7, Math.max(0, dispCol + dCol));
+      state.cursor = state.flipped
+        ? [7 - nextDispRow, 7 - nextDispCol]
+        : [nextDispRow, nextDispCol];
+    }
+    var r = state.cursor[0];
+    var c = state.cursor[1];
+    var piece = state.squares[r][c] || '';
+    announce((piece ? pieceNameOf(piece) + ', ' : '') + squareNameOf(r, c));
+    renderCursor();
+    syncSelection();
+  }
+
+  function activateCursor() {
+    var cur = state.cursor;
+    if (!cur) return;
+    var r = cur[0];
+    var c = cur[1];
+    if (state.keyHeld) {
+      var kh = state.keyHeld;
+      var b1 = state.squares.map(function (row) {
+        return row.slice();
+      });
+      b1[r][c] = kh.piece;
+      if (kh.from) {
+        b1[kh.from[0]][kh.from[1]] = '';
+      }
+      state.keyHeld = null;
+      commit(serialize(b1));
+      announce(pieceNameOf(kh.piece) + ' placed on ' + squareNameOf(r, c));
+      renderAll();
+      return;
+    }
+    var piece = state.squares[r][c] || '';
+    if (!piece) {
+      announce(squareNameOf(r, c) + ' is empty, nothing to pick up');
+      return;
+    }
+    state.keyHeld = { piece: piece, from: [r, c] };
+    announce(
+      pieceNameOf(piece) + ' picked up from ' + squareNameOf(r, c) +
+        '. Move with arrow keys, press Enter to place, Escape to cancel.'
+    );
+  }
+
+  function cancelCursorHeld() {
+    if (!state.keyHeld) return;
+    state.keyHeld = null;
+    announce('Cancelled');
+  }
+
+  function removeAtCursor() {
+    var cur = state.cursor;
+    if (!cur) return;
+    var r = cur[0];
+    var c = cur[1];
+    var piece = state.squares[r][c] || '';
+    if (!piece) return;
+    var b = state.squares.map(function (row) {
+      return row.slice();
+    });
+    b[r][c] = '';
+    commit(serialize(b));
+    announce(pieceNameOf(piece) + ' removed from ' + squareNameOf(r, c));
+    renderAll();
+  }
+
+  function renderCursor() {
+    if (!els.boardGrid) return;
+    var dispR = state.cursor ? (state.flipped ? 7 - state.cursor[0] : state.cursor[0]) : -1;
+    var dispC = state.cursor ? (state.flipped ? 7 - state.cursor[1] : state.cursor[1]) : -1;
+    var btns = els.boardGrid.querySelectorAll('[data-r]');
+    for (var i = 0; i < btns.length; i++) {
+      var btn = btns[i];
+      var isCursor =
+        Number(btn.getAttribute('data-r')) === dispR &&
+        Number(btn.getAttribute('data-c')) === dispC;
+      btn.classList.toggle('board-square-cursor', isCursor);
+    }
   }
 
   function undo() {
@@ -619,15 +764,22 @@
   function share() {
     var url =
       location.origin + location.pathname + '?fen=' + encodeURIComponent(state.fen);
+    state.shareUrl = url;
+    state.shareOpen = true;
+    els.shareUrlInput.textContent = url;
+    els.shareFen.textContent = state.fen;
+    renderShare();
     if (navigator.share) {
       navigator
         .share({ title: 'Chess position', url: url })
+        .then(function () {
+          closeShare();
+        })
         .catch(function () {});
     } else {
-      state.shareUrl = url;
-      state.shareOpen = true;
-      els.shareUrlInput.value = url;
-      renderShare();
+      setTimeout(function () {
+        els.shareCopy.focus();
+      }, 0);
     }
   }
 
@@ -704,7 +856,19 @@
     try {
       sessionStorage.setItem(
         'cv_export_config',
-        JSON.stringify({ fen: state.fen, pieceStyle: state.pieceStyle })
+        JSON.stringify({
+          fen: state.fen,
+          pieceStyle: state.pieceStyle,
+          showCoords: state.showCoords,
+          showCoordinateBorder: state.showCoordinateBorder,
+          showThinFrame: state.showThinFrame,
+          lightSquare: state.lightColor,
+          darkSquare: state.darkColor,
+          exportQuality: state.exportQuality,
+          boardSize: state.boardSize,
+          flipped: state.flipped,
+          fileName: state.fileName
+        })
       );
     } catch (e) {}
     window.location.href = '/export?fen=' + encodeURIComponent(state.fen);
@@ -740,6 +904,8 @@
       if (style) state.pieceStyle = style;
       var coords = localStorage.getItem('chess-show-coords');
       if (coords !== null) state.showCoords = coords !== 'false';
+      var coordBorder = localStorage.getItem('chess-show-coordinate-border');
+      if (coordBorder !== null) state.showCoordinateBorder = coordBorder !== 'false';
       var frame = localStorage.getItem('chess-show-thin-frame');
       if (frame !== null) state.showThinFrame = frame === 'true';
       var flip = localStorage.getItem('chess-flipped');
@@ -748,6 +914,12 @@
       if (light) state.lightColor = light;
       var dark = localStorage.getItem('chess-dark-square');
       if (dark) state.darkColor = dark;
+      var size = localStorage.getItem('chess-board-size');
+      if (size !== null) state.boardSize = Number(size) || 4;
+      var fname = localStorage.getItem('chess-file-name');
+      if (fname) state.fileName = fname;
+      var quality = localStorage.getItem('chess-export-quality');
+      if (quality !== null) state.exportQuality = Number(quality) || 16;
     } catch (e) {}
   }
 
@@ -1044,6 +1216,7 @@
   }
 
   function onKeydown(e) {
+    var isTyping = document.activeElement === els.fenInput;
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
       e.preventDefault();
       if (e.shiftKey) redo();
@@ -1055,18 +1228,52 @@
       redo();
       return;
     }
+    if (isTyping) return;
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      moveCursor(-1, 0);
+      return;
+    }
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      moveCursor(1, 0);
+      return;
+    }
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      moveCursor(0, -1);
+      return;
+    }
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      moveCursor(0, 1);
+      return;
+    }
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+      e.preventDefault();
+      activateCursor();
+      return;
+    }
     if (e.key === 'Delete' || e.key === 'Backspace') {
-      if (document.activeElement === els.fenInput) return;
+      if (state.cursor) {
+        e.preventDefault();
+        removeAtCursor();
+        return;
+      }
       removeHeld();
       return;
     }
     if (e.key === 'Escape') {
+      if (state.keyHeld) {
+        e.preventDefault();
+        cancelCursorHeld();
+        return;
+      }
       clearSelection();
       closeShare();
       return;
     }
     if (e.key.toLowerCase() === 'f') {
-      if (document.activeElement === els.fenInput) return;
       flip();
     }
   }
@@ -1102,6 +1309,9 @@
     els.shareCopy.addEventListener('click', copyShareUrl);
     els.coordsOpt.addEventListener('change', onOptionChange);
     els.frameOpt.addEventListener('change', onOptionChange);
+    els.dbRows.forEach(function (a) {
+      a.addEventListener('click', onDbRowClick);
+    });
   }
 
   function init() {
@@ -1125,6 +1335,7 @@
     els.trashHeld = els.root.querySelector('[data-trash-held]');
     els.shareDialog = els.root.querySelector('#share-dialog');
     els.shareUrlInput = els.root.querySelector('#share-url');
+    els.shareFen = els.root.querySelector('#share-fen');
     els.shareCopy = els.root.querySelector('#share-copy');
     els.coordsOpt = els.root.querySelector('[data-option="showCoords"]');
     els.frameOpt = els.root.querySelector('[data-option="showThinFrame"]');
@@ -1133,6 +1344,14 @@
     ) {
       return;
     }
+    els.paletteStyle = els.root.querySelector('[data-palette-style]');
+
+    var announce = document.createElement('div');
+    announce.className = 'sr-only';
+    announce.setAttribute('aria-live', 'polite');
+    announce.id = 'board-live-region';
+    document.body.appendChild(announce);
+    els.announce = announce;
 
     loadPrefs();
     loadFavorites();

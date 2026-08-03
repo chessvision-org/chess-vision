@@ -33,6 +33,12 @@ export function FenHistoryPage(): string {
 
       <div class="history-grid" data-history-grid hidden></div>
 
+      <div class="history-pagination" data-history-pager hidden>
+        <button type="button" data-page-prev class="btn-sm" disabled>Prev</button>
+        <span class="page-info" data-page-info></span>
+        <button type="button" data-page-next class="btn-sm">Next</button>
+      </div>
+
       <div class="history-empty" data-history-empty hidden>
         <div class="empty-icon">♔</div>
         <p data-empty-message></p>
@@ -43,7 +49,13 @@ export function FenHistoryPage(): string {
         id: "delete-confirm-modal",
         type: "danger",
         title: "Confirm",
-        children: html`<p data-delete-message></p>`,
+        children: html`
+          <p data-delete-message></p>
+          <label class="history-skip-label" data-skip-wrap>
+            <input type="checkbox" data-skip-confirm />
+            <span>Don't ask again for archive deletes</span>
+          </label>
+        `,
       })}
     </div>
 
@@ -293,6 +305,49 @@ export function FenHistoryPage(): string {
         content: "";
         display: table;
         clear: both;
+      }
+      .history-skip-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+        font-size: 0.8125rem;
+        color: rgb(130 133 148);
+        cursor: pointer;
+      }
+      .history-skip-label input[type="checkbox"] {
+        accent-color: rgb(59 130 246);
+        width: 1rem;
+        height: 1rem;
+      }
+
+      .history-pagination {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        margin-top: 1rem;
+      }
+      .history-pagination .btn-sm {
+        padding: 0.375rem 0.75rem;
+        border-radius: 8px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        border: 1px solid rgb(48 50 60);
+        background: rgb(31 33 42);
+        color: rgb(236 237 242);
+        cursor: pointer;
+      }
+      .history-pagination .btn-sm:hover:not(:disabled) {
+        background: rgb(38 41 50);
+      }
+      .history-pagination .btn-sm:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      .page-info {
+        font-size: 0.8125rem;
+        color: rgb(130 133 148);
       }
     </style>
 

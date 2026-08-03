@@ -118,6 +118,35 @@
       if (e.key === 'Escape') closeAll();
     });
 
+    document.addEventListener('keydown', function (e) {
+      var tablist = e.target.closest
+        ? e.target.closest('[role="tablist"]')
+        : null;
+      if (!tablist) return;
+      var tabs = Array.prototype.slice.call(
+        tablist.querySelectorAll('[role="tab"]:not([disabled])')
+      ).filter(function (tab) {
+        return !tab.closest('[hidden]') && !tab.hidden;
+      });
+      if (tabs.length === 0) return;
+      var index = tabs.indexOf(e.target);
+      var next = null;
+      if (e.key === 'ArrowDown') next = (index + 1) % tabs.length;
+      else if (e.key === 'ArrowUp') next = (index - 1 + tabs.length) % tabs.length;
+      else if (e.key === 'Home') next = 0;
+      else if (e.key === 'End') next = tabs.length - 1;
+      else return;
+      e.preventDefault();
+      if (next === null || next === index) return;
+      for (var i = 0; i < tabs.length; i++) {
+        tabs[i].setAttribute('tabindex', i === next ? '0' : '-1');
+      }
+      tabs[next].focus();
+      try {
+        tabs[next].scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      } catch (err) {}
+    });
+
     document.addEventListener('click', function (e) {
       var toggle = e.target.closest('[data-group-toggle]');
       if (toggle) {

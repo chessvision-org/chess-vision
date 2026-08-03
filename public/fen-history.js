@@ -10,8 +10,14 @@
     favorites: {},
     lightSquare: '#f0d9b5',
     darkSquare: '#b58863',
-    pieceStyle: 'cburnett'
+    pieceStyle: 'cburnett',
+    page: 0,
+    perPage: 12
   };
+
+  var ITEMS_PER_PAGE = 12;
+  var MAX_HISTORY = 200;
+  var NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
 
   var els = {};
 
@@ -59,6 +65,68 @@
     } catch (e) {}
   }
 
+  function capHistory() {
+    if (state.history.length <= MAX_HISTORY) return;
+    var favs = state.history.filter(function (e) { return e.isFavorite; });
+    var slots = MAX_HISTORY - favs.length;
+    if (slots <= 0) {
+      state.history = favs;
+      return;
+    }
+    var kept = favs.slice();
+    for (var i = 0; i < state.history.length && slots > 0; i++) {
+      if (!state.history[i].isFavorite) {
+        kept.push(state.history[i]);
+        slots--;
+      }
+    }
+    state.history = kept;
+  }
+
+  function autoArchive() {
+    var now = Date.now();
+    var active = [];
+    var toArchive = [];
+    for (var i = 0; i < state.history.length; i++) {
+      var entry = state.history[i];
+      if (entry.isFavorite || (now - (entry.lastActiveAt || entry.createdAt || 0)) < NINETY_DAYS_MS) {
+        active.push(entry);
+      } else {
+        toArchive.push(entry);
+      }
+    }
+    if (toArchive.length === 0) return;
+    for (var j = 0; j < toArchive.length; j++) {
+      var e = toArchive[j];
+      state.archive.unshift({
+        id: e.id,
+        fen: e.fen,
+        createdAt: e.createdAt,
+        lastActiveAt: e.lastActiveAt,
+        archivedAt: now,
+        source: e.source,
+        archiveSource: 'auto',
+        isFavorite: e.isFavorite,
+        timestamp: e.createdAt || e.lastActiveAt
+      });
+    }
+    state.history = active;
+    saveHistory();
+    saveArchive();
+  }
+
+  function shouldSkipConfirm() {
+    try {
+      return localStorage.getItem('fen-history-skip-delete-confirm') === 'true';
+    } catch (e) { return false; }
+  }
+
+  function setSkipConfirm(val) {
+    try {
+      localStorage.setItem('fen-history-skip-delete-confirm', val ? 'true' : 'false');
+    } catch (e) {}
+  }
+
   function filteredItems() {
     var items = [];
     if (state.activeTab === 'active') {
@@ -75,6 +143,28 @@
       items = items.slice().reverse();
     }
     return items;
+  }
+
+  function pagedItems() {
+    var items = filteredItems();
+    if (items.length <= ITEMS_PER_PAGE) return items;
+    var start = state.page * ITEMS_PER_PAGE;
+    return items.slice(start, start + ITEMS_PER_PAGE);
+  }
+
+  function totalPages() {
+    return Math.ceil(filteredItems().length / ITEMS_PER_PAGE) || 1;
+  }
+
+  function renderPager() {
+    if (!els.pager) return;
+    var total = totalPages();
+    var hasPages = total > 1;
+    els.pager.hidden = !hasPages;
+    if (!hasPages) return;
+    els.pagePrev.disabled = state.page <= 0;
+    els.pageNext.disabled = state.page >= total - 1;
+    els.pageInfo.textContent = (state.page + 1) + ' / ' + total;
   }
 
   function emptyMessage() {
@@ -182,7 +272,7 @@
   }
 
   function renderGrid() {
-    var items = filteredItems();
+    var items = pagedItems();
     els.grid.hidden = items.length === 0;
     els.empty.hidden = items.length > 0;
     els.clearAll.hidden = items.length === 0;
@@ -196,6 +286,7 @@
     for (var j = 0; j < items.length; j++) {
       renderMiniBoard(boards[j], items[j].fen);
     }
+    renderPager();
   }
 
   function renderTabs() {
@@ -244,27 +335,24 @@
   }
 
   function deleteWithConfirm(id) {
+    if (state.activeTab === 'archive' && shouldSkipConfirm()) {
+      confirmDeleteById(id);
+      return;
+    }
     state.deleteTargetId = id;
     els.deleteMessage.textContent = deleteConfirmMessage();
     els.confirmModal.dataset.state = 'open';
     document.body.classList.add('modal-open');
   }
 
-  function cancelDelete() {
-    state.deleteTargetId = null;
-    els.confirmModal.dataset.state = 'closed';
-    document.body.classList.remove('modal-open');
-  }
-
-  function confirmDelete() {
-    if (state.deleteTargetId === null) return;
+  function confirmDeleteById(id) {
     if (state.activeTab === 'archive') {
-      state.archive = state.archive.filter(function (h) { return h.id !== state.deleteTargetId; });
+      state.archive = state.archive.filter(function (h) { return h.id !== id; });
       saveArchive();
     } else {
       var entry = null;
       for (var i = 0; i < state.history.length; i++) {
-        if (state.history[i].id === state.deleteTargetId) { entry = state.history[i]; break; }
+        if (state.history[i].id === id) { entry = state.history[i]; break; }
       }
       if (entry) {
         if (!entry.isFavorite) {
@@ -281,10 +369,21 @@
           state.archive.unshift(archived);
           saveArchive();
         }
-        state.history = state.history.filter(function (h) { return h.id !== state.deleteTargetId; });
+        state.history = state.history.filter(function (h) { return h.id !== entry.id; });
         saveHistory();
       }
     }
+  }
+
+  function cancelDelete() {
+    state.deleteTargetId = null;
+    els.confirmModal.dataset.state = 'closed';
+    document.body.classList.remove('modal-open');
+  }
+
+  function confirmDelete() {
+    if (state.deleteTargetId === null) return;
+    confirmDeleteById(state.deleteTargetId);
     cancelDelete();
     renderGrid();
     renderTabs();
@@ -323,6 +422,7 @@
       state.history = [];
       saveHistory();
     }
+    state.page = 0;
     renderGrid();
     renderTabs();
   }
@@ -331,7 +431,20 @@
     var btn = e.target.closest('[data-tab]');
     if (btn) {
       state.activeTab = btn.getAttribute('data-tab');
+      state.page = 0;
       renderTabs();
+      renderGrid();
+      return;
+    }
+    btn = e.target.closest('[data-page-prev]');
+    if (btn) {
+      state.page = Math.max(0, state.page - 1);
+      renderGrid();
+      return;
+    }
+    btn = e.target.closest('[data-page-next]');
+    if (btn) {
+      state.page = Math.min(totalPages() - 1, state.page + 1);
       renderGrid();
       return;
     }
@@ -361,6 +474,7 @@
     if (btn) {
       e.preventDefault();
       reactivate(Number(btn.getAttribute('data-reactivate')));
+      state.page = 0;
       return;
     }
     btn = e.target.closest('[data-clear-all]');
@@ -377,6 +491,11 @@
       cancelDelete();
       return;
     }
+    btn = e.target.closest('[data-skip-confirm]');
+    if (btn) {
+      setSkipConfirm(btn.checked);
+      return;
+    }
   }
 
   function init() {
@@ -389,13 +508,23 @@
     els.sort = els.root.querySelector('[data-sort]');
     els.confirmModal = els.root.querySelector('#delete-confirm-modal');
     els.deleteMessage = els.root.querySelector('[data-delete-message]');
+    els.pager = els.root.querySelector('[data-history-pager]');
+    els.pagePrev = els.root.querySelector('[data-page-prev]');
+    els.pageNext = els.root.querySelector('[data-page-next]');
+    els.pageInfo = els.root.querySelector('[data-page-info]');
+    var skipCheckbox = els.root.querySelector('[data-skip-confirm]');
     if (!els.grid || !els.confirmModal || !els.deleteMessage) return;
 
     load();
+    autoArchive();
+    capHistory();
+    saveHistory();
     els.sort.value = state.sort;
+    if (skipCheckbox) skipCheckbox.checked = shouldSkipConfirm();
     els.root.addEventListener('click', onClick);
     els.sort.addEventListener('change', function (e) {
       state.sort = e.target.value;
+      state.page = 0;
       renderGrid();
     });
     renderTabs();

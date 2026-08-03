@@ -45,7 +45,7 @@
       label: 'History & favorites',
       keys: [
         'fen-history',
-        'fen-history-archive',
+        'fen-archive',
         'favoriteFens',
         'fenBatchList',
         'advancedFENFavorites',
@@ -802,7 +802,7 @@
   }
 
   function clearFenHistory() {
-    var keys = ['fen-history', 'fen-history-archive', 'favoriteFens', 'fen-history-skip-delete-confirm'];
+    var keys = ['fen-history', 'fen-archive', 'favoriteFens', 'fen-history-skip-delete-confirm'];
     for (var i = 0; i < keys.length; i++) {
       removeLocal(keys[i]);
     }

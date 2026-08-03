@@ -63,7 +63,6 @@
   ];
 
   var state = {
-    hasConfig: false,
     tab: 'board-style',
     fen: START_FEN,
     pieceStyle: 'cburnett',
@@ -106,8 +105,6 @@
     piecePage: 0,
     pieceCols: 4,
     rows: 2,
-    _exportIndex: 0,
-    _exportTotal: 0,
     _progressTimer: null,
     _previewSeq: 0,
     _previewTimer: null
@@ -649,6 +646,8 @@
         '</li>';
     }
     els.themeGrid.innerHTML = html;
+    els.themeGrid.style.gridTemplateColumns =
+      'repeat(' + Math.max(1, state.themeCols || 5) + ', minmax(0, 1fr))';
   }
 
   function renderThemePager() {
@@ -673,6 +672,8 @@
         '</button>';
     }
     els.pieceGrid.innerHTML = html;
+    els.pieceGrid.style.gridTemplateColumns =
+      'repeat(' + Math.max(1, state.pieceCols || 4) + ', minmax(0, 1fr))';
   }
 
   function renderPiecePager() {
@@ -803,6 +804,42 @@
     els.pauseState.hidden = state.isPaused;
     els.resumeState.hidden = !state.isPaused;
     els.pauseBtn.setAttribute('aria-label', state.isPaused ? 'Resume export' : 'Pause export');
+    renderProgressDetails();
+  }
+
+  function renderProgressDetails() {
+    if (!els.progressDetails) return;
+    if (!state.isExporting || state.currentFormat === 'svg') {
+      els.progressDetails.hidden = true;
+      return;
+    }
+    var cfg = getExportConfig();
+    var surface = calcSurface(
+      cfg.boardSize,
+      cfg.showCoords,
+      cfg.exportQuality,
+      cfg.showThinFrame
+    );
+    var canvasPixels = surface.canvasWidth * surface.canvasHeight;
+    var memoryMB = Math.round((canvasPixels * 4) / (1024 * 1024));
+    els.progressResolution.textContent =
+      'Resolution: ' + surface.canvasWidth + ' × ' + surface.canvasHeight + ' px (' + surface.effectiveDPI + ' DPI)';
+    els.progressFileSize.textContent = 'File size estimate: ~' + estimateFileSize(canvasPixels, state.currentFormat);
+    var isLarge = memoryMB >= 200;
+    els.progressWarning.hidden = !isLarge;
+    if (isLarge) {
+      els.progressWarning.textContent =
+        'Large export (RAM: ' + memoryMB + ' MB). May take longer.';
+    }
+    els.progressDetails.hidden = false;
+  }
+
+  function estimateFileSize(canvasPixels, format) {
+    var bytesPerPixel = format === 'jpeg' ? 1.2 : format === 'png' ? 2.5 : 4;
+    var bytes = canvasPixels * bytesPerPixel;
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   }
 
   function renderAll() {
@@ -1195,12 +1232,10 @@
     state.currentFormat = formats[0] || 'png';
     renderProgress();
 
-    var i = 0;
-    var total = formats.length;
-    state._exportIndex = 0;
-    state._exportTotal = total;
+      var i = 0;
+      var total = formats.length;
 
-    var runNext = function () {
+      var runNext = function () {
       if (i >= total) {
         state.isExporting = false;
         state.isPaused = false;
@@ -1215,7 +1250,6 @@
       var name = names[format] || DEFAULT_FILE_NAME;
       var cfg = getExportConfig(overrides);
       state.currentFormat = format;
-      state._exportIndex = i;
       state.exportProgress = (i / total) * 100;
       exp.cancelled = false;
       exp.paused = false;
@@ -1367,6 +1401,73 @@
     e.preventDefault();
   }
 
+  function onGridKey(e) {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    var grid = e.currentTarget;
+    var isTheme = grid === els.themeGrid;
+    var pages = isTheme ? themePages() : piecePages();
+    if (pages <= 1) return;
+    e.preventDefault();
+    if (e.key === 'ArrowLeft') {
+      if (isTheme) {
+        state.themePage = clamp(state.themePage - 1, 0, pages - 1);
+        renderThemeGrid();
+        renderThemePager();
+      } else {
+        state.piecePage = clamp(state.piecePage - 1, 0, pages - 1);
+        renderPieceGrid();
+        renderPiecePager();
+      }
+    } else {
+      if (isTheme) {
+        state.themePage = clamp(state.themePage + 1, 0, pages - 1);
+        renderThemeGrid();
+        renderThemePager();
+      } else {
+        state.piecePage = clamp(state.piecePage + 1, 0, pages - 1);
+        renderPieceGrid();
+        renderPiecePager();
+      }
+    }
+  }
+
+  var _swipe = null;
+  function onGridTouchStart(e) {
+    _swipe = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }
+  function onGridTouchEnd(e) {
+    if (!_swipe) return;
+    var dx = e.changedTouches[0].clientX - _swipe.x;
+    var dy = e.changedTouches[0].clientY - _swipe.y;
+    _swipe = null;
+    if (Math.abs(dx) < 40 || Math.abs(dy) > Math.abs(dx)) return;
+    var grid = e.currentTarget;
+    var isTheme = grid === els.themeGrid;
+    var pages = isTheme ? themePages() : piecePages();
+    if (pages <= 1) return;
+    if (dx < 0) {
+      if (isTheme) {
+        state.themePage = clamp(state.themePage + 1, 0, pages - 1);
+        renderThemeGrid();
+        renderThemePager();
+      } else {
+        state.piecePage = clamp(state.piecePage + 1, 0, pages - 1);
+        renderPieceGrid();
+        renderPiecePager();
+      }
+    } else {
+      if (isTheme) {
+        state.themePage = clamp(state.themePage - 1, 0, pages - 1);
+        renderThemeGrid();
+        renderThemePager();
+      } else {
+        state.piecePage = clamp(state.piecePage - 1, 0, pages - 1);
+        renderPieceGrid();
+        renderPiecePager();
+      }
+    }
+  }
+
   function bindEvents() {
     els.root.addEventListener('click', onClick);
     els.pieceSort.addEventListener('change', function (e) {
@@ -1387,6 +1488,12 @@
     els.satField.addEventListener('pointerup', onSatPointerUp);
     els.satField.addEventListener('pointercancel', onSatPointerUp);
     els.satField.addEventListener('keydown', onSatKey);
+    els.themeGrid.addEventListener('keydown', onGridKey);
+    els.pieceGrid.addEventListener('keydown', onGridKey);
+    els.themeGrid.addEventListener('touchstart', onGridTouchStart, { passive: true });
+    els.themeGrid.addEventListener('touchend', onGridTouchEnd, { passive: true });
+    els.pieceGrid.addEventListener('touchstart', onGridTouchStart, { passive: true });
+    els.pieceGrid.addEventListener('touchend', onGridTouchEnd, { passive: true });
     window.addEventListener('resize', function () {
       computeCols();
       renderThemeGrid();
@@ -1407,26 +1514,47 @@
 
     var fen = (cfg && cfg.fen) || queryFen || attrFen || readLocal('chess-fen');
     if (!fen || !String(fen).trim()) {
-      state.hasConfig = false;
       els.root.querySelector('[data-export-empty]').hidden = false;
       els.root.querySelector('[data-export-content]').hidden = true;
       return;
     }
-    state.hasConfig = true;
     state.fen = String(fen).trim();
     state.tab = params.get('tab') === 'export-settings' ? 'export-settings' : 'board-style';
 
     var style = readLocal('chess-piece-style');
     if (style) state.pieceStyle = style;
+    if (cfg && typeof cfg.pieceStyle === 'string' && cfg.pieceStyle) state.pieceStyle = cfg.pieceStyle;
 
     var coords = readLocal('chess-show-coords');
     if (coords !== null) state.showCoords = coords !== 'false';
+    if (cfg && typeof cfg.showCoords === 'boolean') state.showCoords = cfg.showCoords;
 
     var frame = readLocal('chess-show-thin-frame');
     if (frame !== null) state.showThinFrame = frame === 'true';
+    if (cfg && typeof cfg.showThinFrame === 'boolean') state.showThinFrame = cfg.showThinFrame;
+
+    if (cfg && typeof cfg.showCoordinateBorder === 'boolean') {
+      state.showCoordinateBorder = cfg.showCoordinateBorder;
+    }
+    if (cfg && typeof cfg.exportQuality === 'number' && cfg.exportQuality > 0) {
+      state.exportQuality = cfg.exportQuality;
+    }
+    if (cfg && cfg.boardSize !== undefined) {
+      var bs = Number(cfg.boardSize);
+      if (bs === 4 || bs === 6 || bs === 8) state.boardSizePreset = bs;
+      else if (isFinite(bs) && bs > 0) {
+        state.boardSizePreset = 'custom';
+        state.customBoardSizeValue = bs;
+        state.customBoardSizeInput = String(bs);
+      }
+    }
+    if (cfg && typeof cfg.fileName === 'string' && cfg.fileName.trim()) {
+      state.fileNamesInput = cfg.fileName;
+    }
 
     var flip = readLocal('chess-flipped');
     if (flip === 'true') state.flipped = true;
+    if (cfg && typeof cfg.flipped === 'boolean') state.flipped = cfg.flipped;
 
     var light = readLocal('chess-light-square');
     if (light) state.lightSquare = sanitizeHex(light, '#f0d9b5');
@@ -1494,6 +1622,10 @@
     els.progressFill = els.root.querySelector('[data-progress-fill]');
     els.progressBar = els.root.querySelector('[data-progress-bar]');
     els.progressPercent = els.root.querySelector('[data-progress-percent]');
+    els.progressDetails = els.root.querySelector('[data-progress-details]');
+    els.progressResolution = els.root.querySelector('[data-progress-resolution]');
+    els.progressFileSize = els.root.querySelector('[data-progress-filesize]');
+    els.progressWarning = els.root.querySelector('[data-progress-warning]');
     els.pauseBtn = els.root.querySelector('[data-pause-btn]');
     els.pauseState = els.root.querySelector('[data-pause-state]');
     els.resumeState = els.root.querySelector('[data-resume-state]');
