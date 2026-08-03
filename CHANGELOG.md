@@ -8,6 +8,49 @@ linking back to the commit that introduced the change. There are no version tags
 
 ---
 
+## July 2026
+
+### Features
+
+- **board:** click any piece in the palette to place it on the board without drag-and-drop ([#998ab5b](https://github.com/chessviewer-org/chess-viewer/commit/998ab5b7)), closes [#212](https://github.com/chessviewer-org/chess-viewer/issues/212)
+- **layout:** add a slide-out `Sidebar` for mobile navigation alongside the redesigned navbar shell ([#8f3c126](https://github.com/chessviewer-org/chess-viewer/commit/8f3c1268))
+- **layout:** restructure the navbar shell and menu composition into isolated sub-components ([#8db58b4](https://github.com/chessviewer-org/chess-viewer/commit/8db58b45))
+- **modal:** implement `useScrollLock` for modals so the body stops scrolling while a modal is open, and enhance backdrop-blur styles ([#1b7a5c8](https://github.com/chessviewer-org/chess-viewer/commit/1b7a5c8d))
+- **routing:** lazy page loading with `usePageTransition` and removal of the manual prefetch registry for simpler, fast transitions ([#32b6694](https://github.com/chessviewer-org/chess-viewer/commit/32b66948))
+- **design-system:** migrate to a CSS design system with `animations`, `base`, `theme`, and `utilities` layers ([#a5dbea9](https://github.com/chessviewer-org/chess-viewer/commit/a5dbea9a))
+- **chess-viewer:** bump the rendering engine to v1.1.0, pulling board and render helpers from the shared util package ([#badb16c](https://github.com/chessviewer-org/chess-viewer/commit/badb16cd))
+- **export:** render piece SVGs at export resolution for crisp high-resolution output ([#41ef83a](https://github.com/chessviewer-org/chess-viewer/commit/41ef83a5)), closes [#219](https://github.com/chessviewer-org/chess-viewer/issues/219)
+- **db-search:** refactor the chess-database-search module with a cache layer, provider abstractions, and a Deno config for the edge function ([#e1b6012](https://github.com/chessviewer-org/chess-viewer/commit/e1b60122))
+- **editor:** restructure the interactive editor with a dedicated `Board` sub-module and flattened `DraggablePiece`/`TrashZone` components ([#7eebe51](https://github.com/chessviewer-org/chess-viewer/commit/7eebe51b))
+- **community:** add a `good first issue` label for newcomers ([#053a7a0](https://github.com/chessviewer-org/chess-viewer/commit/053a7a02))
+
+### Bug Fixes
+
+- **board:** unify the export-page and advanced-FEN page board-preview designs to match `ChessEditor` ([#0cf26a0](https://github.com/chessviewer-org/chess-viewer/commit/0cf26a05)), closes [#213](https://github.com/chessviewer-org/chess-viewer/issues/213)
+- **board:** play the piece entrance animation only on first load, not on every style change ([#8c825ec](https://github.com/chessviewer-org/chess-viewer/commit/8c825ecf)), closes [#211](https://github.com/chessviewer-org/chess-viewer/issues/211)
+- **export:** show the real exported file size instead of an estimate ([#9882461](https://github.com/chessviewer-org/chess-viewer/commit/98824616)), closes [#210](https://github.com/chessviewer-org/chess-viewer/issues/210)
+- **seo:** update Open Graph titles, metadata, and page headings for consistency across the site ([#c2e8019](https://github.com/chessviewer-org/chess-viewer/commit/c2e80196))
+- **seo:** update page title format for consistency and improve Open Graph metadata ([#f48793e](https://github.com/chessviewer-org/chess-viewer/commit/f48793ec))
+- **seo:** update route names to use the proper separator style throughout the application ([#81dfeeb](https://github.com/chessviewer-org/chess-viewer/commit/81dfeeb2))
+- **layout:** correct sidebar alignment, tablet scroll behaviour, and bottom spacing across device sizes ([#ad474b8](https://github.com/chessviewer-org/chess-viewer/commit/ad474b83))
+- **layout:** keep the About and Settings page rails and separators fixed while the main content scrolls ([#8ec5a64](https://github.com/chessviewer-org/chess-viewer/commit/8ec5a648)), closes [#205](https://github.com/chessviewer-org/chess-viewer/issues/205)
+- **layout:** keep the sidebar separator fixed at the viewport height ([#011fd65](https://github.com/chessviewer-org/chess-viewer/commit/011fd65e))
+- **layout:** align the tablet layout with desktop and unstuck the navbar on mobile ([#e9787ec](https://github.com/chessviewer-org/chess-viewer/commit/e9787ec2))
+- **layout:** fix sticky sidebar and separator positioning, and remove unwanted body scroll ([#a0f2ca1](https://github.com/chessviewer-org/chess-viewer/commit/a0f2ca1c))
+- **layout:** keep the membership row inline on mobile and simplify the donate link structure ([#e18d541](https://github.com/chessviewer-org/chess-viewer/commit/e18d5411))
+- **layout:** match the advanced-FEN page height model to the rest of the application shell ([#00aa59f](https://github.com/chessviewer-org/chess-viewer/commit/00aa59fa))
+- **navbar:** render the sign-out icon and label in red inside the dropdown ([#5f281dd](https://github.com/chessviewer-org/chess-viewer/commit/5f281dd1))
+- **about:** remove the GitHub Sponsors link and point the donate badge directly to the repository ([#8945d3e](https://github.com/chessviewer-org/chess-viewer/commit/8945d3e0))
+- **about:** correct the tech-stack description and add the missing ChessDB mention ([#cac6274](https://github.com/chessviewer-org/chess-viewer/commit/cac6274d))
+- **labeler:** ensure the label-sync action does not prune existing labels ([#516b2d0](https://github.com/chessviewer-org/chess-viewer/commit/516b2d0d))
+- **drag-drop:** clean up `useDragDrop` and `useA11y` hooks to remove stale references ([#f378b5d](https://github.com/chessviewer-org/chess-viewer/commit/f378b5d1))
+
+### Performance Improvements
+
+- **routing:** switch to on-demand lazy page imports with `usePageTransition`, removing the prefetch registry overhead ([#32b6694](https://github.com/chessviewer-org/chess-viewer/commit/32b66948))
+
+---
+
 ## June 2026
 
 ### Features
