@@ -16,11 +16,11 @@ import {
 import { saveBlob } from './saveBlob';
 
 // Constants
-const SVG_BOARD_PX = 800;
-const SVG_COORD_BORDER_RATIO = 0.05;
+export const SVG_BOARD_PX = 800;
+export const SVG_COORD_BORDER_RATIO = 0.05;
 
 // Helpers
-function escapeXmlAttr(value: string): string {
+export function escapeXmlAttr(value: string): string {
   return value
     .replace(/&/g, '&amp;')
     .replace(/"/g, '&quot;')

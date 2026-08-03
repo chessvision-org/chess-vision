@@ -51,7 +51,7 @@
       "@app-types/*": ["src/shared/types/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "tests"],
   "exclude": ["supabase", "node_modules", "dist", "build"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

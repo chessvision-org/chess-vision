@@ -216,7 +216,9 @@ export function intrinsicPxOf(svgText: string): number {
   return Math.round(maxPx);
 }
 
-function resizePieceSvg(svgText: string, targetPx: number): string {
+export function resizePieceSvg(svgText: string, targetPx: number): string {
+  if (!/viewBox\s*=\s*"/i.test(svgText)) return svgText;
+
   const size = String(Math.round(targetPx));
   const resized = svgText.replace(/<svg([^>]*?)>/i, (_match, attrs: string) => {
     let next = attrs;
