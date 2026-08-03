@@ -9,18 +9,22 @@ import {
 
 import { shouldForceCoordinateBorder } from './imageOptimizer';
 import {
+  type PieceVector,
+  buildPieceVector,
+  fetchPieceSvgText,
   getPieceKey,
   imageToEmbeddableDataURL,
+  namespacePieceIds,
   waitForPieceImage
 } from './pieceUtils';
 import { saveBlob } from './saveBlob';
 
 // Constants
-const SVG_BOARD_PX = 800;
-const SVG_COORD_BORDER_RATIO = 0.05;
+export const SVG_BOARD_PX = 800;
+export const SVG_COORD_BORDER_RATIO = 0.05;
 
 // Helpers
-function escapeXmlAttr(value: string): string {
+export function escapeXmlAttr(value: string): string {
   return value
     .replace(/&/g, '&amp;')
     .replace(/"/g, '&quot;')
@@ -83,6 +87,17 @@ export async function generateBoardSVG(
   }
   const board: ChessBoard = parsedBoard;
 
+  const presentKeys = new Set<string>();
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      const k = getPieceKey(board[row]?.[col] ?? '');
+      if (k) presentKeys.add(k);
+    }
+  }
+
+  const targetPiecePx = Math.ceil((boardSize * 1200) / 20.32);
+
+  const pieceVectors = new Map<string, PieceVector>();
   const pieceDataURLs: Record<string, string> = {};
   await Promise.all(
     Object.values(pieceImages).map((img) => waitForPieceImage(img))
@@ -90,8 +105,18 @@ export async function generateBoardSVG(
 
   await Promise.all(
     Object.entries(pieceImages).map(async ([key, img]) => {
-      if (img && img.complete && img.naturalWidth > 0) {
-        pieceDataURLs[key] = await imageToEmbeddableDataURL(img);
+      if (!presentKeys.has(key)) return;
+      if (!(img && img.complete && img.naturalWidth > 0)) return;
+      const src = img.currentSrc || img.src || '';
+      const svgText =
+        src.startsWith('data:') || src.startsWith('blob:')
+          ? null
+          : await fetchPieceSvgText(src);
+      const vector = svgText ? buildPieceVector(svgText) : null;
+      if (vector) {
+        pieceVectors.set(key, vector);
+      } else {
+        pieceDataURLs[key] = await imageToEmbeddableDataURL(img, targetPiecePx);
       }
     })
   );
@@ -102,16 +127,33 @@ export async function generateBoardSVG(
   const coordTextColor = '#000000';
   const parts: string[] = [];
 
-  const physicalWidthCm = boardSize * (totalWidth / boardPx);
-  const physicalHeightCm = boardSize * (totalHeight / boardPx);
+  const physicalWidthCm = Number(
+    (boardSize * (totalWidth / boardPx)).toFixed(2)
+  );
+  const physicalHeightCm = Number(
+    (boardSize * (totalHeight / boardPx)).toFixed(2)
+  );
 
   parts.push(
     `<svg xmlns="http://www.w3.org/2000/svg" ` +
+      `xmlns:xlink="http://www.w3.org/1999/xlink" ` +
       `viewBox="0 0 ${totalWidth} ${totalHeight}" ` +
       `width="${physicalWidthCm}cm" height="${physicalHeightCm}cm" ` +
       `role="img" aria-label="Chess Board Position">` +
       `<title>Chess Board Position</title>`
   );
+
+  if (pieceVectors.size > 0) {
+    parts.push('<defs>');
+    for (const [key, vector] of pieceVectors) {
+      const symbolId = `cv-p-${key}`;
+      const content = namespacePieceIds(vector, `${symbolId}-`);
+      parts.push(
+        `<symbol id="${symbolId}" viewBox="${escapeXmlAttr(vector.viewBox)}">${content}</symbol>`
+      );
+    }
+    parts.push('</defs>');
+  }
 
   if (withBorder) {
     parts.push(
@@ -158,12 +200,23 @@ export async function generateBoardSVG(
   for (let row = 0; row < 8; row++) {
     for (let col = 0; col < 8; col++) {
       const key = getPieceKey(board[row]?.[col] ?? '');
-      const dataURL = key ? pieceDataURLs[key] : null;
-      if (!dataURL) continue;
+      if (!key) continue;
 
       const [visRow, visCol] = getDisplayCoordinates(row, col, flipped);
       const x = boardX + visCol * squarePx;
       const y = boardY + visRow * squarePx;
+
+      if (pieceVectors.has(key)) {
+        const symbolId = `cv-p-${key}`;
+        parts.push(
+          `<use href="#${symbolId}" xlink:href="#${symbolId}" ` +
+            `x="${x}" y="${y}" width="${squarePx}" height="${squarePx}"/>`
+        );
+        continue;
+      }
+
+      const dataURL = pieceDataURLs[key];
+      if (!dataURL) continue;
       parts.push(
         `<image href="${escapeXmlAttr(dataURL)}" x="${x}" y="${y}" ` +
           `width="${squarePx}" height="${squarePx}" ` +
