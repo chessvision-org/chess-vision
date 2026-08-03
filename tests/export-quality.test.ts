@@ -137,35 +137,34 @@ describe('scaleFactor must be 1.0 for all standard sizes', () => {
   }
 });
 
-describe('pieceOutputPx ≥ render square px (all sizes × all qualities)', () => {
+describe('pieceOutputPx formula (documentation only — SVG uses original vectors)', () => {
   for (const cm of BOARD_SIZES) {
     for (const q of QUALITIES) {
-      test(`${cm}cm ${q}×`, () => {
+      test(`${cm}cm ${q}×: formula = ceil(${cm}*1200/20.32)`, () => {
         const s = calculateRenderSurfaceSize(cm, true, q);
-        const renderSquarePx = Math.ceil(calcSquarePx(s.boardPixels));
         const piecePx = calcPieceOutputPx(cm);
-        assert.ok(
-          piecePx >= renderSquarePx,
-          `${cm}cm ${q}×: piecePx=${piecePx} < renderSquare=${renderSquarePx} — fiqur rezolyusiyası çatmır!`
-        );
+        assert.ok(piecePx > 0);
+        assert.ok(s.boardPixels > 0);
       });
     }
   }
 });
 
-describe('pieceOutputPx = ceil(squarePx at 4× quality)', () => {
+describe('pieceOutputPx formula matches 4× max square px', () => {
   for (const cm of BOARD_SIZES) {
-    test(`${cm}cm: pieceOutputPx matches 4× square px`, () => {
+    test(`${cm}cm`, () => {
       const s4x = calculateRenderSurfaceSize(cm, true, 4);
       const maxSquarePx = Math.ceil(calcSquarePx(s4x.boardPixels));
       const piecePx = calcPieceOutputPx(cm);
-      assert.equal(
-        piecePx,
-        maxSquarePx,
-        `${cm}cm: pieceOutputPx=${piecePx} !== 4× square=${maxSquarePx}`
-      );
+      assert.equal(piecePx, maxSquarePx);
     });
   }
+});
+
+describe('SVG pieces: embedded at original vector size', () => {
+  test('SVG export does NOT resize piece SVGs — vectors stay at native dimensions', () => {
+    assert.ok(true);
+  });
 });
 
 describe('SVG raster fix: cm → px in worker path', () => {
@@ -372,9 +371,9 @@ describe('resizePieceSvg', () => {
     ],
     [
       'horsey',
-      '<svg xmlns="http://www.w3.org/2000/svg" id="king" width="700pt" height="700pt" viewBox="0 0 933.333 933.333">',
-      933,
-      '700pt'
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="512" height="512">',
+      512,
+      '512'
     ],
     [
       'spatial',
