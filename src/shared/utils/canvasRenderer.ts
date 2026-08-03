@@ -6,7 +6,7 @@ import {
 } from '@chessviewer-org/chess-viewer';
 
 import { drawCoordinates } from './coordinateCalculations';
-import { getPieceKey } from './pieceUtils';
+import { ensurePieceResolution, getPieceKey } from './pieceUtils';
 import {
   calculateRenderSurfaceSize,
   shouldForceCoordinateBorder
@@ -108,6 +108,19 @@ export async function createUltraQualityCanvas(
       bY = offset;
     const yieldToMain = () => new Promise((res) => setTimeout(res, 0));
 
+    const targetPiecePx = Math.ceil(sq);
+    const resolvedPieces: Record<string, HTMLImageElement> = {};
+    await Promise.all(
+      Object.entries(pieceImages).map(async ([key, img]) => {
+        if (!img) return;
+        try {
+          resolvedPieces[key] = await ensurePieceResolution(img, targetPiecePx);
+        } catch {
+          resolvedPieces[key] = img;
+        }
+      })
+    );
+
     ctx.clearRect(0, 0, cW, cH);
     await yieldToMain();
 
@@ -150,7 +163,7 @@ export async function createUltraQualityCanvas(
         const pieceChar = board[row]?.[col];
         const pKey = getPieceKey(pieceChar ?? '');
         if (!pKey) continue;
-        const img = pieceImages[pKey];
+        const img = resolvedPieces[pKey] ?? pieceImages[pKey];
         if (img?.complete && img.naturalWidth > 0) {
           const sz = Math.min(width, height);
           ctx.drawImage(

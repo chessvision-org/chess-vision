@@ -139,8 +139,12 @@ async function createWorkerRasterBlob(
     showThinFrame
   );
 
+  const pixelSvg = svgString
+    .replace(/width="[\d.]+cm"/, `width="${surface.canvasWidth}"`)
+    .replace(/height="[\d.]+cm"/, `height="${surface.canvasHeight}"`);
+
   const task = startSvgRasterWorkerTask({
-    svgString,
+    svgString: pixelSvg,
     width: surface.canvasWidth,
     height: surface.canvasHeight,
     format,
