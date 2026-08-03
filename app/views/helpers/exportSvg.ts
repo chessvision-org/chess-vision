@@ -30,12 +30,58 @@ const PIECE_KEYS = [
 ] as const;
 
 const MAX_PIECE_STYLE_LENGTH = 40;
+const MIN_PIECE_INTRINSIC_PX = 64;
+const MAX_PIECE_INTRINSIC_PX = 2048;
 
 interface PieceStyleCache {
   [style: string]: { [key: string]: string };
 }
 
 const pieceDataUrlCache: PieceStyleCache = {};
+
+export function calcCanvasWidth(
+  boardSize: number,
+  showCoords: boolean,
+  exportQuality: number,
+  showThinFrame: boolean,
+): number {
+  const safeQ = Number.isFinite(exportQuality) && exportQuality > 0 ? exportQuality : 1;
+  const rawBoard = Math.round((boardSize / 2.54) * 300 * safeQ);
+  const borderSize = showCoords ? Math.round(Math.max(18, Math.min(800, rawBoard * 0.05))) : 0;
+  const frame = showThinFrame ? Math.max(2, Math.round(rawBoard * 0.003)) : 0;
+  const framePad = showThinFrame ? frame * 2 : 0;
+  return Math.round(borderSize + rawBoard + framePad);
+}
+
+export function intrinsicPxOf(svgText: string): number {
+  let maxPx = 0;
+  const re = /\b(?:width|height)\s*=\s*"([0-9.]+)\s*(px|mm|cm|pt)?"/gi;
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(svgText))) {
+    const value = parseFloat(match[1] ?? "");
+    if (!Number.isFinite(value)) continue;
+    const unit = (match[2] ?? "px").toLowerCase();
+    let px = value;
+    if (unit === "mm") px = (value / 25.4) * 96;
+    else if (unit === "cm") px = (value / 2.54) * 96;
+    else if (unit === "pt") px = (value / 72) * 96;
+    maxPx = Math.max(maxPx, px);
+  }
+  return Math.round(maxPx);
+}
+
+export function resizePieceSvg(svgText: string, targetPx: number): string {
+  const size = String(Math.round(targetPx));
+  const resized = svgText.replace(/<svg([^>]*?)>/i, (_match, attrs: string) => {
+    let next = attrs;
+    next = next.replace(/\s+width\s*=\s*"[^"]*"/i, ` width="${size}"`);
+    next = next.replace(/\s+height\s*=\s*"[^"]*"/i, ` height="${size}"`);
+    if (!/\swidth\s*=/.test(next)) next += ` width="${size}"`;
+    if (!/\sheight\s*=/.test(next)) next += ` height="${size}"`;
+    return `<svg${next}>`;
+  });
+  return resized === svgText ? svgText : resized;
+}
 
 export interface BoardSvgConfig {
   fen: string;
@@ -64,28 +110,35 @@ function getPieceKey(fenPiece: string): string | null {
   return (isWhite ? "w" : "b") + fenPiece.toUpperCase();
 }
 
-function readPieceDataUrl(style: string, key: string): string {
+function readPieceDataUrl(style: string, key: string, targetSize: number): string {
   if (!/^[a-z0-9]+$/.test(style) || style.length > MAX_PIECE_STYLE_LENGTH) {
     return "";
   }
   if (!/^[wb][KQRBNP]$/.test(key)) return "";
 
+  const cacheKey = `${key}|${targetSize}`;
   const cache = (pieceDataUrlCache[style] ??= {});
-  if (cache[key]) return cache[key];
+  if (cache[cacheKey]) return cache[cacheKey];
 
   const filePath = join(PUBLIC_DIR, "piece", style, `${key}.svg`);
   try {
     if (!existsSync(filePath)) {
-      cache[key] = "";
+      cache[cacheKey] = "";
       return "";
     }
-    const svg = readFileSync(filePath);
-    const base64 = svg.toString("base64");
+    const svgText = readFileSync(filePath, "utf8");
+    const intrinsic = intrinsicPxOf(svgText);
+    const target = Math.min(
+      MAX_PIECE_INTRINSIC_PX,
+      Math.max(MIN_PIECE_INTRINSIC_PX, intrinsic, targetSize),
+    );
+    const resized = target > intrinsic ? resizePieceSvg(svgText, target) : svgText;
+    const base64 = Buffer.from(resized, "utf8").toString("base64");
     const dataUrl = `data:image/svg+xml;base64,${base64}`;
-    cache[key] = dataUrl;
+    cache[cacheKey] = dataUrl;
     return dataUrl;
   } catch {
-    cache[key] = "";
+    cache[cacheKey] = "";
     return "";
   }
 }
@@ -140,9 +193,15 @@ export function buildBoardSvg(config: BoardSvgConfig): string {
   }
   const board = parsedBoard;
 
+  const canvasWidth = calcCanvasWidth(boardSize, showCoords, exportQuality, showThinFrame);
+  const pieceOutputPx = Math.min(
+    MAX_PIECE_INTRINSIC_PX,
+    Math.max(MIN_PIECE_INTRINSIC_PX, Math.ceil((squarePx / totalWidth) * canvasWidth)),
+  );
+
   const pieceDataURLs: Record<string, string> = {};
   PIECE_KEYS.forEach((key) => {
-    pieceDataURLs[key] = readPieceDataUrl(pieceStyle, key);
+    pieceDataURLs[key] = readPieceDataUrl(pieceStyle, key, pieceOutputPx);
   });
 
   const fontSize = Math.round(Math.max(10, Math.min(480, borderPx * 0.72)));
