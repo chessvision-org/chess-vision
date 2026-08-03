@@ -10,9 +10,7 @@ test('intrinsicPxOf converts px/mm/pt dimensions to pixels', () => {
     189
   );
   assert.equal(
-    intrinsicPxOf(
-      '<svg width="700pt" height="700pt" viewBox="0 0 933 933"/>'
-    ),
+    intrinsicPxOf('<svg width="700pt" height="700pt" viewBox="0 0 933 933"/>'),
     933
   );
   assert.equal(intrinsicPxOf('<svg viewBox="0 0 45 45"/>'), 0);
