@@ -6,7 +6,14 @@
   var MAX_LEN = 80;
   var FILES = 'abcdefgh';
 
-  var PIECE_NAMES = { K: 'King', Q: 'Queen', R: 'Rook', B: 'Bishop', N: 'Knight', P: 'Pawn' };
+  var PIECE_NAMES = {
+    K: 'King',
+    Q: 'Queen',
+    R: 'Rook',
+    B: 'Bishop',
+    N: 'Knight',
+    P: 'Pawn'
+  };
 
   var state = {
     fen: '',
@@ -54,7 +61,11 @@
   // --- FEN helpers ---
 
   function placement(fen) {
-    return String(fen || '').trim().split(/\s+/)[0] || '';
+    return (
+      String(fen || '')
+        .trim()
+        .split(/\s+/)[0] || ''
+    );
   }
 
   function validPlacement(p) {
@@ -78,10 +89,26 @@
   var fenDebounceTimer = null;
 
   function validateFenDetailed(fen) {
-    var PIECES = { p: 1, n: 1, b: 1, r: 1, q: 1, k: 1, P: 1, N: 1, B: 1, R: 1, Q: 1, K: 1 };
+    var PIECES = {
+      p: 1,
+      n: 1,
+      b: 1,
+      r: 1,
+      q: 1,
+      k: 1,
+      P: 1,
+      N: 1,
+      B: 1,
+      R: 1,
+      Q: 1,
+      K: 1
+    };
     var DIGITS = { 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1 };
     if (!fen || typeof fen !== 'string') {
-      return { isValid: false, errorMessage: 'Error: FEN string is empty or has an invalid format.' };
+      return {
+        isValid: false,
+        errorMessage: 'Error: FEN string is empty or has an invalid format.'
+      };
     }
     if (fen.length > MAX_LEN) {
       return { isValid: false, errorMessage: 'Error: FEN string is too long.' };
@@ -92,7 +119,9 @@
       return {
         isValid: false,
         errorMessage:
-          'Error: A valid FEN must have exactly 6 parts. You provided ' + parts.length + '.'
+          'Error: A valid FEN must have exactly 6 parts. You provided ' +
+          parts.length +
+          '.'
       };
     }
     var position = parts[0];
@@ -101,14 +130,24 @@
     var enPassant = parts[3];
     var halfmove = parts[4];
     var fullmove = parts[5];
-    if (!position || !activeColor || !castling || !enPassant || !halfmove || !fullmove) {
+    if (
+      !position ||
+      !activeColor ||
+      !castling ||
+      !enPassant ||
+      !halfmove ||
+      !fullmove
+    ) {
       return { isValid: false, errorMessage: 'Error: Missing FEN parts.' };
     }
     var rows = position.split('/');
     if (rows.length !== 8) {
       return {
         isValid: false,
-        errorMessage: 'Error: The board must have 8 ranks, but yours has ' + rows.length + '.'
+        errorMessage:
+          'Error: The board must have 8 ranks, but yours has ' +
+          rows.length +
+          '.'
       };
     }
     for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
@@ -122,23 +161,37 @@
         else {
           return {
             isValid: false,
-            errorMessage: "Error: Invalid character '" + ch + "' in the piece placement field."
+            errorMessage:
+              "Error: Invalid character '" +
+              ch +
+              "' in the piece placement field."
           };
         }
       }
       if (count !== 8) {
         return {
           isValid: false,
-          errorMessage: 'Error: Rank ' + (rowIndex + 1) + ' has ' + count + ' squares instead of 8.'
+          errorMessage:
+            'Error: Rank ' +
+            (rowIndex + 1) +
+            ' has ' +
+            count +
+            ' squares instead of 8.'
         };
       }
     }
     if (activeColor !== 'w' && activeColor !== 'b') {
-      return { isValid: false, errorMessage: "Error: Active color must be 'w' (white) or 'b' (black)." };
+      return {
+        isValid: false,
+        errorMessage: "Error: Active color must be 'w' (white) or 'b' (black)."
+      };
     }
     if (castling !== '-') {
       if (!/^[KQkq]{1,4}$/.test(castling)) {
-        return { isValid: false, errorMessage: 'Error: Castling field is invalid.' };
+        return {
+          isValid: false,
+          errorMessage: 'Error: Castling field is invalid.'
+        };
       }
       var unique = {};
       var dup = false;
@@ -150,23 +203,31 @@
         unique[castling[j]] = true;
       }
       if (dup) {
-        return { isValid: false, errorMessage: 'Error: Castling field contains duplicate characters.' };
+        return {
+          isValid: false,
+          errorMessage: 'Error: Castling field contains duplicate characters.'
+        };
       }
     }
     if (enPassant !== '-' && !/^[a-h][36]$/.test(enPassant)) {
       return {
         isValid: false,
-        errorMessage: 'Error: En passant square is invalid (must be a file a-h on rank 3 or 6).'
+        errorMessage:
+          'Error: En passant square is invalid (must be a file a-h on rank 3 or 6).'
       };
     }
     if (!/^\d+$/.test(halfmove) || !/^\d+$/.test(fullmove)) {
       return {
         isValid: false,
-        errorMessage: 'Error: Halfmove clock and fullmove number must be non-negative integers.'
+        errorMessage:
+          'Error: Halfmove clock and fullmove number must be non-negative integers.'
       };
     }
     if (parseInt(fullmove, 10) < 1) {
-      return { isValid: false, errorMessage: 'Error: Fullmove number must be at least 1.' };
+      return {
+        isValid: false,
+        errorMessage: 'Error: Fullmove number must be at least 1.'
+      };
     }
     return { isValid: true, errorMessage: null };
   }
@@ -221,7 +282,11 @@
   }
 
   function metaOf(fen) {
-    var rest = String(fen || '').trim().split(/\s+/).slice(1).join(' ');
+    var rest = String(fen || '')
+      .trim()
+      .split(/\s+/)
+      .slice(1)
+      .join(' ');
     return rest || 'w - - 0 1';
   }
 
@@ -294,10 +359,7 @@
         trimmed
           .split(' ')
           .map(function (seg) {
-            return seg
-              .split('/')
-              .map(encodeURIComponent)
-              .join('/');
+            return seg.split('/').map(encodeURIComponent).join('/');
           })
           .join('_')
       );
@@ -353,7 +415,10 @@
     if (state.slowDbNotified) return;
     if (provider !== 'pdb' && provider !== 'yacpdb') return;
     state.slowDbNotified = true;
-    notify('warning', 'PDB/YACPDB are slow databases — this lookup can take up to ~40 seconds.');
+    notify(
+      'warning',
+      'PDB/YACPDB are slow databases — this lookup can take up to ~40 seconds.'
+    );
   }
 
   function onDbRowClick(e) {
@@ -386,7 +451,9 @@
     els.paletteHint.hidden = !state.palettePiece;
     if (state.palettePiece) {
       els.paletteHint.textContent =
-        'Placing: ' + pieceNameForKey(state.palettePiece) + '. Click a square to place it.';
+        'Placing: ' +
+        pieceNameForKey(state.palettePiece) +
+        '. Click a square to place it.';
     }
   }
 
@@ -414,6 +481,7 @@
 
   function renderFrame() {
     els.boardWrap.classList.toggle('board-frame-on', state.showThinFrame);
+    els.boardWrap.style.setProperty('--frame-color', state.darkColor);
   }
 
   function renderOptions() {
@@ -590,7 +658,9 @@
     }
     state.keyHeld = { piece: piece, from: [r, c] };
     announce(
-      pieceNameOf(piece) + ' picked up from ' + squareNameOf(r, c) +
+      pieceNameOf(piece) +
+        ' picked up from ' +
+        squareNameOf(r, c) +
         '. Move with arrow keys, press Enter to place, Escape to cancel.'
     );
   }
@@ -619,8 +689,16 @@
 
   function renderCursor() {
     if (!els.boardGrid) return;
-    var dispR = state.cursor ? (state.flipped ? 7 - state.cursor[0] : state.cursor[0]) : -1;
-    var dispC = state.cursor ? (state.flipped ? 7 - state.cursor[1] : state.cursor[1]) : -1;
+    var dispR = state.cursor
+      ? state.flipped
+        ? 7 - state.cursor[0]
+        : state.cursor[0]
+      : -1;
+    var dispC = state.cursor
+      ? state.flipped
+        ? 7 - state.cursor[1]
+        : state.cursor[1]
+      : -1;
     var btns = els.boardGrid.querySelectorAll('[data-r]');
     for (var i = 0; i < btns.length; i++) {
       var btn = btns[i];
@@ -699,7 +777,10 @@
     }
     state.palettePiece = key;
     state.held = null;
-    notify('info', 'Placing ' + pieceNameForKey(key) + '. Click a square to place it.');
+    notify(
+      'info',
+      'Placing ' + pieceNameForKey(key) + '. Click a square to place it.'
+    );
     renderAll();
   }
 
@@ -763,7 +844,10 @@
 
   function share() {
     var url =
-      location.origin + location.pathname + '?fen=' + encodeURIComponent(state.fen);
+      location.origin +
+      location.pathname +
+      '?fen=' +
+      encodeURIComponent(state.fen);
     state.shareUrl = url;
     state.shareOpen = true;
     els.shareUrlInput.textContent = url;
@@ -836,7 +920,11 @@
       batch = JSON.parse(localStorage.getItem('fenBatchList') || '[]') || [];
     } catch (e) {}
     if (!Array.isArray(batch)) batch = [];
-    if (batch.some(function (f) { return String(f).trim() === v; })) {
+    if (
+      batch.some(function (f) {
+        return String(f).trim() === v;
+      })
+    ) {
       notify('warning', 'FEN already in batch');
       return;
     }
@@ -893,7 +981,10 @@
   function persistOptions() {
     try {
       localStorage.setItem('chess-show-coords', String(state.showCoords));
-      localStorage.setItem('chess-show-thin-frame', String(state.showThinFrame));
+      localStorage.setItem(
+        'chess-show-thin-frame',
+        String(state.showThinFrame)
+      );
       localStorage.setItem('chess-flipped', String(state.flipped));
     } catch (e) {}
   }
@@ -905,7 +996,8 @@
       var coords = localStorage.getItem('chess-show-coords');
       if (coords !== null) state.showCoords = coords !== 'false';
       var coordBorder = localStorage.getItem('chess-show-coordinate-border');
-      if (coordBorder !== null) state.showCoordinateBorder = coordBorder !== 'false';
+      if (coordBorder !== null)
+        state.showCoordinateBorder = coordBorder !== 'false';
       var frame = localStorage.getItem('chess-show-thin-frame');
       if (frame !== null) state.showThinFrame = frame === 'true';
       var flip = localStorage.getItem('chess-flipped');
@@ -927,7 +1019,8 @@
     try {
       var raw = localStorage.getItem('favoriteFens');
       state.favorites = raw ? JSON.parse(raw) : {};
-      if (!state.favorites || typeof state.favorites !== 'object') state.favorites = {};
+      if (!state.favorites || typeof state.favorites !== 'object')
+        state.favorites = {};
     } catch (e) {
       state.favorites = {};
     }
@@ -987,13 +1080,15 @@
     ghost.style.pointerEvents = 'none';
     ghost.style.position = 'fixed';
     ghost.style.zIndex = '9999';
-    ghost.style.transform = 'translate(' + (clientX - 24) + 'px,' + (clientY - 24) + 'px)';
+    ghost.style.transform =
+      'translate(' + (clientX - 24) + 'px,' + (clientY - 24) + 'px)';
     ghost.style.width = '48px';
     ghost.style.height = '48px';
     ghost.style.borderRadius = '4px';
     ghost.style.boxShadow = '0 4px 12px rgba(0,0,0,0.4)';
     ghost.style.opacity = '0.9';
-    ghost.style.backgroundImage = 'url(/piece/' + state.pieceStyle + '/' + dragPieceKey(dragData) + '.svg)';
+    ghost.style.backgroundImage =
+      'url(/piece/' + state.pieceStyle + '/' + dragPieceKey(dragData) + '.svg)';
     ghost.style.backgroundSize = 'cover';
     ghost.style.backgroundRepeat = 'no-repeat';
     ghost.style.backgroundPosition = 'center';
@@ -1066,7 +1161,11 @@
     cancelDrag();
     if (!dragData || !overId) return;
     if (overId === 'trash') {
-      if (!dragData.isFromPalette && dragData.fromRow !== undefined && dragData.fromCol !== undefined) {
+      if (
+        !dragData.isFromPalette &&
+        dragData.fromRow !== undefined &&
+        dragData.fromCol !== undefined
+      ) {
         var b1 = state.squares.map(function (row) {
           return row.slice();
         });
@@ -1081,15 +1180,20 @@
       overId === 'board' &&
       dragData.toRow !== undefined &&
       dragData.toCol !== undefined &&
-      (dragData.toRow !== dragData.fromRow || dragData.toCol !== dragData.fromCol)
+      (dragData.toRow !== dragData.fromRow ||
+        dragData.toCol !== dragData.fromCol)
     ) {
       var b2 = state.squares.map(function (row) {
         return row.slice();
       });
       if (dragData.isFromPalette) {
         b2[dragData.toRow][dragData.toCol] = dragData.piece;
-      } else if (dragData.fromRow !== undefined && dragData.fromCol !== undefined) {
-        b2[dragData.toRow][dragData.toCol] = b2[dragData.fromRow][dragData.fromCol];
+      } else if (
+        dragData.fromRow !== undefined &&
+        dragData.fromCol !== undefined
+      ) {
+        b2[dragData.toRow][dragData.toCol] =
+          b2[dragData.fromRow][dragData.fromCol];
         b2[dragData.fromRow][dragData.fromCol] = '';
       }
       state.suppressClick = true;
@@ -1108,7 +1212,8 @@
     startDrag(
       {
         piece: piece,
-        pieceKey: (piece === piece.toUpperCase() ? 'w' : 'b') + piece.toUpperCase(),
+        pieceKey:
+          (piece === piece.toUpperCase() ? 'w' : 'b') + piece.toUpperCase(),
         fromRow: r,
         fromCol: c,
         toRow: r,
@@ -1142,7 +1247,11 @@
   function onBoardPointerDown(e) {
     var btn = e.target.closest('[data-r]');
     if (!btn || state.dragData) return;
-    startDragBoard(Number(btn.getAttribute('data-r')), Number(btn.getAttribute('data-c')), e);
+    startDragBoard(
+      Number(btn.getAttribute('data-r')),
+      Number(btn.getAttribute('data-c')),
+      e
+    );
   }
 
   function onBoardClick(e) {
@@ -1152,7 +1261,10 @@
       state.suppressClick = false;
       return;
     }
-    clickSquare(Number(btn.getAttribute('data-r')), Number(btn.getAttribute('data-c')));
+    clickSquare(
+      Number(btn.getAttribute('data-r')),
+      Number(btn.getAttribute('data-c'))
+    );
   }
 
   function onPalettePointerDown(e) {
@@ -1340,7 +1452,11 @@
     els.coordsOpt = els.root.querySelector('[data-option="showCoords"]');
     els.frameOpt = els.root.querySelector('[data-option="showThinFrame"]');
     if (
-      !els.boardWrap || !els.fenInput || !els.shareDialog || !els.coordsOpt || !els.frameOpt
+      !els.boardWrap ||
+      !els.fenInput ||
+      !els.shareDialog ||
+      !els.coordsOpt ||
+      !els.frameOpt
     ) {
       return;
     }

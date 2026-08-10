@@ -1,7 +1,7 @@
-import { createServer } from "node:http";
+import { createServer } from 'node:http';
 
-import { createApp } from "./app";
-import { PORT_CONFIG } from "./config";
+import { createApp } from './app';
+import { PORT_CONFIG } from './config';
 
 const LISTEN_BACKLOG = 2048;
 

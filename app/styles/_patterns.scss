@@ -158,6 +158,7 @@
 
 .donate-link {
   font-size: 0.875rem;
+  line-height: calc(1.25 / 0.875);
   font-weight: 700;
   color: var(--color-warning);
   text-decoration: none;

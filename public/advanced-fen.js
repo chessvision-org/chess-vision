@@ -46,8 +46,7 @@
     }
     if (!hasRangeToken) {
       var base = input.trim();
-      for (var j = 0; j < totalCount; j++)
-        names[j] = base + '-' + (j + 1);
+      for (var j = 0; j < totalCount; j++) names[j] = base + '-' + (j + 1);
       return names;
     }
     var fallback = lastRangeBaseName || 'Position';
@@ -141,7 +140,9 @@
   }
 
   function validPositions() {
-    return state.positions.filter(function (p) { return p.valid; });
+    return state.positions.filter(function (p) {
+      return p.valid;
+    });
   }
 
   function renderList() {
@@ -151,11 +152,23 @@
     for (var i = 0; i < state.positions.length; i++) {
       var pos = state.positions[i];
       html +=
-        '<div class="adv-item' + (pos.valid ? '' : ' invalid') + '">' +
-        '<span class="adv-index">' + (i + 1) + '</span>' +
-        '<span class="adv-fen">' + escapeHtml(pos.fen) + '</span>' +
-        (pos.valid ? '' : '<span class="adv-status">' + escapeHtml(pos.error || 'Invalid FEN') + '</span>') +
-        '<button type="button" class="btn-icon-sm" data-remove="' + i + '" aria-label="Remove position">&times;</button>' +
+        '<div class="adv-item' +
+        (pos.valid ? '' : ' invalid') +
+        '">' +
+        '<span class="adv-index">' +
+        (i + 1) +
+        '</span>' +
+        '<span class="adv-fen">' +
+        escapeHtml(pos.fen) +
+        '</span>' +
+        (pos.valid
+          ? ''
+          : '<span class="adv-status">' +
+            escapeHtml(pos.error || 'Invalid FEN') +
+            '</span>') +
+        '<button type="button" class="btn-icon-sm" data-remove="' +
+        i +
+        '" aria-label="Remove position">&times;</button>' +
         '</div>';
     }
     els.list.innerHTML = html;
@@ -257,15 +270,9 @@
           var blob = new Blob([svgString], {
             type: 'image/svg+xml;charset=utf-8'
           });
-          saveBlob(
-            blob,
-            names[i] || 'chessboard-' + (i + 1),
-            'svg'
-          );
+          saveBlob(blob, names[i] || 'chessboard-' + (i + 1), 'svg');
           i += 1;
-          state.exportProgress = Math.round(
-            (i / valid.length) * 100
-          );
+          state.exportProgress = Math.round((i / valid.length) * 100);
           render();
           runNext();
         })

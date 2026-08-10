@@ -1,4 +1,4 @@
-@use "./variables" as v;
+@use './variables' as v;
 
 // ===== Tabs =====
 .tabs-nav {
@@ -130,19 +130,19 @@
   display: none;
 }
 
-.group-toggle-btn[aria-expanded="true"] .group-chevron-open {
+.group-toggle-btn[aria-expanded='true'] .group-chevron-open {
   display: flex;
 }
 
-.group-toggle-btn[aria-expanded="true"] .group-chevron-close {
+.group-toggle-btn[aria-expanded='true'] .group-chevron-close {
   display: none;
 }
 
-.group-toggle-btn[aria-expanded="false"] .group-chevron-open {
+.group-toggle-btn[aria-expanded='false'] .group-chevron-open {
   display: none;
 }
 
-.group-toggle-btn[aria-expanded="false"] .group-chevron-close {
+.group-toggle-btn[aria-expanded='false'] .group-chevron-close {
   display: flex;
 }
 
@@ -269,7 +269,7 @@
 
   .page-sidebar-sticky {
     position: sticky;
-    top: 2rem;
+    top: calc(var(--navbar-height) + 1rem);
     display: flex;
     flex-direction: row;
   }
@@ -281,7 +281,7 @@
   .page-sidebar-divider {
     display: block;
     margin-left: 2rem;
-    height: calc(100vh - var(--navbar-height) - 4rem);
+    height: calc(100vh - var(--navbar-height) - 2rem);
   }
 }
 

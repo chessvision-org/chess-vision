@@ -1,10 +1,12 @@
-import { html } from "../helpers/html";
+import { html } from '../helpers/html';
 
 export function AdvancedFenPage(): string {
   return html`
     <div class="adv-root" data-adv-root>
       <h1>Advanced FEN Input</h1>
-      <p class="subtitle">Add multiple positions for batch processing and export.</p>
+      <p class="subtitle">
+        Add multiple positions for batch processing and export.
+      </p>
 
       <div class="adv-layout">
         <div class="adv-input-area">
@@ -43,13 +45,17 @@ export function AdvancedFenPage(): string {
           />
           <p class="adv-file-hint">
             Auto-appends
-            <span data-hint-range></span> per position. Use <code>name[2-4]</code> for explicit
-            ranges.
+            <span data-hint-range></span> per position. Use
+            <code>name[2-4]</code> for explicit ranges.
           </p>
 
           <div class="adv-progress" data-adv-progress hidden>
             <div class="adv-progress-bar">
-              <div class="adv-progress-fill" data-adv-progress-fill style="width: 0%"></div>
+              <div
+                class="adv-progress-fill"
+                data-adv-progress-fill
+                style="width: 0%"
+              ></div>
             </div>
             <span class="adv-progress-text" data-adv-progress-text>0%</span>
           </div>
@@ -70,7 +76,9 @@ export function AdvancedFenPage(): string {
             </svg>
             Export All (<span data-export-count>0</span>)
           </button>
-          <button data-clear-all class="btn btn-secondary btn-full" disabled>Clear All</button>
+          <button data-clear-all class="btn btn-secondary btn-full" disabled>
+            Clear All
+          </button>
         </div>
       </div>
 

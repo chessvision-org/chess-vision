@@ -1,5 +1,19 @@
 import { validateFEN } from '@chessviewer-org/chess-viewer';
 
+interface AuthModule {
+  supabase: {
+    functions: {
+      invoke: (
+        name: string,
+        options: { body: { fen: string } }
+      ) => Promise<{
+        error: unknown;
+        data: unknown;
+      }>;
+    };
+  };
+}
+
 // Types
 export type DatabaseProvider = 'pdb' | 'yacpdb' | 'lichess' | 'chessdb';
 
@@ -152,8 +166,7 @@ export async function searchPositionDatabases(
   if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mod = (await import('@auth').catch(() => null)) as any;
+    const mod = (await import('@auth').catch(() => null)) as AuthModule | null;
     const supabase = mod?.supabase;
     if (!supabase) return notFound(fen);
     const res = await supabase.functions.invoke('chess-database-search', {

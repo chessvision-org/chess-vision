@@ -814,7 +814,7 @@
   font-size: 0.75rem;
   color: var(--color-text-secondary);
 
-  input[type="color"] {
+  input[type='color'] {
     width: 2.25rem;
     height: 2.25rem;
     border: none;
@@ -993,7 +993,8 @@
 
 .settings-card-stack-block {
   padding: 1.25rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--color-border), transparent 50%);
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--color-border), transparent 50%);
 }
 
 .settings-card-title {
@@ -1392,7 +1393,7 @@
   transform: translateX(1.25rem);
 }
 .toggle::after {
-  content: "";
+  content: '';
   display: block;
   width: 1.125rem;
   height: 1.125rem;

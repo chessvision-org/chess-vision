@@ -1,5 +1,5 @@
-@use "./variables" as v;
-@use "./mixins" as mx;
+@use './variables' as v;
+@use './mixins' as mx;
 
 .page-layout {
   display: flex;
@@ -80,7 +80,11 @@
 .nav-inner {
   position: relative;
   z-index: 50;
-  background-color: var(--color-bg);
+  background-color: var(--color-surface);
+}
+
+.nav:has(#mobile-backdrop[data-state='open']) .nav-inner {
+  z-index: 100;
 }
 
 .nav-container {
@@ -280,12 +284,12 @@
   border-radius: 0.5rem;
   padding: 0.5rem;
   font-size: 0.875rem;
+  line-height: calc(1.25 / 0.875);
   font-weight: 500;
   color: var(--color-text-primary);
   background: none;
   border: none;
   cursor: pointer;
-  font: inherit;
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -305,12 +309,12 @@
   border-radius: 0.5rem;
   padding: 0.5rem;
   font-size: 0.875rem;
+  line-height: calc(1.25 / 0.875);
   font-weight: 500;
   color: var(--color-error);
   background: none;
   border: none;
   cursor: pointer;
-  font: inherit;
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -325,6 +329,10 @@
 
   &:active {
     background-color: color-mix(in srgb, var(--color-error) 20%, transparent);
+  }
+
+  .menu-icon {
+    color: var(--color-error);
   }
 }
 
@@ -345,15 +353,15 @@
   height: 1.25rem;
 }
 
-.menu-icon-danger {
-  color: var(--color-error);
+.menu-icon-inherit {
+  color: inherit;
 }
 
 // ===== Dropdown link sections =====
 .dropdown-links {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.125rem;
 }
 
 // ===== Profile header =====
@@ -369,6 +377,7 @@
 
 .profile-name {
   font-size: 1rem;
+  line-height: 1.5;
   font-weight: 700;
   color: var(--color-text-primary);
   overflow: hidden;
@@ -391,7 +400,7 @@
   border: none;
   cursor: pointer;
   font: inherit;
-  color: var(--color-text-secondary);
+  color: inherit;
   transition:
     background-color 0.2s var(--animation-curve),
     color 0.2s var(--animation-curve);
@@ -425,7 +434,9 @@
   border-radius: 0.75rem;
   border: 1px solid var(--color-border);
   background-color: var(--color-surface-elevated);
-  box-shadow: var(--shadow-xl);
+  box-shadow:
+    0 20px 25px -5px rgb(0 0 0 / 0.1),
+    0 8px 10px -6px rgb(0 0 0 / 0.1);
   padding: 0.5rem;
   z-index: 50;
 }
@@ -440,7 +451,7 @@
     opacity 0.18s v.$ease-exit,
     transform 0.18s v.$ease-exit;
 
-  &[data-state="open"] {
+  &[data-state='open'] {
     pointer-events: auto;
     opacity: 1;
     transform: scale(1) translate3d(0, 0, 0);
@@ -453,14 +464,14 @@
 .mobile-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 40;
+  z-index: 90;
   background-color: color-mix(in srgb, var(--color-bg) 80%, transparent);
   backdrop-filter: blur(4px);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.24s v.$ease-exit;
 
-  &[data-state="open"] {
+  &[data-state='open'] {
     opacity: 1;
     pointer-events: auto;
     transition: opacity 0.28s v.$ease-enter;
@@ -478,18 +489,21 @@
   left: 0;
   right: 0;
   top: 3.75rem;
-  z-index: 40;
+  z-index: 90;
   display: grid;
   grid-template-rows: 0fr;
   overflow: hidden;
+  border-bottom: 1px solid transparent;
   background-color: var(--color-surface);
-  box-shadow: var(--shadow-sm);
+  box-shadow:
+    0 1px 3px 0 rgb(0 0 0 / 0.1),
+    0 1px 2px -1px rgb(0 0 0 / 0.1);
   pointer-events: none;
   transition:
     grid-template-rows 0.24s v.$ease-exit,
     border-color 0.24s v.$ease-exit;
 
-  &[data-state="open"] {
+  &[data-state='open'] {
     grid-template-rows: 1fr;
     border-bottom-color: rgb(var(--val-border) / 0.5);
     pointer-events: auto;

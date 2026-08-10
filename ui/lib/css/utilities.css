@@ -19,7 +19,7 @@
   animation: marching-ants 0.6s linear infinite;
 }
 
-html[data-reduced-motion="reduce"] .marching-ants {
+html[data-reduced-motion='reduce'] .marching-ants {
   animation: none;
 }
 
@@ -116,14 +116,14 @@ html {
 @media (pointer: coarse) {
   button,
   a,
-  [role="button"] {
+  [role='button'] {
     min-height: 44px;
   }
 }
 
-[role="grid"],
-[role="grid"] [role="gridcell"],
-[role="grid"] [role="gridcell"] * {
+[role='grid'],
+[role='grid'] [role='gridcell'],
+[role='grid'] [role='gridcell'] * {
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -147,9 +147,9 @@ html {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html:not([data-reduced-motion="full"]) *,
-  html:not([data-reduced-motion="full"]) *::before,
-  html:not([data-reduced-motion="full"]) *::after {
+  html:not([data-reduced-motion='full']) *,
+  html:not([data-reduced-motion='full']) *::before,
+  html:not([data-reduced-motion='full']) *::after {
     animation-duration: 0.01ms !important;
     animation-delay: 0.01ms !important;
     animation-iteration-count: 1 !important;
@@ -158,9 +158,9 @@ html {
   }
 }
 
-html[data-reduced-motion="reduce"] *,
-html[data-reduced-motion="reduce"] *::before,
-html[data-reduced-motion="reduce"] *::after {
+html[data-reduced-motion='reduce'] *,
+html[data-reduced-motion='reduce'] *::before,
+html[data-reduced-motion='reduce'] *::after {
   animation-duration: 0.01ms !important;
   animation-delay: 0.01ms !important;
   animation-iteration-count: 1 !important;
@@ -173,8 +173,12 @@ html[data-reduced-motion="reduce"] *::after {
   outline: none !important;
 }
 
-*:not(input):not(textarea):not(select):not([role="combobox"]):not([role="listbox"]):focus,
-*:not(input):not(textarea):not(select):not([role="combobox"]):not([role="listbox"]):focus-visible {
+*:not(input):not(textarea):not(select):not([role='combobox']):not(
+    [role='listbox']
+  ):focus,
+*:not(input):not(textarea):not(select):not([role='combobox']):not(
+    [role='listbox']
+  ):focus-visible {
   box-shadow: none !important;
 }
 
@@ -204,46 +208,56 @@ select:focus-visible {
     transition: background-color 9999s ease-in-out 0s;
   }
 
-  input[type="search"]::-webkit-search-decoration,
-  input[type="search"]::-webkit-search-cancel-button,
-  input[type="search"]::-webkit-search-results-button,
-  input[type="search"]::-webkit-search-results-decoration {
+  input[type='search']::-webkit-search-decoration,
+  input[type='search']::-webkit-search-cancel-button,
+  input[type='search']::-webkit-search-results-button,
+  input[type='search']::-webkit-search-results-decoration {
     display: none;
   }
 
-  input[type="number"]::-webkit-inner-spin-button,
-  input[type="number"]::-webkit-outer-spin-button {
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
     -webkit-appearance: none;
     @apply m-0;
   }
 
-  input[type="number"] {
+  input[type='number'] {
     -moz-appearance: textfield;
   }
 
-  input[type="range"] {
+  input[type='range'] {
     -webkit-appearance: none;
     appearance: none;
     cursor: pointer;
     height: 6px;
-    background: linear-gradient(90deg, var(--color-surface-elevated), var(--color-surface-hover));
+    background: linear-gradient(
+      90deg,
+      var(--color-surface-elevated),
+      var(--color-surface-hover)
+    );
     border-radius: 10px;
     outline: none;
   }
 
-  input[type="range"]::-webkit-slider-thumb {
+  input[type='range']::-webkit-slider-thumb {
     -webkit-appearance: none;
     width: 1.25rem;
     height: 1.25rem;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
+    background: linear-gradient(
+      135deg,
+      var(--color-accent),
+      var(--color-accent-hover)
+    );
     cursor: pointer;
-    box-shadow: 0 2px 8px color-mix(in srgb, var(--color-accent), transparent 60%);
+    box-shadow: 0 2px 8px
+      color-mix(in srgb, var(--color-accent), transparent 60%);
     transition: all 0.2s var(--animation-curve);
   }
 
-  input[type="range"]::-webkit-slider-thumb:hover {
-    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-accent), transparent 40%);
+  input[type='range']::-webkit-slider-thumb:hover {
+    box-shadow: 0 4px 12px
+      color-mix(in srgb, var(--color-accent), transparent 40%);
   }
 }
 

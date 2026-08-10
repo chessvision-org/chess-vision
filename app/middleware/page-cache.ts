@@ -1,17 +1,4 @@
-import type { NextFunction, Request, Response } from "express";
-
-/**
- * In-memory cache for anonymous page responses (lila PageCache pattern).
- *
- * This app renders the exact same HTML for every visitor — the pages are fully
- * static, auth is client-side. Caching the rendered HTML for a few seconds
- * absorbs request bursts and rapid reload stress so the single Node process
- * never saturates on page rendering.
- *
- * Only GET page responses (200, text/html, no Cookie) are cached. The key is
- * the full path + query string, so `/?fen=...` variants are kept separately.
- * The store is bounded (MAX_ENTRIES) with a simple FIFO eviction.
- */
+import type { NextFunction, Request, Response } from 'express';
 
 const TTL_MS = 10_000;
 const MAX_ENTRIES = 64;
@@ -24,44 +11,48 @@ interface CacheEntry {
 const cache = new Map<string, CacheEntry>();
 
 function shouldCache(req: Request): boolean {
-  if (req.method !== "GET") return false;
-  if (req.path === "/health") return false;
-  if (req.path.startsWith("/auth")) return false;
+  if (req.method !== 'GET') return false;
+  if (req.path === '/health') return false;
+  if (req.path.startsWith('/auth')) return false;
   if (req.headers.cookie) return false;
-  if (req.path.includes(".")) return false;
+  if (req.path.includes('.')) return false;
   return true;
 }
 
-export const pageCache: (req: Request, res: Response, next: NextFunction) => void = (
-  req,
-  res,
-  next,
-) => {
+export const pageCache: (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => void = (req, res, next) => {
   if (!shouldCache(req)) return next();
 
   const key = req.originalUrl;
 
   const hit = cache.get(key);
   if (hit && hit.expiresAt > Date.now()) {
-    res.set("Cache-Control", "no-cache");
-    res.set("X-Cache", "hit");
-    res.type("html").send(hit.html);
+    res.set('Cache-Control', 'no-cache');
+    res.set('X-Cache', 'hit');
+    res.type('html').send(hit.html);
     return;
   }
 
   const originalSend = res.send.bind(res);
   let buffered = false;
-  let buffer = "";
+  let buffer = '';
 
   res.send = ((body: unknown): Response => {
-    if (res.statusCode === 200 && typeof body === "string" && !req.headers.cookie) {
+    if (
+      res.statusCode === 200 &&
+      typeof body === 'string' &&
+      !req.headers.cookie
+    ) {
       buffer = body;
       buffered = true;
     }
     return originalSend(body);
-  }) as Response["send"];
+  }) as Response['send'];
 
-  res.on("finish", () => {
+  res.on('finish', () => {
     if (buffered && res.statusCode === 200) {
       if (cache.size >= MAX_ENTRIES) {
         const now = Date.now();

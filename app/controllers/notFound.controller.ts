@@ -1,11 +1,11 @@
-import type { Request, Response } from "express";
+import type { Request, Response } from 'express';
 
-import { renderPage } from "../views/render";
+import { renderPage } from '../views/render';
 
 export function notFoundPage(_req: Request, res: Response): void {
   res.status(404).send(
     renderPage({
-      path: "/404",
+      path: '/404',
       noindex: true,
       children: `
         <div class="not-found-page">
@@ -15,7 +15,7 @@ export function notFoundPage(_req: Request, res: Response): void {
             <a class="btn btn-primary" href="/">Go home</a>
           </div>
         </div>
-      `,
-    }),
+      `
+    })
   );
 }

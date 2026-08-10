@@ -31,19 +31,27 @@
     try {
       var rawHist = localStorage.getItem('fen-history');
       state.history = rawHist ? JSON.parse(rawHist) : [];
-    } catch (e) { state.history = []; }
+    } catch (e) {
+      state.history = [];
+    }
     try {
       var rawArch = localStorage.getItem('fen-archive');
       state.archive = rawArch ? JSON.parse(rawArch) : [];
-    } catch (e) { state.archive = []; }
+    } catch (e) {
+      state.archive = [];
+    }
     try {
       var rawFav = localStorage.getItem('favoriteFens');
       state.favorites = rawFav ? JSON.parse(rawFav) : {};
-    } catch (e) { state.favorites = {}; }
+    } catch (e) {
+      state.favorites = {};
+    }
     try {
-      state.lightSquare = localStorage.getItem('chess-light-square') || '#f0d9b5';
+      state.lightSquare =
+        localStorage.getItem('chess-light-square') || '#f0d9b5';
       state.darkSquare = localStorage.getItem('chess-dark-square') || '#b58863';
-      state.pieceStyle = localStorage.getItem('chess-piece-style') || 'cburnett';
+      state.pieceStyle =
+        localStorage.getItem('chess-piece-style') || 'cburnett';
     } catch (e) {}
   }
 
@@ -67,7 +75,9 @@
 
   function capHistory() {
     if (state.history.length <= MAX_HISTORY) return;
-    var favs = state.history.filter(function (e) { return e.isFavorite; });
+    var favs = state.history.filter(function (e) {
+      return e.isFavorite;
+    });
     var slots = MAX_HISTORY - favs.length;
     if (slots <= 0) {
       state.history = favs;
@@ -89,7 +99,10 @@
     var toArchive = [];
     for (var i = 0; i < state.history.length; i++) {
       var entry = state.history[i];
-      if (entry.isFavorite || (now - (entry.lastActiveAt || entry.createdAt || 0)) < NINETY_DAYS_MS) {
+      if (
+        entry.isFavorite ||
+        now - (entry.lastActiveAt || entry.createdAt || 0) < NINETY_DAYS_MS
+      ) {
         active.push(entry);
       } else {
         toArchive.push(entry);
@@ -118,12 +131,17 @@
   function shouldSkipConfirm() {
     try {
       return localStorage.getItem('fen-history-skip-delete-confirm') === 'true';
-    } catch (e) { return false; }
+    } catch (e) {
+      return false;
+    }
   }
 
   function setSkipConfirm(val) {
     try {
-      localStorage.setItem('fen-history-skip-delete-confirm', val ? 'true' : 'false');
+      localStorage.setItem(
+        'fen-history-skip-delete-confirm',
+        val ? 'true' : 'false'
+      );
     } catch (e) {}
   }
 
@@ -133,12 +151,16 @@
       items = state.history;
     } else if (state.activeTab === 'favorites') {
       var favFens = Object.keys(state.favorites);
-      items = state.history.filter(function (h) { return favFens.indexOf(h.fen) !== -1; });
+      items = state.history.filter(function (h) {
+        return favFens.indexOf(h.fen) !== -1;
+      });
     } else {
       items = state.archive;
     }
     if (state.sort === 'name') {
-      items = items.slice().sort(function (a, b) { return a.fen.localeCompare(b.fen); });
+      items = items.slice().sort(function (a, b) {
+        return a.fen.localeCompare(b.fen);
+      });
     } else if (state.sort === 'oldest') {
       items = items.slice().reverse();
     }
@@ -164,7 +186,7 @@
     if (!hasPages) return;
     els.pagePrev.disabled = state.page <= 0;
     els.pageNext.disabled = state.page >= total - 1;
-    els.pageInfo.textContent = (state.page + 1) + ' / ' + total;
+    els.pageInfo.textContent = state.page + 1 + ' / ' + total;
   }
 
   function emptyMessage() {
@@ -184,14 +206,21 @@
     if (!ts) return '';
     var d = new Date(ts);
     return (
-      d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) +
+      d.toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      }) +
       ' ' +
       d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
     );
   }
 
   function renderMiniBoard(el, fen) {
-    var placement = String(fen || '').trim().split(/\s+/)[0] || '';
+    var placement =
+      String(fen || '')
+        .trim()
+        .split(/\s+/)[0] || '';
     if (!placement) return;
     var ranks = placement.split('/');
     var board = [];
@@ -216,10 +245,21 @@
         var bg = isLight ? state.lightSquare : state.darkSquare;
         var pieceHtml = '';
         if (cell) {
-          var key = (cell === cell.toUpperCase() ? 'w' : 'b') + cell.toUpperCase();
-          pieceHtml = '<img src="/piece/' + state.pieceStyle + '/' + key + '.svg" alt="" />';
+          var key =
+            (cell === cell.toUpperCase() ? 'w' : 'b') + cell.toUpperCase();
+          pieceHtml =
+            '<img src="/piece/' +
+            state.pieceStyle +
+            '/' +
+            key +
+            '.svg" alt="" />';
         }
-        html += '<div class="mini-square" style="background:' + bg + '">' + pieceHtml + '</div>';
+        html +=
+          '<div class="mini-square" style="background:' +
+          bg +
+          '">' +
+          pieceHtml +
+          '</div>';
       }
     }
     el.innerHTML = html;
@@ -240,31 +280,63 @@
     var actions = '';
     if (state.activeTab === 'archive') {
       actions +=
-        '<button type="button" data-reactivate="' + item.id + '" class="btn-icon-sm" title="Reactivate">' + ICON_ROTATE + '</button>' +
-        '<button type="button" data-delete="' + item.id + '" class="btn-icon-sm btn-danger" title="Delete permanently">' + ICON_TRASH + '</button>';
+        '<button type="button" data-reactivate="' +
+        item.id +
+        '" class="btn-icon-sm" title="Reactivate">' +
+        ICON_ROTATE +
+        '</button>' +
+        '<button type="button" data-delete="' +
+        item.id +
+        '" class="btn-icon-sm btn-danger" title="Delete permanently">' +
+        ICON_TRASH +
+        '</button>';
     } else {
       actions +=
-        '<button type="button" data-delete="' + item.id + '" class="btn-icon-sm btn-danger" title="Move to archive">' + ICON_ROTATE + '</button>';
+        '<button type="button" data-delete="' +
+        item.id +
+        '" class="btn-icon-sm btn-danger" title="Move to archive">' +
+        ICON_ROTATE +
+        '</button>';
     }
     var source = item.source
       ? '<div class="history-source">Source: ' + item.source + '</div>'
       : '';
     return (
-      '<div class="history-card' + (fav ? ' favorite' : '') + '">' +
-      '<a href="/?fen=' + encodeURIComponent(item.fen) + '" class="history-card-link">' +
+      '<div class="history-card' +
+      (fav ? ' favorite' : '') +
+      '">' +
+      '<a href="/?fen=' +
+      encodeURIComponent(item.fen) +
+      '" class="history-card-link">' +
       '<div class="history-board"><div class="mini-board"></div></div>' +
       '<div class="history-meta">' +
       '<div class="history-info">' +
-      '<code class="history-fen">' + fenPart + '</code>' +
-      '<div class="history-timestamp">' + formatDateTime(item.timestamp || item.lastActiveAt) + '</div>' +
+      '<code class="history-fen">' +
+      fenPart +
+      '</code>' +
+      '<div class="history-timestamp">' +
+      formatDateTime(item.timestamp || item.lastActiveAt) +
+      '</div>' +
       source +
       '</div>' +
       '</div>' +
       '</a>' +
       '<div class="history-actions-cell" style="padding: 0 0.625rem 0.625rem">' +
-      '<button type="button" data-fav="' + item.id + '" class="btn-icon-sm fav-btn' + (fav ? ' active' : '') + '"' +
-      ' title="' + (fav ? 'Remove from favorites' : 'Add to favorites') + '">' + ICON_STAR + '</button>' +
-      '<button type="button" data-copy-fen="' + item.id + '" class="btn-icon-sm" title="Copy FEN">' + ICON_COPY + '</button>' +
+      '<button type="button" data-fav="' +
+      item.id +
+      '" class="btn-icon-sm fav-btn' +
+      (fav ? ' active' : '') +
+      '"' +
+      ' title="' +
+      (fav ? 'Remove from favorites' : 'Add to favorites') +
+      '">' +
+      ICON_STAR +
+      '</button>' +
+      '<button type="button" data-copy-fen="' +
+      item.id +
+      '" class="btn-icon-sm" title="Copy FEN">' +
+      ICON_COPY +
+      '</button>' +
       actions +
       '</div>' +
       '</div>'
@@ -304,14 +376,19 @@
     };
     var counts = els.root.querySelectorAll('[data-tab-count]');
     for (var j = 0; j < counts.length; j++) {
-      counts[j].textContent = String(countMap[counts[j].getAttribute('data-tab-count')] || 0);
+      counts[j].textContent = String(
+        countMap[counts[j].getAttribute('data-tab-count')] || 0
+      );
     }
   }
 
   function toggleFavorite(id) {
     var entry = null;
     for (var i = 0; i < state.history.length; i++) {
-      if (state.history[i].id === id) { entry = state.history[i]; break; }
+      if (state.history[i].id === id) {
+        entry = state.history[i];
+        break;
+      }
     }
     if (!entry) return;
     var fen = entry.fen;
@@ -327,11 +404,14 @@
   }
 
   function copyFen(fen) {
-    navigator.clipboard.writeText(fen).then(function () {
-      notify('success', 'FEN copied to clipboard');
-    }).catch(function () {
-      notify('error', 'Could not copy FEN');
-    });
+    navigator.clipboard
+      .writeText(fen)
+      .then(function () {
+        notify('success', 'FEN copied to clipboard');
+      })
+      .catch(function () {
+        notify('error', 'Could not copy FEN');
+      });
   }
 
   function deleteWithConfirm(id) {
@@ -347,12 +427,17 @@
 
   function confirmDeleteById(id) {
     if (state.activeTab === 'archive') {
-      state.archive = state.archive.filter(function (h) { return h.id !== id; });
+      state.archive = state.archive.filter(function (h) {
+        return h.id !== id;
+      });
       saveArchive();
     } else {
       var entry = null;
       for (var i = 0; i < state.history.length; i++) {
-        if (state.history[i].id === id) { entry = state.history[i]; break; }
+        if (state.history[i].id === id) {
+          entry = state.history[i];
+          break;
+        }
       }
       if (entry) {
         if (!entry.isFavorite) {
@@ -369,7 +454,9 @@
           state.archive.unshift(archived);
           saveArchive();
         }
-        state.history = state.history.filter(function (h) { return h.id !== entry.id; });
+        state.history = state.history.filter(function (h) {
+          return h.id !== entry.id;
+        });
         saveHistory();
       }
     }
@@ -392,7 +479,10 @@
   function reactivate(id) {
     var idx = -1;
     for (var i = 0; i < state.archive.length; i++) {
-      if (state.archive[i].id === id) { idx = i; break; }
+      if (state.archive[i].id === id) {
+        idx = i;
+        break;
+      }
     }
     if (idx === -1) return;
     var entry = state.archive[idx];
@@ -459,7 +549,10 @@
     if (btn) {
       var entry = null;
       for (var i = 0; i < state.history.length; i++) {
-        if (state.history[i].id === Number(btn.getAttribute('data-copy-fen'))) { entry = state.history[i]; break; }
+        if (state.history[i].id === Number(btn.getAttribute('data-copy-fen'))) {
+          entry = state.history[i];
+          break;
+        }
       }
       if (entry) copyFen(entry.fen);
       return;
@@ -478,8 +571,14 @@
       return;
     }
     btn = e.target.closest('[data-clear-all]');
-    if (btn) { clearAll(); return; }
-    if (e.target.closest('[data-modal-cancel]') || e.target.closest('[data-modal-close]')) {
+    if (btn) {
+      clearAll();
+      return;
+    }
+    if (
+      e.target.closest('[data-modal-cancel]') ||
+      e.target.closest('[data-modal-close]')
+    ) {
       cancelDelete();
       return;
     }

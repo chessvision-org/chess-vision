@@ -1,4 +1,4 @@
-import { html } from "../helpers/html";
+import { html } from '../helpers/html';
 import {
   renderBoard,
   renderBoardOptions,
@@ -7,16 +7,20 @@ import {
   renderFenToolbar,
   renderPalette,
   renderShareDialog,
-  renderTrashZone,
-} from "../components/chess/editorParts";
-import { isValidFen, MAX_FEN_LENGTH, STARTING_FEN } from "../components/chess/boardUtils";
+  renderTrashZone
+} from '../components/chess/editorParts';
+import {
+  isValidFen,
+  MAX_FEN_LENGTH,
+  STARTING_FEN
+} from '../components/chess/boardUtils';
 
 export interface HomePageOptions {
   fen?: string | null;
   queryFen?: string | null;
 }
 
-const DEFAULT_PIECE_STYLE = "cburnett";
+const DEFAULT_PIECE_STYLE = 'cburnett';
 
 export function HomePage(options: HomePageOptions = {}): string {
   const queryFen =
@@ -28,20 +32,36 @@ export function HomePage(options: HomePageOptions = {}): string {
 
   return html`
     <div class="editor-root" data-editor data-fen="${fen}">
-      <h1 class="sr-only">Free Chess Diagram Generator — FEN to PNG, JPEG & SVG</h1>
-
-      <header class="editor-head"></header>
+      <h1 class="sr-only">
+        Free Chess Diagram Generator — FEN to PNG, JPEG & SVG
+      </h1>
 
       ${renderFenToolbar(fen)}
 
       <div class="workspace">
-        <section class="editor-board-card card-elevated" aria-label="Board editor">
-          ${renderCommandBar()} ${renderBoard()} ${renderBoardOptions()}
-        </section>
+        <div class="workspace-inner">
+          <div class="editor-cmdbar-top">${renderCommandBar()}</div>
 
-        <aside class="editor-side">
-          ${renderPalette(DEFAULT_PIECE_STYLE)} ${renderDbSearch(fen)} ${renderTrashZone()}
-        </aside>
+          <div class="editor-main-row">
+            <section class="editor-board-col" aria-label="Board editor">
+              <div class="editor-board-wrap">
+                <div class="editor-board-inner">${renderBoard()}</div>
+              </div>
+            </section>
+
+            <aside class="editor-panel">
+              <div class="editor-cmdbar">${renderCommandBar()}</div>
+              <div class="editor-palette-card">
+                ${renderPalette(DEFAULT_PIECE_STYLE)}
+              </div>
+              <div class="editor-display-opts">${renderBoardOptions()}</div>
+              <div class="editor-db-search">${renderDbSearch(fen)}</div>
+              <div class="editor-trash">${renderTrashZone()}</div>
+            </aside>
+          </div>
+
+          <div class="editor-db-row">${renderDbSearch(fen)}</div>
+        </div>
       </div>
 
       ${renderShareDialog()}

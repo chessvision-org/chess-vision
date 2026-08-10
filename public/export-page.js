@@ -34,9 +34,26 @@
     ice: { name: 'Ice', light: '#e8f4f8', dark: '#7eb8da' }
   };
   var BUILTIN_THEME_KEYS = [
-    'classic', 'brown', 'wood', 'sand', 'slate', 'marble', 'blue', 'ocean',
-    'green', 'forest', 'mint', 'purple', 'lavender', 'red', 'coral', 'sunset',
-    'pink', 'burgundy', 'navy', 'ice'
+    'classic',
+    'brown',
+    'wood',
+    'sand',
+    'slate',
+    'marble',
+    'blue',
+    'ocean',
+    'green',
+    'forest',
+    'mint',
+    'purple',
+    'lavender',
+    'red',
+    'coral',
+    'sunset',
+    'pink',
+    'burgundy',
+    'navy',
+    'ice'
   ];
 
   var PIECE_SETS = [
@@ -130,7 +147,9 @@
     if (!s) return [];
     return s
       .split(',')
-      .map(function (n) { return n.trim(); })
+      .map(function (n) {
+        return n.trim();
+      })
       .filter(Boolean);
   }
 
@@ -140,7 +159,13 @@
     var parsed = Number(s);
     if (!isFinite(parsed)) return 'Board size must be a valid number.';
     if (parsed < BOARD_SIZE_MIN || parsed > BOARD_SIZE_MAX) {
-      return 'Board size must be between ' + BOARD_SIZE_MIN + 'cm and ' + BOARD_SIZE_MAX + 'cm.';
+      return (
+        'Board size must be between ' +
+        BOARD_SIZE_MIN +
+        'cm and ' +
+        BOARD_SIZE_MAX +
+        'cm.'
+      );
     }
     return null;
   }
@@ -206,15 +231,23 @@
   }
 
   function rgbToHex(r, g, b) {
-    return '#' + [r, g, b].map(function (x) {
-      var hex = x.toString(16);
-      return hex.length === 1 ? '0' + hex : hex;
-    }).join('');
+    return (
+      '#' +
+      [r, g, b]
+        .map(function (x) {
+          var hex = x.toString(16);
+          return hex.length === 1 ? '0' + hex : hex;
+        })
+        .join('')
+    );
   }
 
   function rgbToHsv(r, g, b) {
-    var rn = r / 255, gn = g / 255, bn = b / 255;
-    var max = Math.max(rn, gn, bn), min = Math.min(rn, gn, bn);
+    var rn = r / 255,
+      gn = g / 255,
+      bn = b / 255;
+    var max = Math.max(rn, gn, bn),
+      min = Math.min(rn, gn, bn);
     var d = max - min;
     var h = 0;
     var s = max === 0 ? 0 : d / max;
@@ -229,21 +262,51 @@
   }
 
   function hsvToRgb(h, s, v) {
-    var r = 0, g = 0, b = 0;
+    var r = 0,
+      g = 0,
+      b = 0;
     var i = Math.floor(h * 6);
     var f = h * 6 - i;
     var p = v * (1 - s);
     var q = v * (1 - f * s);
     var t = v * (1 - (1 - f) * s);
     switch (i % 6) {
-      case 0: r = v; g = t; b = p; break;
-      case 1: r = q; g = v; b = p; break;
-      case 2: r = p; g = v; b = t; break;
-      case 3: r = p; g = q; b = v; break;
-      case 4: r = t; g = p; b = v; break;
-      case 5: r = v; g = p; b = q; break;
+      case 0:
+        r = v;
+        g = t;
+        b = p;
+        break;
+      case 1:
+        r = q;
+        g = v;
+        b = p;
+        break;
+      case 2:
+        r = p;
+        g = v;
+        b = t;
+        break;
+      case 3:
+        r = p;
+        g = q;
+        b = v;
+        break;
+      case 4:
+        r = t;
+        g = p;
+        b = v;
+        break;
+      case 5:
+        r = v;
+        g = p;
+        b = q;
+        break;
     }
-    return { r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255) };
+    return {
+      r: Math.round(r * 255),
+      g: Math.round(g * 255),
+      b: Math.round(b * 255)
+    };
   }
 
   // --- export sizing ---
@@ -256,7 +319,8 @@
     try {
       var ua = navigator.userAgent;
       if (/Safari/.test(ua) && !/Chrome/.test(ua)) return 16384;
-      if (window.innerWidth <= 768 && (window.devicePixelRatio || 1) >= 2) return 8192;
+      if (window.innerWidth <= 768 && (window.devicePixelRatio || 1) >= 2)
+        return 8192;
       return 32767;
     } catch (e) {
       return 16384;
@@ -264,7 +328,8 @@
   }
 
   function calcSurface(boardSizeCm, showCoords, exportQuality, showThinFrame) {
-    var safeQ = isFinite(exportQuality) && exportQuality > 0 ? exportQuality : 1;
+    var safeQ =
+      isFinite(exportQuality) && exportQuality > 0 ? exportQuality : 1;
     var maxCanvas = getMaxCanvasSize();
     var rawBoard = Math.round((boardSizeCm / 2.54) * 300 * safeQ);
     var borderSize = showCoords
@@ -272,7 +337,9 @@
       : 0;
     var rawW = Math.round(borderSize + rawBoard);
     var rawH = Math.round(rawBoard + borderSize);
-    var w = rawW, h = rawH, sf = 1;
+    var w = rawW,
+      h = rawH,
+      sf = 1;
     if (rawW > maxCanvas || rawH > maxCanvas) {
       var md = Math.max(rawW, rawH);
       sf = maxCanvas / md;
@@ -286,7 +353,12 @@
     var cw = Math.round(border + boardPx + framePad);
     var ch = Math.round(boardPx + border + framePad);
     var effDPI = Math.round(300 * safeQ * sf);
-    return { canvasWidth: cw, canvasHeight: ch, effectiveDPI: effDPI, scaleFactor: sf };
+    return {
+      canvasWidth: cw,
+      canvasHeight: ch,
+      effectiveDPI: effDPI,
+      scaleFactor: sf
+    };
   }
 
   function checkCancellation() {
@@ -311,7 +383,7 @@
     var t = new Uint32Array(256);
     for (var n = 0; n < 256; n++) {
       var c = n;
-      for (var k = 0; k < 8; k++) c = c & 1 ? 3988292384 ^ c >>> 1 : c >>> 1;
+      for (var k = 0; k < 8; k++) c = c & 1 ? 3988292384 ^ (c >>> 1) : c >>> 1;
       t[n] = c;
     }
     return t;
@@ -328,13 +400,18 @@
       dv.setUint32(12, ppm);
       phys[16] = 1;
       var crc = 4294967295;
-      for (var i = 4; i < 17; i++) crc = crcTable[(crc ^ phys[i]) & 255] ^ crc >>> 8;
+      for (var i = 4; i < 17; i++)
+        crc = crcTable[(crc ^ phys[i]) & 255] ^ (crc >>> 8);
       dv.setUint32(17, crc ^ 4294967295);
       var chunks = [bytes.slice(0, 8)];
-      var pos = 8, inserted = false;
+      var pos = 8,
+        inserted = false;
       while (pos < bytes.length) {
         var length = new DataView(bytes.buffer).getUint32(pos);
-        var type = String.fromCharCode.apply(null, Array.from(bytes.slice(pos + 4, pos + 8)));
+        var type = String.fromCharCode.apply(
+          null,
+          Array.from(bytes.slice(pos + 4, pos + 8))
+        );
         if (!inserted && (type === 'IDAT' || type === 'PLTE')) {
           chunks.push(phys);
           inserted = true;
@@ -356,15 +433,16 @@
       while (pos < bytes.length) {
         if (bytes[pos] !== 255) break;
         var marker = bytes[pos + 1];
-        var l1 = bytes[pos + 2], l2 = bytes[pos + 3];
+        var l1 = bytes[pos + 2],
+          l2 = bytes[pos + 3];
         if (l1 === undefined || l2 === undefined) break;
         var length = (l1 << 8) + l2;
         if (marker === 224 && length >= 16) {
           var jfif = bytes.slice(pos, pos + 2 + length);
           jfif[13] = 1;
-          jfif[14] = dpi >> 8 & 255;
+          jfif[14] = (dpi >> 8) & 255;
           jfif[15] = dpi & 255;
-          jfif[16] = dpi >> 8 & 255;
+          jfif[16] = (dpi >> 8) & 255;
           jfif[17] = dpi & 255;
           var out2 = new Uint8Array(bytes.length);
           out2.set(bytes.slice(0, pos));
@@ -376,8 +454,24 @@
         pos += 2 + length;
       }
       var header = new Uint8Array([
-        255, 224, 0, 16, 74, 70, 73, 70, 0, 1, 1, 1,
-        dpi >> 8 & 255, dpi & 255, dpi >> 8 & 255, dpi & 255, 0, 0
+        255,
+        224,
+        0,
+        16,
+        74,
+        70,
+        73,
+        70,
+        0,
+        1,
+        1,
+        1,
+        (dpi >> 8) & 255,
+        dpi & 255,
+        (dpi >> 8) & 255,
+        dpi & 255,
+        0,
+        0
       ]);
       var out = new Uint8Array(bytes.length + header.length);
       out.set(bytes.slice(0, 2));
@@ -388,7 +482,9 @@
   }
 
   function changeDPI(blob, dpi, format) {
-    return format === 'png' ? changePngDPI(blob, dpi) : changeJpegDPI(blob, dpi);
+    return format === 'png'
+      ? changePngDPI(blob, dpi)
+      : changeJpegDPI(blob, dpi);
   }
 
   // --- save blob ---
@@ -404,7 +500,9 @@
 
   function saveBlob(blob, fileName, extension) {
     var safeName = sanitizeFileName(fileName);
-    var safeExt = String(extension || '').replace(/[^a-z0-9]/gi, '').toLowerCase();
+    var safeExt = String(extension || '')
+      .replace(/[^a-z0-9]/gi, '')
+      .toLowerCase();
     var url = URL.createObjectURL(blob);
     var link = document.createElement('a');
     link.href = url;
@@ -413,7 +511,9 @@
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    setTimeout(function () { URL.revokeObjectURL(url); }, 100);
+    setTimeout(function () {
+      URL.revokeObjectURL(url);
+    }, 100);
   }
 
   // --- svg fetch + raster ---
@@ -453,7 +553,9 @@
 
   function rasterize(svgString, width, height, format) {
     return new Promise(function (resolve, reject) {
-      var svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+      var svgBlob = new Blob([svgString], {
+        type: 'image/svg+xml;charset=utf-8'
+      });
       var url = URL.createObjectURL(svgBlob);
       var img = new Image();
       img.onload = function () {
@@ -474,11 +576,15 @@
           ctx.imageSmoothingEnabled = true;
           ctx.imageSmoothingQuality = 'high';
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          canvas.toBlob(function (blob) {
-            URL.revokeObjectURL(url);
-            if (blob) resolve(blob);
-            else reject(new Error('Canvas.toBlob returned null'));
-          }, format === 'jpeg' ? 'image/jpeg' : 'image/png', 0.92);
+          canvas.toBlob(
+            function (blob) {
+              URL.revokeObjectURL(url);
+              if (blob) resolve(blob);
+              else reject(new Error('Canvas.toBlob returned null'));
+            },
+            format === 'jpeg' ? 'image/jpeg' : 'image/png',
+            0.92
+          );
         } catch (e) {
           URL.revokeObjectURL(url);
           reject(e);
@@ -527,11 +633,23 @@
     for (var i = 0; i < BUILTIN_THEME_KEYS.length; i++) {
       var key = BUILTIN_THEME_KEYS[i];
       var t = BOARD_THEMES[key];
-      tiles.push({ key: 'b-' + key, name: t.name, light: t.light, dark: t.dark, custom: null });
+      tiles.push({
+        key: 'b-' + key,
+        name: t.name,
+        light: t.light,
+        dark: t.dark,
+        custom: null
+      });
     }
     for (var j = 0; j < state.customPresets.length; j++) {
       var p = state.customPresets[j];
-      tiles.push({ key: 'c-' + p.id, name: p.name, light: p.light, dark: p.dark, custom: p.id });
+      tiles.push({
+        key: 'c-' + p.id,
+        name: p.name,
+        light: p.light,
+        dark: p.dark,
+        custom: p.id
+      });
     }
     return tiles;
   }
@@ -572,7 +690,9 @@
   function pieceSetsSorted() {
     var copy = PIECE_SETS.slice();
     if (state.pieceSort === 'name') {
-      copy.sort(function (a, b) { return a.name.localeCompare(b.name); });
+      copy.sort(function (a, b) {
+        return a.name.localeCompare(b.name);
+      });
     }
     return copy;
   }
@@ -587,7 +707,9 @@
   }
 
   function pickerHex() {
-    return state.pickerActive === 'light' ? state.pickerLight : state.pickerDark;
+    return state.pickerActive === 'light'
+      ? state.pickerLight
+      : state.pickerDark;
   }
 
   function pickerHueHex() {
@@ -606,26 +728,51 @@
     if (tile.custom !== null) {
       actions =
         '<div class="theme-tile-actions">' +
-        '<button type="button" class="theme-action-btn" data-edit-theme="' + tile.custom + '" aria-label="Edit ' + tile.name + '">' +
+        '<button type="button" class="theme-action-btn" data-edit-theme="' +
+        tile.custom +
+        '" aria-label="Edit ' +
+        tile.name +
+        '">' +
         '<svg class="theme-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/></svg>' +
         '</button>' +
-        '<button type="button" class="theme-action-btn theme-action-btn-danger" data-delete-theme="' + tile.custom + '" aria-label="Delete ' + tile.name + '">' +
+        '<button type="button" class="theme-action-btn theme-action-btn-danger" data-delete-theme="' +
+        tile.custom +
+        '" aria-label="Delete ' +
+        tile.name +
+        '">' +
         '<svg class="theme-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>' +
         '</button>' +
         '</div>';
     }
     return (
       '<li class="theme-tile">' +
-      '<button type="button" class="theme-swatch' + (selected ? ' theme-swatch-selected' : '') +
-      '" data-theme-light="' + tile.light + '" data-theme-dark="' + tile.dark + '"' +
-      ' title="' + tile.name + '" aria-label="Apply ' + tile.name + ' theme"' +
-      ' aria-pressed="' + selected + '">' +
-      '<span class="theme-swatch-half" style="background-color:' + tile.light + '"></span>' +
-      '<span class="theme-swatch-half" style="background-color:' + tile.dark + '"></span>' +
+      '<button type="button" class="theme-swatch' +
+      (selected ? ' theme-swatch-selected' : '') +
+      '" data-theme-light="' +
+      tile.light +
+      '" data-theme-dark="' +
+      tile.dark +
+      '"' +
+      ' title="' +
+      tile.name +
+      '" aria-label="Apply ' +
+      tile.name +
+      ' theme"' +
+      ' aria-pressed="' +
+      selected +
+      '">' +
+      '<span class="theme-swatch-half" style="background-color:' +
+      tile.light +
+      '"></span>' +
+      '<span class="theme-swatch-half" style="background-color:' +
+      tile.dark +
+      '"></span>' +
       check +
       '</button>' +
       actions +
-      '<span class="theme-tile-name">' + tile.name + '</span>' +
+      '<span class="theme-tile-name">' +
+      tile.name +
+      '</span>' +
       '</li>'
     );
   }
@@ -653,7 +800,7 @@
   function renderThemePager() {
     var pages = themePages();
     els.themePager.hidden = pages <= 1;
-    els.themePageLabel.textContent = (state.themePage + 1) + ' / ' + pages;
+    els.themePageLabel.textContent = state.themePage + 1 + ' / ' + pages;
     els.themePrev.disabled = state.themePage === 0;
     els.themeNext.disabled = state.themePage >= pages - 1;
   }
@@ -665,10 +812,23 @@
       var set = sets[i];
       var active = state.pieceStyle === set.id;
       html +=
-        '<button type="button" class="piece-tile' + (active ? ' piece-tile-active' : '') +
-        '" data-piece="' + set.id + '" aria-pressed="' + active + '" aria-label="' + set.name + '">' +
-        '<img class="piece-tile-img" src="/piece/' + set.id + '/wN.svg" alt="' + set.name + '" width="44" height="44" loading="lazy" />' +
-        '<span class="piece-tile-name">' + set.name + '</span>' +
+        '<button type="button" class="piece-tile' +
+        (active ? ' piece-tile-active' : '') +
+        '" data-piece="' +
+        set.id +
+        '" aria-pressed="' +
+        active +
+        '" aria-label="' +
+        set.name +
+        '">' +
+        '<img class="piece-tile-img" src="/piece/' +
+        set.id +
+        '/wN.svg" alt="' +
+        set.name +
+        '" width="44" height="44" loading="lazy" />' +
+        '<span class="piece-tile-name">' +
+        set.name +
+        '</span>' +
         '</button>';
     }
     els.pieceGrid.innerHTML = html;
@@ -679,7 +839,7 @@
   function renderPiecePager() {
     var pages = piecePages();
     els.piecePager.hidden = pages <= 1;
-    els.piecePageLabel.textContent = (state.piecePage + 1) + ' / ' + pages;
+    els.piecePageLabel.textContent = state.piecePage + 1 + ' / ' + pages;
     els.piecePrev.disabled = state.piecePage === 0;
     els.pieceNext.disabled = state.piecePage >= pages - 1;
   }
@@ -699,15 +859,16 @@
   }
 
   function renderPicker() {
-    els.pickerTitle.textContent = state.pickerId !== null ? 'Edit theme' : 'New theme';
+    els.pickerTitle.textContent =
+      state.pickerId !== null ? 'Edit theme' : 'New theme';
     els.pickerLightPreview.style.backgroundColor = state.pickerLight;
     els.pickerDarkPreview.style.backgroundColor = state.pickerDark;
     els.pickerLightHex.textContent = state.pickerLight;
     els.pickerDarkHex.textContent = state.pickerDark;
     els.pickerName.value = state.pickerName;
     els.satField.style.backgroundColor = pickerHueHex();
-    els.satCursor.style.left = (state.pickerS * 100) + '%';
-    els.satCursor.style.top = ((1 - state.pickerV) * 100) + '%';
+    els.satCursor.style.left = state.pickerS * 100 + '%';
+    els.satCursor.style.top = (1 - state.pickerV) * 100 + '%';
     els.hueInput.value = String(Math.round(state.pickerH * 360));
     els.pickerSideBtns.forEach(function (btn) {
       var active = btn.getAttribute('data-picker-side') === state.pickerActive;
@@ -734,10 +895,16 @@
   }
 
   function renderPreview() {
-    els.previewImg.classList.toggle('board-preview-img-loading', state.previewLoading);
+    els.previewImg.classList.toggle(
+      'board-preview-img-loading',
+      state.previewLoading
+    );
     els.previewLoadingEl.hidden = !state.previewLoading;
     els.previewErrorEl.hidden = !(!state.previewLoading && state.previewError);
-    if (state.previewUrl && els.previewImg.getAttribute('src') !== state.previewUrl) {
+    if (
+      state.previewUrl &&
+      els.previewImg.getAttribute('src') !== state.previewUrl
+    ) {
       els.previewImg.src = state.previewUrl;
     }
   }
@@ -762,7 +929,8 @@
 
   function renderQuality() {
     els.qualityBtns.forEach(function (btn) {
-      var active = Number(btn.getAttribute('data-quality')) === state.exportQuality;
+      var active =
+        Number(btn.getAttribute('data-quality')) === state.exportQuality;
       btn.classList.toggle('settings-btn-active', active);
       btn.classList.toggle('settings-btn-inactive', !active);
     });
@@ -770,13 +938,15 @@
 
   function renderBoardSize() {
     els.sizeBtns.forEach(function (btn) {
-      var active = Number(btn.getAttribute('data-size')) === state.boardSizePreset;
+      var active =
+        Number(btn.getAttribute('data-size')) === state.boardSizePreset;
       btn.classList.toggle('settings-btn-active', active);
       btn.classList.toggle('settings-btn-inactive', !active);
     });
     var customActive = state.boardSizePreset === 'custom';
     els.sizeCustom.classList.toggle('board-size-input-active', customActive);
-    if (document.activeElement !== els.sizeCustom) els.sizeCustom.value = state.customBoardSizeInput;
+    if (document.activeElement !== els.sizeCustom)
+      els.sizeCustom.value = state.customBoardSizeInput;
     var err = customBoardSizeError();
     els.customSizeError.textContent = err || '';
     els.customSizeError.hidden = !err;
@@ -784,7 +954,8 @@
   }
 
   function renderFileNames() {
-    if (document.activeElement !== els.fileNames) els.fileNames.value = state.fileNamesInput;
+    if (document.activeElement !== els.fileNames)
+      els.fileNames.value = state.fileNamesInput;
     var err = state.fileNameError;
     els.fileNameError.textContent = err || '';
     els.fileNameError.hidden = !err;
@@ -794,16 +965,25 @@
   function renderProgress() {
     els.progressModal.dataset.state = state.isExporting ? 'open' : 'closed';
     document.body.classList.toggle('modal-open', state.isExporting);
-    els.exportStatus.textContent = state.isPaused ? 'Paused' : 'Creating image...';
+    els.exportStatus.textContent = state.isPaused
+      ? 'Paused'
+      : 'Creating image...';
     els.exportFormat.textContent = state.currentFormat
       ? String(state.currentFormat).toUpperCase()
       : '';
     els.progressFill.style.width = state.displayProgress + '%';
-    els.progressBar.setAttribute('aria-valuenow', String(Math.round(state.displayProgress)));
-    els.progressPercent.textContent = Math.round(state.displayProgress) + '% complete';
+    els.progressBar.setAttribute(
+      'aria-valuenow',
+      String(Math.round(state.displayProgress))
+    );
+    els.progressPercent.textContent =
+      Math.round(state.displayProgress) + '% complete';
     els.pauseState.hidden = state.isPaused;
     els.resumeState.hidden = !state.isPaused;
-    els.pauseBtn.setAttribute('aria-label', state.isPaused ? 'Resume export' : 'Pause export');
+    els.pauseBtn.setAttribute(
+      'aria-label',
+      state.isPaused ? 'Resume export' : 'Pause export'
+    );
     renderProgressDetails();
   }
 
@@ -823,8 +1003,16 @@
     var canvasPixels = surface.canvasWidth * surface.canvasHeight;
     var memoryMB = Math.round((canvasPixels * 4) / (1024 * 1024));
     els.progressResolution.textContent =
-      'Resolution: ' + surface.canvasWidth + ' × ' + surface.canvasHeight + ' px (' + surface.effectiveDPI + ' DPI)';
-    els.progressFileSize.textContent = 'File size estimate: ~' + estimateFileSize(canvasPixels, state.currentFormat);
+      'Resolution: ' +
+      surface.canvasWidth +
+      ' × ' +
+      surface.canvasHeight +
+      ' px (' +
+      surface.effectiveDPI +
+      ' DPI)';
+    els.progressFileSize.textContent =
+      'File size estimate: ~' +
+      estimateFileSize(canvasPixels, state.currentFormat);
     var isLarge = memoryMB >= 200;
     els.progressWarning.hidden = !isLarge;
     if (isLarge) {
@@ -873,14 +1061,20 @@
 
   function computeCols() {
     try {
-      if (window.matchMedia('(min-width: 1200px)').matches) state.themeCols = 10;
-      else if (window.matchMedia('(min-width: 1000px)').matches) state.themeCols = 9;
-      else if (window.matchMedia('(min-width: 800px)').matches) state.themeCols = 8;
-      else if (window.matchMedia('(min-width: 640px)').matches) state.themeCols = 7;
-      else if (window.matchMedia('(min-width: 480px)').matches) state.themeCols = 6;
+      if (window.matchMedia('(min-width: 1200px)').matches)
+        state.themeCols = 10;
+      else if (window.matchMedia('(min-width: 1000px)').matches)
+        state.themeCols = 9;
+      else if (window.matchMedia('(min-width: 800px)').matches)
+        state.themeCols = 8;
+      else if (window.matchMedia('(min-width: 640px)').matches)
+        state.themeCols = 7;
+      else if (window.matchMedia('(min-width: 480px)').matches)
+        state.themeCols = 6;
       else state.themeCols = 5;
       if (window.matchMedia('(min-width: 1024px)').matches) state.pieceCols = 8;
-      else if (window.matchMedia('(min-width: 640px)').matches) state.pieceCols = 6;
+      else if (window.matchMedia('(min-width: 640px)').matches)
+        state.pieceCols = 6;
       else state.pieceCols = 4;
     } catch (e) {}
   }
@@ -964,7 +1158,9 @@
   }
 
   function deleteTheme(id) {
-    state.customPresets = state.customPresets.filter(function (p) { return p.id !== id; });
+    state.customPresets = state.customPresets.filter(function (p) {
+      return p.id !== id;
+    });
     try {
       localStorage.setItem(PRESETS_KEY, JSON.stringify(state.customPresets));
     } catch (e) {}
@@ -974,7 +1170,9 @@
   }
 
   function saveCustomTheme() {
-    var name = String(state.pickerName || '').trim().slice(0, MAX_NAME_LEN);
+    var name = String(state.pickerName || '')
+      .trim()
+      .slice(0, MAX_NAME_LEN);
     var light = state.pickerLight.toLowerCase();
     var dark = state.pickerDark.toLowerCase();
     var isEdit = state.pickerId !== null;
@@ -982,14 +1180,20 @@
     if (!isEdit) {
       for (var i = 0; i < BUILTIN_THEME_KEYS.length; i++) {
         var bt = BOARD_THEMES[BUILTIN_THEME_KEYS[i]];
-        if (bt.light.toLowerCase() === light && bt.dark.toLowerCase() === dark) {
+        if (
+          bt.light.toLowerCase() === light &&
+          bt.dark.toLowerCase() === dark
+        ) {
           notify('info', 'This color pair already exists: "' + bt.name + '"');
           return;
         }
       }
       for (var j = 0; j < state.customPresets.length; j++) {
         var cp = state.customPresets[j];
-        if (cp.light.toLowerCase() === light && cp.dark.toLowerCase() === dark) {
+        if (
+          cp.light.toLowerCase() === light &&
+          cp.dark.toLowerCase() === dark
+        ) {
           notify('info', 'This color pair already exists: "' + cp.name + '"');
           return;
         }
@@ -1009,17 +1213,25 @@
     if (isEdit) {
       state.customPresets = state.customPresets.map(function (p) {
         return p.id === state.pickerId
-          ? { id: p.id, name: name, light: p.light, dark: p.dark, timestamp: p.timestamp }
+          ? {
+              id: p.id,
+              name: name,
+              light: p.light,
+              dark: p.dark,
+              timestamp: p.timestamp
+            }
           : p;
       });
     } else {
-      state.customPresets = state.customPresets.concat([{
-        id: Date.now(),
-        name: name,
-        light: state.pickerLight,
-        dark: state.pickerDark,
-        timestamp: Date.now()
-      }]);
+      state.customPresets = state.customPresets.concat([
+        {
+          id: Date.now(),
+          name: name,
+          light: state.pickerLight,
+          dark: state.pickerDark,
+          timestamp: Date.now()
+        }
+      ]);
     }
 
     try {
@@ -1037,7 +1249,10 @@
   function setPieceStyle(id) {
     var valid = false;
     for (var i = 0; i < PIECE_SETS.length; i++) {
-      if (PIECE_SETS[i].id === id) { valid = true; break; }
+      if (PIECE_SETS[i].id === id) {
+        valid = true;
+        break;
+      }
     }
     if (!valid) return;
     state.pieceStyle = id;
@@ -1062,9 +1277,13 @@
     var includes = state.selectedFormats.indexOf(format) !== -1;
     if (includes && state.selectedFormats.length === 1) return;
     var next = includes
-      ? state.selectedFormats.filter(function (f) { return f !== format; })
+      ? state.selectedFormats.filter(function (f) {
+          return f !== format;
+        })
       : state.selectedFormats.concat([format]);
-    var ordered = FORMAT_ORDER.filter(function (f) { return next.indexOf(f) !== -1; });
+    var ordered = FORMAT_ORDER.filter(function (f) {
+      return next.indexOf(f) !== -1;
+    });
     var names = parseNames(state.fileNamesInput);
     if (names.length > ordered.length) {
       state.fileNamesInput = names.slice(0, ordered.length).join(', ');
@@ -1131,12 +1350,14 @@
   }
 
   function getExportConfig(overrides) {
-    var q = overrides && overrides.exportQuality != null
-      ? overrides.exportQuality
-      : state.exportQuality;
-    var size = overrides && overrides.boardSize != null
-      ? overrides.boardSize
-      : activeBoardSize();
+    var q =
+      overrides && overrides.exportQuality != null
+        ? overrides.exportQuality
+        : state.exportQuality;
+    var size =
+      overrides && overrides.boardSize != null
+        ? overrides.boardSize
+        : activeBoardSize();
     var border = shouldForceCoordinateBorder(q) || state.showCoordinateBorder;
     return {
       fen: state.fen,
@@ -1154,7 +1375,9 @@
 
   function schedulePreview() {
     if (state._previewTimer) clearTimeout(state._previewTimer);
-    state._previewTimer = setTimeout(function () { refreshPreview(); }, 150);
+    state._previewTimer = setTimeout(function () {
+      refreshPreview();
+    }, 150);
   }
 
   function refreshPreview() {
@@ -1166,22 +1389,27 @@
     state.previewLoading = true;
     state.previewError = false;
     renderPreview();
-    fetchSvg(cfg).then(function (svg) {
-      if (seq !== state._previewSeq) return;
-      var blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
-      var url = URL.createObjectURL(blob);
-      if (state.previewUrl) {
-        try { URL.revokeObjectURL(state.previewUrl); } catch (e) {}
+    fetchSvg(cfg).then(
+      function (svg) {
+        if (seq !== state._previewSeq) return;
+        var blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+        var url = URL.createObjectURL(blob);
+        if (state.previewUrl) {
+          try {
+            URL.revokeObjectURL(state.previewUrl);
+          } catch (e) {}
+        }
+        state.previewUrl = url;
+        state.previewLoading = false;
+        renderPreview();
+      },
+      function () {
+        if (seq !== state._previewSeq) return;
+        state.previewLoading = false;
+        state.previewError = true;
+        renderPreview();
       }
-      state.previewUrl = url;
-      state.previewLoading = false;
-      renderPreview();
-    }, function () {
-      if (seq !== state._previewSeq) return;
-      state.previewLoading = false;
-      state.previewError = true;
-      renderPreview();
-    });
+    );
   }
 
   function runFormatExport(format, cfg, name) {
@@ -1192,7 +1420,9 @@
       .then(function (svgString) {
         checkCancellation();
         if (format === 'svg') {
-          var svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+          var svgBlob = new Blob([svgString], {
+            type: 'image/svg+xml;charset=utf-8'
+          });
           saveBlob(svgBlob, name, 'svg');
           return;
         }
@@ -1204,7 +1434,12 @@
         );
         return waitIfPaused()
           .then(function () {
-            return rasterize(svgString, surface.canvasWidth, surface.canvasHeight, format);
+            return rasterize(
+              svgString,
+              surface.canvasWidth,
+              surface.canvasHeight,
+              format
+            );
           })
           .then(function (blob) {
             return changeDPI(blob, surface.effectiveDPI, format);
@@ -1218,13 +1453,17 @@
 
   function download() {
     if (state.isExporting) return;
+    if (window.cvAnalytics) window.cvAnalytics.trackExport();
     var formats = state.selectedFormats.slice();
     if (formats.length === 0) {
       notify('error', 'Select at least one format.');
       return;
     }
     var names = resolvedFileNames();
-    var overrides = { boardSize: activeBoardSize(), exportQuality: state.exportQuality };
+    var overrides = {
+      boardSize: activeBoardSize(),
+      exportQuality: state.exportQuality
+    };
     state.isExporting = true;
     state.isPaused = false;
     state.exportProgress = 0;
@@ -1232,10 +1471,10 @@
     state.currentFormat = formats[0] || 'png';
     renderProgress();
 
-      var i = 0;
-      var total = formats.length;
+    var i = 0;
+    var total = formats.length;
 
-      var runNext = function () {
+    var runNext = function () {
       if (i >= total) {
         state.isExporting = false;
         state.isPaused = false;
@@ -1255,25 +1494,28 @@
       exp.paused = false;
       renderProgress();
 
-      runFormatExport(format, cfg, name).then(function () {
-        if (exp.cancelled) return;
-        i += 1;
-        state.exportProgress = (i / total) * 100;
-        runNext();
-      }, function (err) {
-        state.isExporting = false;
-        state.isPaused = false;
-        state.exportProgress = 0;
-        state.displayProgress = 0;
-        state.currentFormat = null;
-        renderProgress();
-        if (err && err.message === 'Export cancelled') {
-          notify('info', 'Export cancelled');
-        } else {
-          var label = String(format).toUpperCase();
-          notify('error', label + ' export failed');
+      runFormatExport(format, cfg, name).then(
+        function () {
+          if (exp.cancelled) return;
+          i += 1;
+          state.exportProgress = (i / total) * 100;
+          runNext();
+        },
+        function (err) {
+          state.isExporting = false;
+          state.isPaused = false;
+          state.exportProgress = 0;
+          state.displayProgress = 0;
+          state.currentFormat = null;
+          renderProgress();
+          if (err && err.message === 'Export cancelled') {
+            notify('info', 'Export cancelled');
+          } else {
+            var label = String(format).toUpperCase();
+            notify('error', label + ' export failed');
+          }
         }
-      });
+      );
     };
     runNext();
   }
@@ -1310,13 +1552,25 @@
   function onClick(e) {
     var target = e.target;
     var btn = target.closest('[data-format]');
-    if (btn) { toggleFormat(btn.getAttribute('data-format')); return; }
+    if (btn) {
+      toggleFormat(btn.getAttribute('data-format'));
+      return;
+    }
     btn = target.closest('[data-quality]');
-    if (btn) { setResolutionValue(Number(btn.getAttribute('data-quality'))); return; }
+    if (btn) {
+      setResolutionValue(Number(btn.getAttribute('data-quality')));
+      return;
+    }
     btn = target.closest('[data-size]');
-    if (btn) { selectBoardSizePreset(Number(btn.getAttribute('data-size'))); return; }
+    if (btn) {
+      selectBoardSizePreset(Number(btn.getAttribute('data-size')));
+      return;
+    }
     btn = target.closest('[data-tab-btn]');
-    if (btn) { setTab(btn.getAttribute('data-tab-btn')); return; }
+    if (btn) {
+      setTab(btn.getAttribute('data-tab-btn'));
+      return;
+    }
     btn = target.closest('[data-theme-tab]');
     if (btn) {
       if (btn.getAttribute('data-theme-tab') === 'custom') openLivePicker();
@@ -1325,7 +1579,12 @@
     }
     btn = target.closest('[data-theme-add]');
     if (btn) {
-      openPicker({ id: null, name: '', light: state.lightSquare, dark: state.darkSquare });
+      openPicker({
+        id: null,
+        name: '',
+        light: state.lightSquare,
+        dark: state.darkSquare
+      });
       return;
     }
     btn = target.closest('[data-edit-theme]');
@@ -1334,36 +1593,79 @@
       for (var ei = 0; ei < state.customPresets.length; ei++) {
         var ep = state.customPresets[ei];
         if (String(ep.id) === String(editId)) {
-          openPicker({ id: ep.id, name: ep.name, light: ep.light, dark: ep.dark });
+          openPicker({
+            id: ep.id,
+            name: ep.name,
+            light: ep.light,
+            dark: ep.dark
+          });
           return;
         }
       }
       return;
     }
     btn = target.closest('[data-delete-theme]');
-    if (btn) { deleteTheme(btn.getAttribute('data-delete-theme')); return; }
+    if (btn) {
+      deleteTheme(btn.getAttribute('data-delete-theme'));
+      return;
+    }
     btn = target.closest('[data-theme-light]');
     if (btn) {
-      applyTheme(btn.getAttribute('data-theme-light'), btn.getAttribute('data-theme-dark'));
+      applyTheme(
+        btn.getAttribute('data-theme-light'),
+        btn.getAttribute('data-theme-dark')
+      );
       renderThemeGrid();
       return;
     }
     btn = target.closest('[data-piece]');
-    if (btn) { setPieceStyle(btn.getAttribute('data-piece')); return; }
+    if (btn) {
+      setPieceStyle(btn.getAttribute('data-piece'));
+      return;
+    }
     btn = target.closest('[data-theme-prev]');
-    if (btn) { state.themePage = clamp(state.themePage - 1, 0, themePages() - 1); renderThemeGrid(); renderThemePager(); return; }
+    if (btn) {
+      state.themePage = clamp(state.themePage - 1, 0, themePages() - 1);
+      renderThemeGrid();
+      renderThemePager();
+      return;
+    }
     btn = target.closest('[data-theme-next]');
-    if (btn) { state.themePage = clamp(state.themePage + 1, 0, themePages() - 1); renderThemeGrid(); renderThemePager(); return; }
+    if (btn) {
+      state.themePage = clamp(state.themePage + 1, 0, themePages() - 1);
+      renderThemeGrid();
+      renderThemePager();
+      return;
+    }
     btn = target.closest('[data-piece-prev]');
-    if (btn) { state.piecePage = clamp(state.piecePage - 1, 0, piecePages() - 1); renderPieceGrid(); renderPiecePager(); return; }
+    if (btn) {
+      state.piecePage = clamp(state.piecePage - 1, 0, piecePages() - 1);
+      renderPieceGrid();
+      renderPiecePager();
+      return;
+    }
     btn = target.closest('[data-piece-next]');
-    if (btn) { state.piecePage = clamp(state.piecePage + 1, 0, piecePages() - 1); renderPieceGrid(); renderPiecePager(); return; }
+    if (btn) {
+      state.piecePage = clamp(state.piecePage + 1, 0, piecePages() - 1);
+      renderPieceGrid();
+      renderPiecePager();
+      return;
+    }
     btn = target.closest('[data-picker-side]');
-    if (btn) { pickerSetSide(btn.getAttribute('data-picker-side')); return; }
+    if (btn) {
+      pickerSetSide(btn.getAttribute('data-picker-side'));
+      return;
+    }
     btn = target.closest('[data-picker-close]');
-    if (btn) { closePicker(); return; }
+    if (btn) {
+      closePicker();
+      return;
+    }
     btn = target.closest('[data-save-theme]');
-    if (btn) { saveCustomTheme(); return; }
+    if (btn) {
+      saveCustomTheme();
+      return;
+    }
     btn = target.closest('[data-pause-btn]');
     if (btn) {
       if (state.isPaused) resumeExport();
@@ -1371,14 +1673,22 @@
       return;
     }
     btn = target.closest('[data-cancel-export]');
-    if (btn) { cancelExport(); return; }
+    if (btn) {
+      cancelExport();
+      return;
+    }
     btn = target.closest('[data-download]');
-    if (btn) { download(); return; }
+    if (btn) {
+      download();
+      return;
+    }
   }
 
   function onSatPointerDown(e) {
     state.satDragging = true;
-    try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch (err) {}
     satPos(e.clientX, e.clientY);
   }
 
@@ -1388,15 +1698,37 @@
 
   function onSatPointerUp(e) {
     state.satDragging = false;
-    try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (err) {}
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch (err) {}
   }
 
   function onSatKey(e) {
     var step = 0.04;
-    if (e.key === 'ArrowLeft') pickerSetHsv(state.pickerH, Math.max(0, state.pickerS - step), state.pickerV);
-    else if (e.key === 'ArrowRight') pickerSetHsv(state.pickerH, Math.min(1, state.pickerS + step), state.pickerV);
-    else if (e.key === 'ArrowUp') pickerSetHsv(state.pickerH, state.pickerS, Math.min(1, state.pickerV + step));
-    else if (e.key === 'ArrowDown') pickerSetHsv(state.pickerH, state.pickerS, Math.max(0, state.pickerV - step));
+    if (e.key === 'ArrowLeft')
+      pickerSetHsv(
+        state.pickerH,
+        Math.max(0, state.pickerS - step),
+        state.pickerV
+      );
+    else if (e.key === 'ArrowRight')
+      pickerSetHsv(
+        state.pickerH,
+        Math.min(1, state.pickerS + step),
+        state.pickerV
+      );
+    else if (e.key === 'ArrowUp')
+      pickerSetHsv(
+        state.pickerH,
+        state.pickerS,
+        Math.min(1, state.pickerV + step)
+      );
+    else if (e.key === 'ArrowDown')
+      pickerSetHsv(
+        state.pickerH,
+        state.pickerS,
+        Math.max(0, state.pickerV - step)
+      );
     else return;
     e.preventDefault();
   }
@@ -1476,13 +1808,27 @@
       renderPieceGrid();
       renderPiecePager();
     });
-    els.coordsOpt.addEventListener('change', function (e) { setShowCoords(e.target.checked); });
-    els.frameOpt.addEventListener('change', function (e) { setShowThinFrame(e.target.checked); });
-    els.sizeCustom.addEventListener('focus', function () { selectBoardSizePreset('custom'); });
-    els.sizeCustom.addEventListener('input', function (e) { updateCustomBoardSize(e.target.value); });
-    els.fileNames.addEventListener('input', function (e) { updateFileNames(e.target.value); });
-    els.hueInput.addEventListener('input', function (e) { hueInput(e.target.value); });
-    els.pickerName.addEventListener('input', function (e) { state.pickerName = e.target.value; });
+    els.coordsOpt.addEventListener('change', function (e) {
+      setShowCoords(e.target.checked);
+    });
+    els.frameOpt.addEventListener('change', function (e) {
+      setShowThinFrame(e.target.checked);
+    });
+    els.sizeCustom.addEventListener('focus', function () {
+      selectBoardSizePreset('custom');
+    });
+    els.sizeCustom.addEventListener('input', function (e) {
+      updateCustomBoardSize(e.target.value);
+    });
+    els.fileNames.addEventListener('input', function (e) {
+      updateFileNames(e.target.value);
+    });
+    els.hueInput.addEventListener('input', function (e) {
+      hueInput(e.target.value);
+    });
+    els.pickerName.addEventListener('input', function (e) {
+      state.pickerName = e.target.value;
+    });
     els.satField.addEventListener('pointerdown', onSatPointerDown);
     els.satField.addEventListener('pointermove', onSatPointerMove);
     els.satField.addEventListener('pointerup', onSatPointerUp);
@@ -1490,10 +1836,18 @@
     els.satField.addEventListener('keydown', onSatKey);
     els.themeGrid.addEventListener('keydown', onGridKey);
     els.pieceGrid.addEventListener('keydown', onGridKey);
-    els.themeGrid.addEventListener('touchstart', onGridTouchStart, { passive: true });
-    els.themeGrid.addEventListener('touchend', onGridTouchEnd, { passive: true });
-    els.pieceGrid.addEventListener('touchstart', onGridTouchStart, { passive: true });
-    els.pieceGrid.addEventListener('touchend', onGridTouchEnd, { passive: true });
+    els.themeGrid.addEventListener('touchstart', onGridTouchStart, {
+      passive: true
+    });
+    els.themeGrid.addEventListener('touchend', onGridTouchEnd, {
+      passive: true
+    });
+    els.pieceGrid.addEventListener('touchstart', onGridTouchStart, {
+      passive: true
+    });
+    els.pieceGrid.addEventListener('touchend', onGridTouchEnd, {
+      passive: true
+    });
     window.addEventListener('resize', function () {
       computeCols();
       renderThemeGrid();
@@ -1519,19 +1873,25 @@
       return;
     }
     state.fen = String(fen).trim();
-    state.tab = params.get('tab') === 'export-settings' ? 'export-settings' : 'board-style';
+    state.tab =
+      params.get('tab') === 'export-settings'
+        ? 'export-settings'
+        : 'board-style';
 
     var style = readLocal('chess-piece-style');
     if (style) state.pieceStyle = style;
-    if (cfg && typeof cfg.pieceStyle === 'string' && cfg.pieceStyle) state.pieceStyle = cfg.pieceStyle;
+    if (cfg && typeof cfg.pieceStyle === 'string' && cfg.pieceStyle)
+      state.pieceStyle = cfg.pieceStyle;
 
     var coords = readLocal('chess-show-coords');
     if (coords !== null) state.showCoords = coords !== 'false';
-    if (cfg && typeof cfg.showCoords === 'boolean') state.showCoords = cfg.showCoords;
+    if (cfg && typeof cfg.showCoords === 'boolean')
+      state.showCoords = cfg.showCoords;
 
     var frame = readLocal('chess-show-thin-frame');
     if (frame !== null) state.showThinFrame = frame === 'true';
-    if (cfg && typeof cfg.showThinFrame === 'boolean') state.showThinFrame = cfg.showThinFrame;
+    if (cfg && typeof cfg.showThinFrame === 'boolean')
+      state.showThinFrame = cfg.showThinFrame;
 
     if (cfg && typeof cfg.showCoordinateBorder === 'boolean') {
       state.showCoordinateBorder = cfg.showCoordinateBorder;
@@ -1564,15 +1924,25 @@
 
     var wizard = readSession(WIZARD_KEY);
     if (wizard) {
-      if (Array.isArray(wizard.selectedFormats) && wizard.selectedFormats.length) {
-        var next = FORMAT_ORDER.filter(function (f) { return wizard.selectedFormats.indexOf(f) !== -1; });
+      if (
+        Array.isArray(wizard.selectedFormats) &&
+        wizard.selectedFormats.length
+      ) {
+        var next = FORMAT_ORDER.filter(function (f) {
+          return wizard.selectedFormats.indexOf(f) !== -1;
+        });
         if (next.length) state.selectedFormats = next;
       }
-      if (typeof wizard.resolution === 'number') state.exportQuality = wizard.resolution;
-      if (wizard.boardSizePreset !== undefined) state.boardSizePreset = wizard.boardSizePreset;
-      if (typeof wizard.customBoardSizeInput === 'string') state.customBoardSizeInput = wizard.customBoardSizeInput;
-      if (typeof wizard.customBoardSizeValue === 'number') state.customBoardSizeValue = wizard.customBoardSizeValue;
-      if (typeof wizard.fileNamesInput === 'string') state.fileNamesInput = wizard.fileNamesInput;
+      if (typeof wizard.resolution === 'number')
+        state.exportQuality = wizard.resolution;
+      if (wizard.boardSizePreset !== undefined)
+        state.boardSizePreset = wizard.boardSizePreset;
+      if (typeof wizard.customBoardSizeInput === 'string')
+        state.customBoardSizeInput = wizard.customBoardSizeInput;
+      if (typeof wizard.customBoardSizeValue === 'number')
+        state.customBoardSizeValue = wizard.customBoardSizeValue;
+      if (typeof wizard.fileNamesInput === 'string')
+        state.fileNamesInput = wizard.fileNamesInput;
     }
 
     var presets = readJson(PRESETS_KEY, []);
@@ -1589,8 +1959,12 @@
     els.themeNext = els.root.querySelector('[data-theme-next]');
     els.themeTabs = els.root.querySelectorAll('[data-theme-tab]');
     els.pickerTitle = els.root.querySelector('[data-picker-title]');
-    els.pickerLightPreview = els.root.querySelector('[data-picker-light-preview]');
-    els.pickerDarkPreview = els.root.querySelector('[data-picker-dark-preview]');
+    els.pickerLightPreview = els.root.querySelector(
+      '[data-picker-light-preview]'
+    );
+    els.pickerDarkPreview = els.root.querySelector(
+      '[data-picker-dark-preview]'
+    );
     els.pickerLightHex = els.root.querySelector('[data-picker-light]');
     els.pickerDarkHex = els.root.querySelector('[data-picker-dark]');
     els.pickerName = els.root.querySelector('[data-picker-name]');
@@ -1623,15 +1997,22 @@
     els.progressBar = els.root.querySelector('[data-progress-bar]');
     els.progressPercent = els.root.querySelector('[data-progress-percent]');
     els.progressDetails = els.root.querySelector('[data-progress-details]');
-    els.progressResolution = els.root.querySelector('[data-progress-resolution]');
+    els.progressResolution = els.root.querySelector(
+      '[data-progress-resolution]'
+    );
     els.progressFileSize = els.root.querySelector('[data-progress-filesize]');
     els.progressWarning = els.root.querySelector('[data-progress-warning]');
     els.pauseBtn = els.root.querySelector('[data-pause-btn]');
     els.pauseState = els.root.querySelector('[data-pause-state]');
     els.resumeState = els.root.querySelector('[data-resume-state]');
     if (
-      !els.themeGrid || !els.pieceGrid || !els.previewImg || !els.progressModal ||
-      !els.satField || !els.coordsOpt || !els.frameOpt
+      !els.themeGrid ||
+      !els.pieceGrid ||
+      !els.previewImg ||
+      !els.progressModal ||
+      !els.satField ||
+      !els.coordsOpt ||
+      !els.frameOpt
     ) {
       return;
     }

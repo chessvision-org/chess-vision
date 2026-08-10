@@ -1,4 +1,4 @@
-@use "./variables" as v;
+@use './variables' as v;
 
 // ===== Buttons =====
 .btn {
@@ -178,6 +178,7 @@
 
 .checkbox-text {
   font-size: 0.875rem;
+  line-height: 1.25rem;
   font-weight: 600;
   color: var(--color-text-secondary);
   user-select: none;
@@ -350,7 +351,7 @@
     opacity 0.16s v.$ease-exit,
     transform 0.16s v.$ease-exit;
 
-  &[data-state="open"] {
+  &[data-state='open'] {
     pointer-events: auto;
     opacity: 1;
     transform: scale(1) translate3d(0, 0, 0);
@@ -551,7 +552,8 @@
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 40%, transparent);
+    box-shadow: 0 0 0 2px
+      color-mix(in srgb, var(--color-accent) 40%, transparent);
   }
 }
 

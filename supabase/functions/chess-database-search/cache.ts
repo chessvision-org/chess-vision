@@ -1,6 +1,6 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.107.0";
-import type { ProviderHit } from "./types.ts";
-import { trace } from "./utils/trace.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.107.0';
+import type { ProviderHit } from './types.ts';
+import { trace } from './utils/trace.ts';
 
 // Service client
 export function makeServiceClient(url: string, key: string) {
@@ -19,9 +19,9 @@ export function lichessCacheKey(fen: string): string {
 }
 
 function isHit(v: unknown): v is ProviderHit {
-  if (typeof v !== "object" || v === null) return false;
+  if (typeof v !== 'object' || v === null) return false;
   const o = v as Record<string, unknown>;
-  return typeof o["found"] === "boolean" && typeof o["url"] === "string";
+  return typeof o['found'] === 'boolean' && typeof o['url'] === 'string';
 }
 
 function ttlFor(found: boolean): number {
@@ -31,19 +31,19 @@ function ttlFor(found: boolean): number {
 export async function readCache<T extends Record<string, ProviderHit>>(
   db: ServiceClient,
   key: string,
-  isValid: (v: unknown) => v is T,
+  isValid: (v: unknown) => v is T
 ): Promise<T | null> {
   try {
     const { data } = await db
-      .from("db_search_cache")
-      .select("providers, found, checked_at")
-      .eq("fen_board", key)
+      .from('db_search_cache')
+      .select('providers, found, checked_at')
+      .eq('fen_board', key)
       .maybeSingle();
 
     if (!data || !isValid(data.providers)) return null;
     const age = Date.now() - new Date(data.checked_at as string).getTime();
     const ttl = ttlFor(data.found as boolean);
-    trace("CACHE", key, "hit", "fresh", age < ttl);
+    trace('CACHE', key, 'hit', 'fresh', age < ttl);
     return age < ttl ? data.providers : null;
   } catch (err) {
     console.error(`Cache read failed for ${key}:`, err);
@@ -55,17 +55,17 @@ export async function writeCache(
   db: ServiceClient,
   key: string,
   providers: Record<string, ProviderHit>,
-  found: boolean,
+  found: boolean
 ): Promise<void> {
   try {
-    await db.from("db_search_cache").upsert(
+    await db.from('db_search_cache').upsert(
       {
         fen_board: key,
         found,
         providers,
-        checked_at: new Date().toISOString(),
+        checked_at: new Date().toISOString()
       },
-      { onConflict: "fen_board" },
+      { onConflict: 'fen_board' }
     );
   } catch (err) {
     console.error(`Cache write failed for ${key}:`, err);
@@ -73,12 +73,14 @@ export async function writeCache(
 }
 
 export function isLichessHit(v: unknown): v is { lichess: ProviderHit } {
-  if (typeof v !== "object" || v === null) return false;
-  return isHit((v as Record<string, unknown>)["lichess"]);
+  if (typeof v !== 'object' || v === null) return false;
+  return isHit((v as Record<string, unknown>)['lichess']);
 }
 
-export function isProviderPair(v: unknown): v is { pdb: ProviderHit; yacpdb: ProviderHit } {
-  if (typeof v !== "object" || v === null) return false;
+export function isProviderPair(
+  v: unknown
+): v is { pdb: ProviderHit; yacpdb: ProviderHit } {
+  if (typeof v !== 'object' || v === null) return false;
   const o = v as Record<string, unknown>;
-  return isHit(o["pdb"]) && isHit(o["yacpdb"]);
+  return isHit(o['pdb']) && isHit(o['yacpdb']);
 }

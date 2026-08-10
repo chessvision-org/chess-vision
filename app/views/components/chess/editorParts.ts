@@ -1,10 +1,9 @@
-import { html, raw, escapeHtml } from "../../helpers/html";
-import { Checkbox, ModalShell } from "../ui";
+import { html, raw, escapeHtml } from '../../helpers/html';
+import { Checkbox, ModalShell } from '../ui';
 import {
   AlertCircle,
   ArrowUpRight,
   BookOpen,
-  ChessKing,
   Clipboard,
   Copy,
   Database,
@@ -19,12 +18,17 @@ import {
   Redo2,
   Repeat2,
   RotateCcw,
-  Search,
   Share2,
   Star,
-  Undo2,
-} from "../icons";
-import { buildDbUrl, pieceName, pieceSrc, type DatabaseProvider } from "./boardUtils";
+  Trash2,
+  Undo2
+} from '../icons';
+import {
+  buildDbUrl,
+  pieceName,
+  pieceSrc,
+  type DatabaseProvider
+} from './boardUtils';
 
 export function renderBoard(): string {
   return html`<div class="board-wrap" data-board-wrap></div>`;
@@ -32,71 +36,66 @@ export function renderBoard(): string {
 
 export function renderCommandBar(): string {
   return html`<div class="cmd-bar">
-    <button
-      type="button"
-      class="btn-icon"
-      data-action="undo"
-      disabled
-      title="Undo (Ctrl+Z)"
-      aria-label="Undo"
-    >
-      ${raw(Undo2("h-4 w-4"))}
-    </button>
-    <button
-      type="button"
-      class="btn-icon"
-      data-action="redo"
-      disabled
-      title="Redo (Ctrl+Y)"
-      aria-label="Redo"
-    >
-      ${raw(Redo2("h-4 w-4"))}
-    </button>
-    <span class="sep"></span>
-    <button
-      type="button"
-      class="btn-icon"
-      data-action="flip"
-      title="Flip board (F)"
-      aria-label="Flip board"
-    >
-      ${raw(Repeat2("h-4 w-4"))}
-    </button>
-    <span class="spacer"></span>
-    <button
-      type="button"
-      class="btn-icon"
-      data-action="remove"
-      title="Remove selected piece"
-      aria-label="Remove selected piece"
-    >
-      ${raw(Eraser("h-4 w-4"))}
-    </button>
-    <button
-      type="button"
-      class="btn-icon"
-      data-action="copy-fen"
-      title="Copy FEN"
-      aria-label="Copy FEN"
-    >
-      ${raw(Copy("h-4 w-4"))}
-    </button>
-    <button
-      type="button"
-      class="btn-icon"
-      data-action="share"
-      title="Share position"
-      aria-label="Share position"
-    >
-      ${raw(Share2("h-4 w-4"))}
-    </button>
-    <a
-      href="/export"
-      class="btn-icon btn-icon-accent"
-      title="Download / Export"
-      aria-label="Download or export"
-      >${raw(Download("h-4 w-4"))}</a
-    >
+    <div class="cmd-bar-group">
+      <button
+        type="button"
+        class="btn-icon"
+        data-action="undo"
+        disabled
+        title="Undo (Ctrl+Z)"
+        aria-label="Undo last change"
+      >
+        ${raw(Undo2('h-5 w-5'))}
+      </button>
+      <button
+        type="button"
+        class="btn-icon"
+        data-action="redo"
+        disabled
+        title="Redo (Ctrl+Y)"
+        aria-label="Redo last change"
+      >
+        ${raw(Redo2('h-5 w-5'))}
+      </button>
+      <span class="cmd-sep" aria-hidden="true"></span>
+      <button
+        type="button"
+        class="btn-icon"
+        data-action="flip"
+        title="Flip board (F)"
+        aria-label="Flip board orientation"
+      >
+        ${raw(Repeat2('h-5 w-5'))}
+      </button>
+    </div>
+    <div class="cmd-bar-group">
+      <button
+        type="button"
+        class="btn-icon"
+        data-action="copy-fen"
+        title="Copy image"
+        aria-label="Copy board image to clipboard"
+      >
+        ${raw(Copy('h-5 w-5'))}
+      </button>
+      <button
+        type="button"
+        class="btn-icon"
+        data-action="share"
+        title="Share"
+        aria-label="Share board"
+      >
+        ${raw(Share2('h-5 w-5'))}
+      </button>
+      <span class="cmd-sep" aria-hidden="true"></span>
+      <a
+        href="/export"
+        class="btn-icon btn-icon-accent"
+        title="Download / Export"
+        aria-label="Download or export board"
+        >${raw(Download('h-5 w-5'))}</a
+      >
+    </div>
   </div>`;
 }
 
@@ -107,10 +106,14 @@ export function renderFenToolbar(fen: string): string {
         <label class="fen-toolbar-label">FEN Notation</label>
         <div class="fen-toolbar-actions">
           <a href="/advanced-fen" class="action-btn" title="Advanced FEN Input">
-            ${raw(ListPlus("action-btn-icon"))}<span class="action-btn-label">Advanced</span></a
+            ${raw(ListPlus('action-btn-icon'))}<span class="action-btn-label"
+              >Advanced</span
+            ></a
           >
           <a href="/fen-history" class="action-btn" title="FEN History">
-            ${raw(History("action-btn-icon"))}<span class="action-btn-label">History</span></a
+            ${raw(History('action-btn-icon'))}<span class="action-btn-label"
+              >History</span
+            ></a
           >
         </div>
       </div>
@@ -125,7 +128,7 @@ export function renderFenToolbar(fen: string): string {
                 title="Paste FEN from clipboard"
                 aria-label="Paste FEN from clipboard"
               >
-                ${raw(Clipboard("toolbar-btn-icon"))}
+                ${raw(Clipboard('toolbar-btn-icon'))}
                 <span class="sr-only">Paste</span>
               </button>
             </div>
@@ -138,7 +141,7 @@ export function renderFenToolbar(fen: string): string {
                 title="Add to batch (no redirect)"
                 aria-label="Add to batch"
               >
-                ${raw(Plus("toolbar-btn-icon"))}<span>Add</span>
+                ${raw(Plus('toolbar-btn-icon'))}<span>Add</span>
               </button>
               <button
                 type="button"
@@ -149,9 +152,9 @@ export function renderFenToolbar(fen: string): string {
                 aria-label="Add to favorites"
                 aria-pressed="false"
               >
-                ${raw(Star("toolbar-btn-icon fen-star-outline"))}
-                ${raw(FilledStar("toolbar-btn-icon fen-star-filled"))}
-                <span data-fav-label>Save</span>
+                ${raw(Star('toolbar-btn-icon fen-star-outline'))}
+                ${raw(FilledStar('toolbar-btn-icon fen-star-filled'))}
+                <span class="hidden sm-inline" data-fav-label>Save</span>
               </button>
             </div>
             <span class="group-divider" aria-hidden="true"></span>
@@ -163,7 +166,7 @@ export function renderFenToolbar(fen: string): string {
                 title="Load the starting position"
                 aria-label="Load starting position"
               >
-                ${raw(RotateCcw("toolbar-btn-icon"))}<span>Reset</span>
+                ${raw(RotateCcw('toolbar-btn-icon'))}<span>Reset</span>
               </button>
               <button
                 type="button"
@@ -172,7 +175,7 @@ export function renderFenToolbar(fen: string): string {
                 title="Clear the board (empty position)"
                 aria-label="Clear board"
               >
-                ${raw(Eraser("toolbar-btn-icon"))}<span>Clear</span>
+                ${raw(Eraser('toolbar-btn-icon'))}<span>Clear</span>
               </button>
             </div>
           </div>
@@ -196,7 +199,7 @@ export function renderFenToolbar(fen: string): string {
         <div class="fen-error" id="fen-error" role="alert">
           <div class="fen-error-inner">
             <div class="fen-error-content">
-              ${raw(AlertCircle("fen-error-icon"))}
+              ${raw(AlertCircle('fen-error-icon'))}
               <span data-fen-error-text></span>
             </div>
           </div>
@@ -206,8 +209,8 @@ export function renderFenToolbar(fen: string): string {
   </div>`;
 }
 
-const WHITE_KEYS = ["wK", "wQ", "wR", "wB", "wN", "wP"];
-const BLACK_KEYS = ["bK", "bQ", "bR", "bB", "bN", "bP"];
+const WHITE_KEYS = ['wK', 'wQ', 'wR', 'wB', 'wN', 'wP'];
+const BLACK_KEYS = ['bK', 'bQ', 'bR', 'bB', 'bN', 'bP'];
 
 function paletteGroup(keys: string[], label: string, style: string): string {
   return html`<div class="palette-group">
@@ -224,19 +227,25 @@ function paletteGroup(keys: string[], label: string, style: string): string {
               title="${pieceName(key)}"
               aria-label="${pieceName(key)}"
             >
-              <img src="${pieceSrc(key, style)}" alt="" class="palette-piece" draggable="false" />
-            </button>`,
+              <img
+                src="${pieceSrc(key, style)}"
+                alt=""
+                class="palette-piece"
+                draggable="false"
+              />
+            </button>`
         )
-        .join("")}
+        .join('')}
     </div>
   </div>`;
 }
 
 export function renderPalette(pieceStyle: string): string {
-  return html`<section class="card palette-card" aria-label="Piece palette">
-    <h3 class="card-title">${raw(ChessKing("h-4 w-4"))} Pieces</h3>
-    ${paletteGroup(WHITE_KEYS, "White", pieceStyle)}
-    ${paletteGroup(BLACK_KEYS, "Black", pieceStyle)}
+  return html`<section class="palette-card" aria-label="Piece palette">
+    <div class="palette-groups">
+      ${paletteGroup(WHITE_KEYS, 'White', pieceStyle)}
+      ${paletteGroup(BLACK_KEYS, 'Black', pieceStyle)}
+    </div>
     <p class="palette-hint" id="palette-hint" hidden></p>
   </section>`;
 }
@@ -246,16 +255,15 @@ const DB_PROVIDERS: {
   label: string;
   icon: (c?: string, h?: boolean) => string;
 }[] = [
-  { id: "lichess", label: "Lichess", icon: Globe },
-  { id: "chessdb", label: "ChessDB", icon: Database },
-  { id: "pdb", label: "PDB", icon: Library },
-  { id: "yacpdb", label: "YACPDB", icon: BookOpen },
+  { id: 'lichess', label: 'Lichess', icon: Globe },
+  { id: 'chessdb', label: 'ChessDB', icon: Database },
+  { id: 'pdb', label: 'PDB', icon: Library },
+  { id: 'yacpdb', label: 'YACPDB', icon: BookOpen }
 ];
 
 export function renderDbSearch(fen: string): string {
-  return html`<section class="card db-card" aria-label="Position databases">
-    <h3 class="card-title">${raw(Search("h-4 w-4"))} Database Search</h3>
-    <p class="db-hint">Open this position in an external database.</p>
+  return html`<section class="db-card" aria-label="Position databases">
+    <span class="db-title">Database Search</span>
     <div class="db-grid">
       ${DB_PROVIDERS.map(
         (p) =>
@@ -267,40 +275,45 @@ export function renderDbSearch(fen: string): string {
             rel="noopener"
             title="${p.label}"
           >
-            <span class="db-icon">${raw(p.icon("h-4 w-4"))}</span>
+            <span class="db-icon">${raw(p.icon('h-4 w-4'))}</span>
             <span class="db-label">${p.label}</span>
-            <span class="db-open">${raw(ArrowUpRight("h-3.5 w-3.5"))}</span>
-          </a>`,
-      ).join("")}
+            <span class="db-chip"
+              >Open ${raw(ArrowUpRight('h-3.5 w-3.5'))}</span
+            >
+          </a>`
+      ).join('')}
     </div>
   </section>`;
 }
 
 export function renderTrashZone(): string {
-  return html`<div class="trash-zone" id="trash-zone">
-    <span data-trash-empty>Click to remove a selected piece</span>
-    <span data-trash-held hidden>Remove selected piece</span>
+  return html`<div class="trash-zone" id="trash-zone" aria-hidden="true">
+    ${raw(Trash2('h-5 w-5'))}
+    <span data-trash-empty>Drop to remove</span>
+    <span data-trash-held hidden>Release to remove</span>
   </div>`;
 }
 
 export function renderBoardOptions(): string {
   return html`<div class="board-options">
-    ${Checkbox({ label: "Coordinates", dataOption: "showCoords" })}
-    ${Checkbox({ label: "Thin frame", dataOption: "showThinFrame" })}
+    ${Checkbox({ label: 'Show Coordinates', dataOption: 'showCoords' })}
+    ${Checkbox({ label: 'Board Frame', dataOption: 'showThinFrame' })}
   </div>`;
 }
 
 export function renderShareDialog(): string {
   return ModalShell({
-    id: "share-dialog",
-    title: "Share position",
+    id: 'share-dialog',
+    title: 'Share position',
     icon: Share2,
     children: html`<p class="text-sm text-text-secondary mb-3">
         Anyone with this link can open the same position.
       </p>
       <div class="share-row">
         <input type="text" readonly class="input-field" id="share-url" />
-        <button type="button" class="btn btn-primary" id="share-copy">Copy link</button>
-      </div>`,
+        <button type="button" class="btn btn-primary" id="share-copy">
+          Copy link
+        </button>
+      </div>`
   });
 }

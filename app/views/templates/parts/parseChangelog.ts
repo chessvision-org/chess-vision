@@ -1,7 +1,8 @@
-// Parser — ported from master `src/pages/AboutPage/utils/parseChangelog.ts`
-// (pure TS, no browser deps).
-
-export type ChangelogCategory = "Features" | "Bug Fixes" | "Performance Improvements" | "Reverts";
+export type ChangelogCategory =
+  | 'Features'
+  | 'Bug Fixes'
+  | 'Performance Improvements'
+  | 'Reverts';
 
 export interface ChangelogEntry {
   scope: string | null;
@@ -30,10 +31,10 @@ export interface ChangelogYear {
 }
 
 const CATEGORY_TITLES: ReadonlySet<string> = new Set([
-  "Features",
-  "Bug Fixes",
-  "Performance Improvements",
-  "Reverts",
+  'Features',
+  'Bug Fixes',
+  'Performance Improvements',
+  'Reverts'
 ]);
 
 const MONTH_RE = /^##\s+(\S+)\s+(\d{4})\s*$/;
@@ -60,7 +61,9 @@ function parseEntry(line: string): ChangelogEntry {
   if (closesMatch?.[1] && closesMatch[2]) {
     issueNumber = closesMatch[1];
     issueUrl = closesMatch[2];
-    rest = rest.slice(0, closesMatch.index) + rest.slice(closesMatch.index + closesMatch[0].length);
+    rest =
+      rest.slice(0, closesMatch.index) +
+      rest.slice(closesMatch.index + closesMatch[0].length);
   }
 
   let hash: string | null = null;
@@ -69,7 +72,9 @@ function parseEntry(line: string): ChangelogEntry {
   if (hashMatch?.[1] && hashMatch[2]) {
     hash = hashMatch[1];
     commitUrl = hashMatch[2];
-    rest = rest.slice(0, hashMatch.index) + rest.slice(hashMatch.index + hashMatch[0].length);
+    rest =
+      rest.slice(0, hashMatch.index) +
+      rest.slice(hashMatch.index + hashMatch[0].length);
   }
 
   return {
@@ -78,12 +83,12 @@ function parseEntry(line: string): ChangelogEntry {
     hash,
     commitUrl,
     issueNumber,
-    issueUrl,
+    issueUrl
   };
 }
 
 function parseMonths(source: string): ChangelogMonth[] {
-  const lines = source.split("\n");
+  const lines = source.split('\n');
   const months: ChangelogMonth[] = [];
 
   let currentMonth: ChangelogMonth | null = null;
@@ -92,7 +97,7 @@ function parseMonths(source: string): ChangelogMonth[] {
 
   const flushNote = () => {
     if (currentMonth && noteLines.length > 0) {
-      const text = noteLines.join(" ").trim();
+      const text = noteLines.join(' ').trim();
       if (text) currentMonth.note = text;
     }
     noteLines.length = 0;
@@ -108,7 +113,7 @@ function parseMonths(source: string): ChangelogMonth[] {
         title: `${monthMatch[1]} ${monthMatch[2]}`,
         year: Number(monthMatch[2]),
         groups: [],
-        note: null,
+        note: null
       };
       currentGroup = null;
       months.push(currentMonth);
@@ -121,7 +126,7 @@ function parseMonths(source: string): ChangelogMonth[] {
     if (categoryMatch?.[1] && CATEGORY_TITLES.has(categoryMatch[1].trim())) {
       currentGroup = {
         category: categoryMatch[1].trim() as ChangelogCategory,
-        entries: [],
+        entries: []
       };
       currentMonth.groups.push(currentGroup);
       continue;
@@ -133,7 +138,7 @@ function parseMonths(source: string): ChangelogMonth[] {
       continue;
     }
 
-    if (line.trim() && !line.startsWith("---") && !currentGroup) {
+    if (line.trim() && !line.startsWith('---') && !currentGroup) {
       noteLines.push(line.trim());
     }
   }

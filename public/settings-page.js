@@ -19,7 +19,7 @@
     lightSquare: 'chess-light-square',
     darkSquare: 'chess-dark-square',
     pieceStyle: 'chess-piece-style',
-    pieceSort: 'cv_piece_sort',
+    pieceSort: 'cv_piece_sort'
   };
 
   var STORAGE_CATEGORIES = [
@@ -37,8 +37,8 @@
         'chess-board-size',
         'chess-flipped',
         'chess-file-name',
-        'chess-export-quality',
-      ],
+        'chess-export-quality'
+      ]
     },
     {
       id: 'history',
@@ -49,10 +49,10 @@
         'favoriteFens',
         'fenBatchList',
         'advancedFENFavorites',
-        'advanced-fen-position-settings',
-      ],
+        'advanced-fen-position-settings'
+      ]
     },
-    { id: 'themes', label: 'Custom themes', keys: ['custom-theme-presets'] },
+    { id: 'themes', label: 'Custom themes', keys: ['custom-theme-presets'] }
   ];
 
   var PRESET_THEMES = [
@@ -65,7 +65,7 @@
     { light: '#EED4D4', dark: '#B48282', name: 'Rosy' },
     { light: '#D9E4F5', dark: '#8FA8CC', name: 'Blue' },
     { light: '#F0F0D5', dark: '#B5B57E', name: 'Olive' },
-    { light: '#F5E6D3', dark: '#C89B6C', name: 'Tan' },
+    { light: '#F5E6D3', dark: '#C89B6C', name: 'Tan' }
   ];
 
   var PIECE_SETS = [
@@ -88,7 +88,7 @@
     { id: 'california', name: 'California' },
     { id: 'pirouetti', name: 'Pirouetti' },
     { id: 'kosal', name: 'Kosal' },
-    { id: 'spatial', name: 'Spatial' },
+    { id: 'spatial', name: 'Spatial' }
   ];
 
   var EVENT_LABELS = {
@@ -100,7 +100,7 @@
     MFA_DISABLED: 'Two-factor disabled',
     LOGIN_SUCCESS: 'Successful sign-in',
     LOGIN_FAILURE: 'Failed sign-in attempt',
-    PASSWORD_CHANGE: 'Password changed',
+    PASSWORD_CHANGE: 'Password changed'
   };
 
   var CVD_MATRICES = {
@@ -109,7 +109,7 @@
     protanopia:
       '0.10889 0.89111 0.00000 0 0.10889 0.89111 0.00000 0 0.00000 0.25238 0.74762 0 0 0 0 1 0',
     tritanopia:
-      '0.96720 0.03280 0.00000 0 0.02138 0.97862 0.00000 0 0.02138 0.52552 0.45310 0 0 0 0 1 0',
+      '0.96720 0.03280 0.00000 0 0.02138 0.97862 0.00000 0 0.02138 0.52552 0.45310 0 0 0 0 1 0'
   };
 
   var DEFAULT_LIGHT = '#F0D9B5';
@@ -129,7 +129,7 @@
     isSubmitting: false,
     confirmAction: null,
     deletePassword: '',
-    deleteMfaCode: '',
+    deleteMfaCode: ''
   };
 
   // ===== Storage helpers =====
@@ -198,7 +198,7 @@
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit',
+      minute: '2-digit'
     });
   }
 
@@ -274,32 +274,43 @@
       if (res.status === 204) {
         return { data: null, error: null };
       }
-      return res.json().then(function (data) {
-        if (!res.ok || data.error) {
-          var err = data.error || data;
-          var message =
-            err.message ||
-            err.error_description ||
-            err.msg ||
-            err.code ||
-            err.details ||
-            err.hint;
+      return res
+        .json()
+        .then(function (data) {
+          if (!res.ok || data.error) {
+            var err = data.error || data;
+            var message =
+              err.message ||
+              err.error_description ||
+              err.msg ||
+              err.code ||
+              err.details ||
+              err.hint;
+            return {
+              data: null,
+              error: {
+                message: String(
+                  message || 'Request failed (' + res.status + ')'
+                )
+              }
+            };
+          }
+          return { data: data, error: null };
+        })
+        .catch(function () {
           return {
             data: null,
-            error: { message: String(message || 'Request failed (' + res.status + ')') },
+            error: { message: 'Request failed (' + res.status + ')' }
           };
-        }
-        return { data: data, error: null };
-      }).catch(function () {
-        return { data: null, error: { message: 'Request failed (' + res.status + ')' } };
-      });
+        });
     }
 
     function request(path, options) {
       return fetch(url + path, {
         method: options.method || 'GET',
         headers: Object.assign(baseHeaders(), options.headers || {}),
-        body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+        body:
+          options.body !== undefined ? JSON.stringify(options.body) : undefined
       });
     }
 
@@ -322,22 +333,24 @@
       updateUser: function (attributes) {
         return authRequest('/auth/v1/user', {
           method: 'PUT',
-          body: attributes,
+          body: attributes
         });
       },
 
       signInWithPassword: function (email, password) {
         return authRequest('/auth/v1/token?grant_type=password', {
           method: 'POST',
-          body: { email: email, password: password },
+          body: { email: email, password: password }
         });
       },
 
       resetPasswordForEmail: function (email) {
         return authRequest('/auth/v1/recover', {
           method: 'POST',
-          headers: { 'redirect-to': window.location.origin + '/auth/reset-password' },
-          body: { email: email, gotrue_meta_security: {} },
+          headers: {
+            'redirect-to': window.location.origin + '/auth/reset-password'
+          },
+          body: { email: email, gotrue_meta_security: {} }
         });
       },
 
@@ -345,7 +358,7 @@
         return authRequest('/auth/v1/logout', {
           method: 'POST',
           headers: { 'X-Supabase-Api-Version': '20240101' },
-          body: { scope: scope || 'local' },
+          body: { scope: scope || 'local' }
         });
       },
 
@@ -356,12 +369,18 @@
       mfaEnroll: function (friendlyName) {
         return authRequest('/auth/v1/factors', {
           method: 'POST',
-          body: { factor_type: 'totp', issuer: 'ChessViewer', friendly_name: friendlyName },
+          body: {
+            factor_type: 'totp',
+            issuer: 'ChessViewer',
+            friendly_name: friendlyName
+          }
         });
       },
 
       mfaUnenroll: function (factorId) {
-        return request('/auth/v1/factors/' + factorId, { method: 'DELETE' }).then(function (res) {
+        return request('/auth/v1/factors/' + factorId, {
+          method: 'DELETE'
+        }).then(function (res) {
           if (res.status === 204 || res.status === 200) {
             return { data: null, error: null };
           }
@@ -372,21 +391,21 @@
       mfaChallenge: function (factorId) {
         return authRequest('/auth/v1/factors/' + factorId + '/challenge', {
           method: 'POST',
-          body: {},
+          body: {}
         });
       },
 
       mfaVerify: function (factorId, challengeId, code) {
         return authRequest('/auth/v1/factors/' + factorId + '/verify', {
           method: 'POST',
-          body: { challenge_id: challengeId, code: code },
+          body: { challenge_id: challengeId, code: code }
         });
       },
 
       rpc: function (name, body) {
         return authRequest('/rest/v1/rpc/' + name, {
           method: 'POST',
-          body: body || {},
+          body: body || {}
         });
       },
 
@@ -394,15 +413,17 @@
         return request(
           '/rest/v1/profiles?select=display_name,supporter_until&user_id=eq.' +
             encodeURIComponent(userId),
-          { method: 'GET' },
+          { method: 'GET' }
         ).then(handleJson);
       },
 
       profileUpsert: function (userId, displayName) {
         return request('/rest/v1/profiles?on_conflict=user_id', {
           method: 'POST',
-          headers: { Prefer: 'resolution=merge-duplicates,return=representation' },
-          body: [{ user_id: userId, display_name: displayName }],
+          headers: {
+            Prefer: 'resolution=merge-duplicates,return=representation'
+          },
+          body: [{ user_id: userId, display_name: displayName }]
         }).then(handleJson);
       },
 
@@ -410,9 +431,9 @@
         return request(
           '/rest/v1/security_events?select=id,event_type,created_at&order=created_at.desc&limit=' +
             limit,
-          { method: 'GET' },
+          { method: 'GET' }
         ).then(handleJson);
-      },
+      }
     };
   })();
 
@@ -438,7 +459,8 @@
     state.activeTab = tabId;
     var panels = els.root.querySelectorAll('[data-settings-panel]');
     for (var i = 0; i < panels.length; i++) {
-      panels[i].hidden = panels[i].getAttribute('data-settings-panel') !== tabId;
+      panels[i].hidden =
+        panels[i].getAttribute('data-settings-panel') !== tabId;
     }
     var tabs = els.root.querySelectorAll('.tab-btn');
     for (var j = 0; j < tabs.length; j++) {
@@ -459,7 +481,10 @@
   function syncTabFromUrl() {
     var params = new URLSearchParams(window.location.search);
     var requested = params.get('tab');
-    if (requested && els.root.querySelector('[data-settings-panel="' + requested + '"]')) {
+    if (
+      requested &&
+      els.root.querySelector('[data-settings-panel="' + requested + '"]')
+    ) {
       setActiveTab(requested, false);
     } else {
       setActiveTab('profile', false);
@@ -469,7 +494,8 @@
   // ===== Appearance =====
 
   function systemTheme() {
-    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+    return window.matchMedia &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches
       ? 'dark'
       : 'light';
   }
@@ -478,7 +504,8 @@
     var resolved = mode === 'system' ? systemTheme() : mode;
     if (resolved !== 'light' && resolved !== 'dark') resolved = 'dark';
     document.documentElement.setAttribute('data-theme', resolved);
-    if (window.__INITIAL_THEME__ !== undefined) window.__INITIAL_THEME__ = resolved;
+    if (window.__INITIAL_THEME__ !== undefined)
+      window.__INITIAL_THEME__ = resolved;
   }
 
   function renderThemeMode() {
@@ -520,9 +547,15 @@
         'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none';
       document.body.prepend(svg);
     }
-    var filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
+    var filter = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'filter'
+    );
     filter.setAttribute('id', filterId);
-    var matrix = document.createElementNS('http://www.w3.org/2000/svg', 'feColorMatrix');
+    var matrix = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'feColorMatrix'
+    );
     matrix.setAttribute('type', 'matrix');
     matrix.setAttribute('values', CVD_MATRICES[type]);
     filter.appendChild(matrix);
@@ -535,7 +568,8 @@
       document.documentElement.style.removeProperty('filter');
       return;
     }
-    document.documentElement.style.filter = 'url(#' + ensureCvdFilter(preference) + ')';
+    document.documentElement.style.filter =
+      'url(#' + ensureCvdFilter(preference) + ')';
   }
 
   function applyReducedMotion(preference) {
@@ -561,10 +595,12 @@
         var labels = {
           deuteranopia: 'green-blind (Deuteranopia)',
           protanopia: 'red-blind (Protanopia)',
-          tritanopia: 'blue-blind (Tritanopia)',
+          tritanopia: 'blue-blind (Tritanopia)'
         };
         els.visionBannerText.textContent =
-          'The interface is being shown with ' + (labels[colorVision] || colorVision) + ' colours.';
+          'The interface is being shown with ' +
+          (labels[colorVision] || colorVision) +
+          ' colours.';
       }
     }
 
@@ -614,7 +650,7 @@
       { rank: 0, file: 0, glyph: '\u265F' },
       { rank: 0, file: 2, glyph: '\u265F' },
       { rank: 0, file: 4, glyph: '\u265F' },
-      { rank: 0, file: 6, glyph: '\u265F' },
+      { rank: 0, file: 6, glyph: '\u265F' }
     ];
 
     ctx.font = Math.floor(square * 0.72) + 'px sans-serif';
@@ -626,7 +662,7 @@
       ctx.fillText(
         p.glyph,
         (p.file + 0.5) * square,
-        (7 - p.rank + 0.5) * square,
+        (7 - p.rank + 0.5) * square
       );
     }
 
@@ -651,9 +687,17 @@
         return (
           '<button type="button" class="settings-piece-tile' +
           (isActive ? ' settings-piece-tile-active' : '') +
-          '" data-piece-set="' + set.id + '" aria-pressed="' + isActive + '">' +
-          '<img src="' + pieceUrl(set.id, 'wN') + '" alt="" width="40" height="40" loading="lazy" />' +
-          '<span class="settings-piece-tile-name">' + set.name + '</span>' +
+          '" data-piece-set="' +
+          set.id +
+          '" aria-pressed="' +
+          isActive +
+          '">' +
+          '<img src="' +
+          pieceUrl(set.id, 'wN') +
+          '" alt="" width="40" height="40" loading="lazy" />' +
+          '<span class="settings-piece-tile-name">' +
+          set.name +
+          '</span>' +
           '</button>'
         );
       })
@@ -670,8 +714,10 @@
 
     els.presets.forEach(function (btn) {
       var isActive =
-        btn.getAttribute('data-preset-light').toLowerCase() === state.lightSquare.toLowerCase() &&
-        btn.getAttribute('data-preset-dark').toLowerCase() === state.darkSquare.toLowerCase();
+        btn.getAttribute('data-preset-light').toLowerCase() ===
+          state.lightSquare.toLowerCase() &&
+        btn.getAttribute('data-preset-dark').toLowerCase() ===
+          state.darkSquare.toLowerCase();
       btn.classList.toggle('settings-theme-preset-active', isActive);
     });
     renderBoardPreview();
@@ -713,7 +759,9 @@
       var bytes = bytesForKeys(cat.keys);
       total += bytes;
       var el = els.root.querySelector('[data-storage-bytes="' + cat.id + '"]');
-      var clearBtn = els.root.querySelector('[data-clear-category="' + cat.id + '"]');
+      var clearBtn = els.root.querySelector(
+        '[data-clear-category="' + cat.id + '"]'
+      );
       if (el) el.textContent = formatBytes(bytes);
       if (clearBtn) clearBtn.disabled = bytes === 0;
     }
@@ -727,7 +775,11 @@
       var value = readLocal(keys[i], null);
       if (value !== null) data[keys[i]] = value;
     }
-    downloadText('chessviewer-data.json', JSON.stringify(data, null, 2), 'application/json');
+    downloadText(
+      'chessviewer-data.json',
+      JSON.stringify(data, null, 2),
+      'application/json'
+    );
     showDataMessage('Data exported');
   }
 
@@ -802,7 +854,12 @@
   }
 
   function clearFenHistory() {
-    var keys = ['fen-history', 'fen-archive', 'favoriteFens', 'fen-history-skip-delete-confirm'];
+    var keys = [
+      'fen-history',
+      'fen-archive',
+      'favoriteFens',
+      'fen-history-skip-delete-confirm'
+    ];
     for (var i = 0; i < keys.length; i++) {
       removeLocal(keys[i]);
     }
@@ -835,8 +892,10 @@
     if (!raw) return { displayName: 'User', supporterUntil: null };
     var parsed = safeJSONParse(raw, {});
     return {
-      displayName: typeof parsed.displayName === 'string' ? parsed.displayName : 'User',
-      supporterUntil: typeof parsed.supporterUntil === 'string' ? parsed.supporterUntil : null,
+      displayName:
+        typeof parsed.displayName === 'string' ? parsed.displayName : 'User',
+      supporterUntil:
+        typeof parsed.supporterUntil === 'string' ? parsed.supporterUntil : null
     };
   }
 
@@ -894,7 +953,8 @@
       els.rowLast.hidden = !lastSignIn;
       if (els.lastValue) els.lastValue.textContent = lastSignIn || '';
 
-      var userId = state.user && state.user.id ? state.user.id : 'Local Account';
+      var userId =
+        state.user && state.user.id ? state.user.id : 'Local Account';
       els.userIdValue.textContent = userId;
       els.supportIdValue.textContent = userId.slice(0, 8).toUpperCase();
 
@@ -930,7 +990,8 @@
     if (!signedIn) return;
 
     if (state.user && state.user.last_sign_in_at) {
-      els.lastSignin.textContent = formatDateTime(state.user.last_sign_in_at) || 'Unknown';
+      els.lastSignin.textContent =
+        formatDateTime(state.user.last_sign_in_at) || 'Unknown';
     }
 
     renderMfa();
@@ -942,7 +1003,10 @@
   function verifiedFactor(factors) {
     if (!Array.isArray(factors)) return null;
     for (var i = 0; i < factors.length; i++) {
-      if (factors[i].factor_type === 'totp' && factors[i].status === 'verified') {
+      if (
+        factors[i].factor_type === 'totp' &&
+        factors[i].status === 'verified'
+      ) {
         return factors[i];
       }
     }
@@ -962,8 +1026,11 @@
     if (els.mfaEnabledPanel) els.mfaEnabledPanel.hidden = !enabled;
 
     if (els.mfaStatusEl) {
-      els.mfaStatusEl.textContent =
-        loading ? 'Checking…' : enabled ? 'Enabled' : 'Not enabled';
+      els.mfaStatusEl.textContent = loading
+        ? 'Checking…'
+        : enabled
+          ? 'Enabled'
+          : 'Not enabled';
     }
     if (els.mfaStatusIcon) {
       els.mfaStatusIcon.innerHTML = enabled ? shieldCheckSvg() : shieldXSvg();
@@ -1011,44 +1078,57 @@
     setMfaError('');
     var email = state.user && state.user.email;
     var uniqueId = Math.random().toString(36).substring(2, 8);
-    var friendlyName = email ? email + ' (' + uniqueId + ')' : 'ChessViewer Auth (' + uniqueId + ')';
+    var friendlyName = email
+      ? email + ' (' + uniqueId + ')'
+      : 'ChessViewer Auth (' + uniqueId + ')';
 
-    sb.mfaEnroll(friendlyName).then(function (res) {
-      if (res.error) {
-        var message = res.error.message || 'Failed to start setup.';
-        if (/422|disabled/i.test(String(message)) && !/email/i.test(message)) {
-          message =
-            '2FA setup failed. Please ensure MFA/TOTP is enabled in your Supabase project settings.';
+    sb.mfaEnroll(friendlyName)
+      .then(function (res) {
+        if (res.error) {
+          var message = res.error.message || 'Failed to start setup.';
+          if (
+            /422|disabled/i.test(String(message)) &&
+            !/email/i.test(message)
+          ) {
+            message =
+              '2FA setup failed. Please ensure MFA/TOTP is enabled in your Supabase project settings.';
+          }
+          setMfaError(message);
+          return;
         }
-        setMfaError(message);
-        return;
-      }
-      var data = res.data;
-      if (!data || !data.totp) {
-        setMfaError('Failed to start setup.');
-        return;
-      }
-      state.mfaStatus = 'enroll';
-      state.enrollFactorId = data.id;
-      if (els.mfaEnrollStep) els.mfaEnrollStep.textContent = 'Scan this code with your authenticator app';
-      if (els.mfaQr) {
-        if (data.totp.qr_code) {
-          els.mfaQr.hidden = false;
-          els.mfaQr.innerHTML = '<img src="' + data.totp.qr_code + '" alt="QR code" width="176" height="176" />';
-        } else {
-          els.mfaQr.hidden = true;
-          els.mfaQr.innerHTML = '';
+        var data = res.data;
+        if (!data || !data.totp) {
+          setMfaError('Failed to start setup.');
+          return;
         }
-      }
-      if (els.mfaSecretValue) els.mfaSecretValue.textContent = data.totp.secret || '';
-      if (els.mfaSecret) els.mfaSecret.hidden = false;
-      if (els.mfaVerifyRow) els.mfaVerifyRow.hidden = false;
-      if (els.mfaVerifyCode) els.mfaVerifyCode.value = '';
-      state.backupCodes = [];
-      renderMfa();
-    }).finally(function () {
-      state.isSubmitting = false;
-    });
+        state.mfaStatus = 'enroll';
+        state.enrollFactorId = data.id;
+        if (els.mfaEnrollStep)
+          els.mfaEnrollStep.textContent =
+            'Scan this code with your authenticator app';
+        if (els.mfaQr) {
+          if (data.totp.qr_code) {
+            els.mfaQr.hidden = false;
+            els.mfaQr.innerHTML =
+              '<img src="' +
+              data.totp.qr_code +
+              '" alt="QR code" width="176" height="176" />';
+          } else {
+            els.mfaQr.hidden = true;
+            els.mfaQr.innerHTML = '';
+          }
+        }
+        if (els.mfaSecretValue)
+          els.mfaSecretValue.textContent = data.totp.secret || '';
+        if (els.mfaSecret) els.mfaSecret.hidden = false;
+        if (els.mfaVerifyRow) els.mfaVerifyRow.hidden = false;
+        if (els.mfaVerifyCode) els.mfaVerifyCode.value = '';
+        state.backupCodes = [];
+        renderMfa();
+      })
+      .finally(function () {
+        state.isSubmitting = false;
+      });
   }
 
   function verifyMfaEnrollment() {
@@ -1061,33 +1141,51 @@
     state.isSubmitting = true;
     setMfaError('');
 
-    sb.mfaChallenge(state.enrollFactorId).then(function (challengeRes) {
-      if (challengeRes.error || !challengeRes.data) {
-        throw new Error((challengeRes.error && challengeRes.error.message) || 'Challenge failed.');
-      }
-      return sb.mfaVerify(state.enrollFactorId, challengeRes.data.id, code).then(function (verifyRes) {
-        if (verifyRes.error) {
-          throw new Error('Invalid verification code.');
+    sb.mfaChallenge(state.enrollFactorId)
+      .then(function (challengeRes) {
+        if (challengeRes.error || !challengeRes.data) {
+          throw new Error(
+            (challengeRes.error && challengeRes.error.message) ||
+              'Challenge failed.'
+          );
         }
-        return sb.rpc('generate_recovery_codes', {});
+        return sb
+          .mfaVerify(state.enrollFactorId, challengeRes.data.id, code)
+          .then(function (verifyRes) {
+            if (verifyRes.error) {
+              throw new Error('Invalid verification code.');
+            }
+            return sb.rpc('generate_recovery_codes', {});
+          });
+      })
+      .then(function (codesRes) {
+        state.backupCodes = Array.isArray(codesRes.data) ? codesRes.data : [];
+        if (els.mfaVerifyRow) els.mfaVerifyRow.hidden = true;
+        if (els.mfaBackup) els.mfaBackup.hidden = false;
+        if (els.mfaBackupCodes) {
+          els.mfaBackupCodes.innerHTML = state.backupCodes
+            .map(function (code) {
+              return (
+                '<button type="button" class="settings-mfa-backup-code" data-mfa-backup-code="' +
+                code +
+                '">' +
+                code +
+                '</button>'
+              );
+            })
+            .join('');
+        }
+        if (els.mfaEnrollStep)
+          els.mfaEnrollStep.textContent = 'Backup codes — save them now';
+      })
+      .catch(function (err) {
+        setMfaError(
+          err instanceof Error ? err.message : 'Verification failed.'
+        );
+      })
+      .finally(function () {
+        state.isSubmitting = false;
       });
-    }).then(function (codesRes) {
-      state.backupCodes = Array.isArray(codesRes.data) ? codesRes.data : [];
-      if (els.mfaVerifyRow) els.mfaVerifyRow.hidden = true;
-      if (els.mfaBackup) els.mfaBackup.hidden = false;
-      if (els.mfaBackupCodes) {
-        els.mfaBackupCodes.innerHTML = state.backupCodes
-          .map(function (code) {
-            return '<button type="button" class="settings-mfa-backup-code" data-mfa-backup-code="' + code + '">' + code + '</button>';
-          })
-          .join('');
-      }
-      if (els.mfaEnrollStep) els.mfaEnrollStep.textContent = 'Backup codes — save them now';
-    }).catch(function (err) {
-      setMfaError(err instanceof Error ? err.message : 'Verification failed.');
-    }).finally(function () {
-      state.isSubmitting = false;
-    });
   }
 
   function disableMfa() {
@@ -1097,17 +1195,21 @@
     state.isSubmitting = true;
     setMfaError('');
 
-    sb.mfaUnenroll(factor.id).then(function (res) {
-      if (res.error) {
-        setMfaError((res.error && res.error.message) || 'Failed to disable 2FA.');
-        return;
-      }
-      state.mfaFactor = null;
-      state.backupCodes = [];
-      refreshMfaStatus();
-    }).finally(function () {
-      state.isSubmitting = false;
-    });
+    sb.mfaUnenroll(factor.id)
+      .then(function (res) {
+        if (res.error) {
+          setMfaError(
+            (res.error && res.error.message) || 'Failed to disable 2FA.'
+          );
+          return;
+        }
+        state.mfaFactor = null;
+        state.backupCodes = [];
+        refreshMfaStatus();
+      })
+      .finally(function () {
+        state.isSubmitting = false;
+      });
   }
 
   function setMfaError(message) {
@@ -1138,21 +1240,25 @@
 
     state.isSubmitting = true;
     setChangePasswordLabel('Updating…');
-    sb.updateUser({ password: password }).then(function (res) {
-      if (res.error) {
-        notifyError('We could not update your password. You may need to re-authenticate, then try again.');
-        return;
-      }
-      els.newPassword.value = '';
-      els.confirmPassword.value = '';
-      els.changePasswordBtn.disabled = true;
-      els.emailResetBtn.disabled = true;
-      notifyInfo('Password updated. Use it the next time you sign in.');
-      renderActivity();
-    }).finally(function () {
-      state.isSubmitting = false;
-      setChangePasswordLabel('Update Password');
-    });
+    sb.updateUser({ password: password })
+      .then(function (res) {
+        if (res.error) {
+          notifyError(
+            'We could not update your password. You may need to re-authenticate, then try again.'
+          );
+          return;
+        }
+        els.newPassword.value = '';
+        els.confirmPassword.value = '';
+        els.changePasswordBtn.disabled = true;
+        els.emailResetBtn.disabled = true;
+        notifyInfo('Password updated. Use it the next time you sign in.');
+        renderActivity();
+      })
+      .finally(function () {
+        state.isSubmitting = false;
+        setChangePasswordLabel('Update Password');
+      });
   }
 
   function setChangePasswordLabel(text) {
@@ -1163,14 +1269,18 @@
     if (state.isSubmitting || !state.user || !state.user.email) return;
     state.isSubmitting = true;
     setEmailResetLabel('Sending…');
-    sb.resetPasswordForEmail(state.user.email).then(function (res) {
-      if (!res.error) {
-        notifyInfo('We sent a password reset link to ' + state.user.email + '.');
-      }
-    }).finally(function () {
-      state.isSubmitting = false;
-      setEmailResetLabel('Email a reset link');
-    });
+    sb.resetPasswordForEmail(state.user.email)
+      .then(function (res) {
+        if (!res.error) {
+          notifyInfo(
+            'We sent a password reset link to ' + state.user.email + '.'
+          );
+        }
+      })
+      .finally(function () {
+        state.isSubmitting = false;
+        setEmailResetLabel('Email a reset link');
+      });
   }
 
   function setEmailResetLabel(text) {
@@ -1185,21 +1295,24 @@
         sb.signOut('global').then(function () {
           window.location.href = '/';
         });
-      },
+      }
     );
   }
 
   function renderActivity() {
     if (!els.activityList || !state.session) return;
-    els.activityList.innerHTML = '<p class="text-xs text-text-muted">Loading activity…</p>';
+    els.activityList.innerHTML =
+      '<p class="text-xs text-text-muted">Loading activity…</p>';
     sb.securityEvents(5).then(function (res) {
       if (res.error) {
-        els.activityList.innerHTML = '<p class="text-xs text-text-muted">No recent activity to show.</p>';
+        els.activityList.innerHTML =
+          '<p class="text-xs text-text-muted">No recent activity to show.</p>';
         return;
       }
       var rows = Array.isArray(res.data) ? res.data : [];
       if (rows.length === 0) {
-        els.activityList.innerHTML = '<p class="text-xs text-text-muted">No recent activity to show.</p>';
+        els.activityList.innerHTML =
+          '<p class="text-xs text-text-muted">No recent activity to show.</p>';
         return;
       }
       els.activityList.innerHTML = rows
@@ -1208,8 +1321,12 @@
           var time = formatEventTime(row.created_at);
           return (
             '<div class="settings-activity-row">' +
-            '<span class="settings-activity-label">' + label + '</span>' +
-            '<span class="settings-activity-time">' + time + '</span>' +
+            '<span class="settings-activity-label">' +
+            label +
+            '</span>' +
+            '<span class="settings-activity-time">' +
+            time +
+            '</span>' +
             '</div>'
           );
         })
@@ -1225,35 +1342,44 @@
     var mfaCode = els.deleteMfa.value;
     if (els.deleteError) els.deleteError.hidden = true;
 
-    sb.signInWithPassword(state.user.email, password).then(function (res) {
-      if (res.error) {
-        throw new Error('Invalid password. Please try again.');
-      }
-      if (state.mfaFactor) {
-        return sb.mfaChallenge(state.mfaFactor.id).then(function (challengeRes) {
-          if (challengeRes.error || !challengeRes.data) {
-            throw new Error('Challenge failed.');
-          }
-          return sb.mfaVerify(state.mfaFactor.id, challengeRes.data.id, mfaCode).then(function (verifyRes) {
-            if (verifyRes.error) {
-              throw new Error('Invalid MFA code.');
-            }
-          });
-        });
-      }
-      return null;
-    }).then(function () {
-      return sb.rpc('delete_own_account', {});
-    }).then(function (res) {
-      if (res.error) throw new Error('Deletion failed.');
-      localStorage.clear();
-      window.location.href = '/';
-    }).catch(function (err) {
-      if (els.deleteError) {
-        els.deleteError.textContent = err instanceof Error ? err.message : 'Deletion failed.';
-        els.deleteError.hidden = false;
-      }
-    });
+    sb.signInWithPassword(state.user.email, password)
+      .then(function (res) {
+        if (res.error) {
+          throw new Error('Invalid password. Please try again.');
+        }
+        if (state.mfaFactor) {
+          return sb
+            .mfaChallenge(state.mfaFactor.id)
+            .then(function (challengeRes) {
+              if (challengeRes.error || !challengeRes.data) {
+                throw new Error('Challenge failed.');
+              }
+              return sb
+                .mfaVerify(state.mfaFactor.id, challengeRes.data.id, mfaCode)
+                .then(function (verifyRes) {
+                  if (verifyRes.error) {
+                    throw new Error('Invalid MFA code.');
+                  }
+                });
+            });
+        }
+        return null;
+      })
+      .then(function () {
+        return sb.rpc('delete_own_account', {});
+      })
+      .then(function (res) {
+        if (res.error) throw new Error('Deletion failed.');
+        localStorage.clear();
+        window.location.href = '/';
+      })
+      .catch(function (err) {
+        if (els.deleteError) {
+          els.deleteError.textContent =
+            err instanceof Error ? err.message : 'Deletion failed.';
+          els.deleteError.hidden = false;
+        }
+      });
   }
 
   // ===== Auth init =====
@@ -1267,10 +1393,13 @@
       if (rows.length > 0 && rows[0]) {
         state.profile = {
           displayName: rows[0].display_name || 'ChessViewer user',
-          supporterUntil: rows[0].supporter_until || null,
+          supporterUntil: rows[0].supporter_until || null
         };
       } else {
-        state.profile = { displayName: 'ChessViewer user', supporterUntil: null };
+        state.profile = {
+          displayName: 'ChessViewer user',
+          supporterUntil: null
+        };
         sb.profileUpsert(userId, state.profile.displayName);
       }
     });
@@ -1346,18 +1475,26 @@
     els.emailSave.disabled = true;
     setEmailSaveLabel('Sending…');
 
-    sb.updateUser({ email: next }).then(function (res) {
-      if (res.error) {
-        notifyError('Something went wrong updating your email. Please try again in a moment.');
-        els.emailInput.value = current;
-        return;
-      }
-      notifyInfo('We sent a confirmation link to ' + next + '. Your email changes once you click that link.');
-    }).finally(function () {
-      state.isSubmitting = false;
-      els.emailSave.disabled = false;
-      setEmailSaveLabel('Update Email');
-    });
+    sb.updateUser({ email: next })
+      .then(function (res) {
+        if (res.error) {
+          notifyError(
+            'Something went wrong updating your email. Please try again in a moment.'
+          );
+          els.emailInput.value = current;
+          return;
+        }
+        notifyInfo(
+          'We sent a confirmation link to ' +
+            next +
+            '. Your email changes once you click that link.'
+        );
+      })
+      .finally(function () {
+        state.isSubmitting = false;
+        els.emailSave.disabled = false;
+        setEmailSaveLabel('Update Email');
+      });
   }
 
   function setEmailSaveLabel(text) {
@@ -1379,10 +1516,13 @@
   // ===== Preferences switches =====
 
   function renderPreferences() {
-    var confirmDestructive = readPreference(KEYS.confirmDestructive, true) !== false;
+    var confirmDestructive =
+      readPreference(KEYS.confirmDestructive, true) !== false;
     var hideSensitive = readPreference(KEYS.hideSensitive, false) === true;
-    if (els.confirmDestructiveSwitch) els.confirmDestructiveSwitch.checked = confirmDestructive;
-    if (els.hideSensitiveSwitch) els.hideSensitiveSwitch.checked = hideSensitive;
+    if (els.confirmDestructiveSwitch)
+      els.confirmDestructiveSwitch.checked = confirmDestructive;
+    if (els.hideSensitiveSwitch)
+      els.hideSensitiveSwitch.checked = hideSensitive;
   }
 
   // ===== Event wiring =====
@@ -1393,11 +1533,16 @@
       var link = target.closest ? target.closest('.tab-btn') : null;
       if (link && !link.hidden && link.getAttribute('aria-controls')) {
         e.preventDefault();
-        setActiveTab(link.getAttribute('aria-controls').replace('panel-', ''), true);
+        setActiveTab(
+          link.getAttribute('aria-controls').replace('panel-', ''),
+          true
+        );
         return;
       }
 
-      var themeBtn = target.closest ? target.closest('[data-theme-option]') : null;
+      var themeBtn = target.closest
+        ? target.closest('[data-theme-option]')
+        : null;
       if (themeBtn) {
         var mode = themeBtn.getAttribute('data-theme-option');
         writePreference(KEYS.themeMode, mode);
@@ -1405,18 +1550,25 @@
         return;
       }
 
-      var contrastBtn = target.closest ? target.closest('[data-contrast-option]') : null;
+      var contrastBtn = target.closest
+        ? target.closest('[data-contrast-option]')
+        : null;
       if (contrastBtn) {
-        writePreference(KEYS.contrast, contrastBtn.getAttribute('data-contrast-option'));
+        writePreference(
+          KEYS.contrast,
+          contrastBtn.getAttribute('data-contrast-option')
+        );
         renderContrast();
         return;
       }
 
-      var preset = target.closest ? target.closest('[data-preset-light]') : null;
+      var preset = target.closest
+        ? target.closest('[data-preset-light]')
+        : null;
       if (preset) {
         setBoardColors(
           preset.getAttribute('data-preset-light'),
-          preset.getAttribute('data-preset-dark'),
+          preset.getAttribute('data-preset-dark')
         );
         return;
       }
@@ -1440,13 +1592,17 @@
         return;
       }
 
-      var secretCopy = target.closest ? target.closest('[data-mfa-secret-copy]') : null;
+      var secretCopy = target.closest
+        ? target.closest('[data-mfa-secret-copy]')
+        : null;
       if (secretCopy) {
         copyText(els.mfaSecretValue ? els.mfaSecretValue.textContent : '');
         return;
       }
 
-      var backupCode = target.closest ? target.closest('[data-mfa-backup-code]') : null;
+      var backupCode = target.closest
+        ? target.closest('[data-mfa-backup-code]')
+        : null;
       if (backupCode) {
         copyText(backupCode.getAttribute('data-mfa-backup-code'));
         return;
@@ -1463,7 +1619,7 @@
             new Date().toLocaleDateString() +
             '\n\nKeep these codes safe! Each code can only be used once.\n\n' +
             state.backupCodes.join('\n'),
-          'text/plain',
+          'text/plain'
         );
         return;
       }
@@ -1522,7 +1678,9 @@
         return;
       }
 
-      var clearCat = target.closest ? target.closest('[data-clear-category]') : null;
+      var clearCat = target.closest
+        ? target.closest('[data-clear-category]')
+        : null;
       if (clearCat) {
         var catId = clearCat.getAttribute('data-clear-category');
         for (var i = 0; i < STORAGE_CATEGORIES.length; i++) {
@@ -1530,8 +1688,12 @@
             var cat = STORAGE_CATEGORIES[i];
             askConfirm(
               'Clear ' + cat.label,
-              'Remove all "' + cat.label + '" data from this browser? This cannot be undone.',
-              function () { clearCategory(cat); },
+              'Remove all "' +
+                cat.label +
+                '" data from this browser? This cannot be undone.',
+              function () {
+                clearCategory(cat);
+              }
             );
             break;
           }
@@ -1539,7 +1701,9 @@
         return;
       }
 
-      var dataAction = target.closest ? target.closest('[data-data-action]') : null;
+      var dataAction = target.closest
+        ? target.closest('[data-data-action]')
+        : null;
       if (dataAction) {
         var action = dataAction.getAttribute('data-data-action');
         if (action === 'export') {
@@ -1550,13 +1714,13 @@
           askConfirm(
             'Clear FEN History',
             'Delete all FEN history and archived positions from this browser? This cannot be undone.',
-            clearFenHistory,
+            clearFenHistory
           );
         } else if (action === 'reset') {
           askConfirm(
             'Reset Data',
             'Reset saved app data on this browser? This will delete all settings and history.',
-            resetAllData,
+            resetAllData
           );
         }
         return;
@@ -1576,7 +1740,10 @@
         return;
       }
 
-      if (e.target.closest('[data-modal-cancel]') || e.target.closest('[data-modal-close]')) {
+      if (
+        e.target.closest('[data-modal-cancel]') ||
+        e.target.closest('[data-modal-close]')
+      ) {
         if (e.target.closest('#delete-account-modal')) {
           closeModal('delete-account-modal');
         } else {
@@ -1622,7 +1789,8 @@
       if (input.hasAttribute && input.hasAttribute('data-email-input')) {
         var email = input.value.trim();
         var validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-        var currentEmail = state.user && state.user.email ? state.user.email : '';
+        var currentEmail =
+          state.user && state.user.email ? state.user.email : '';
         els.emailSave.disabled =
           !validEmail || email.toLowerCase() === currentEmail.toLowerCase();
         return;
@@ -1634,7 +1802,9 @@
       if (input.hasAttribute && input.hasAttribute('data-confirm-password')) {
         updatePasswordButton();
         if (els.passwordError) {
-          els.passwordError.hidden = !(input.value.length > 0 && input.value !== els.newPassword.value);
+          els.passwordError.hidden = !(
+            input.value.length > 0 && input.value !== els.newPassword.value
+          );
         }
         return;
       }
@@ -1672,8 +1842,10 @@
       if (input.hasAttribute && input.hasAttribute('data-switch')) {
         var switchKey = input.getAttribute('data-switch');
         writePreference(
-          switchKey === 'confirmDestructive' ? KEYS.confirmDestructive : KEYS.hideSensitive,
-          input.checked,
+          switchKey === 'confirmDestructive'
+            ? KEYS.confirmDestructive
+            : KEYS.hideSensitive,
+          input.checked
         );
         return;
       }
@@ -1688,7 +1860,9 @@
   function updatePasswordButton() {
     var password = els.newPassword.value;
     var confirm = els.confirmPassword.value;
-    els.changePasswordBtn.disabled = !(password.length >= 8 && password === confirm);
+    els.changePasswordBtn.disabled = !(
+      password.length >= 8 && password === confirm
+    );
   }
 
   // ===== Init =====
@@ -1707,7 +1881,9 @@
     els.contrastOptions = els.root.querySelectorAll('[data-contrast-option]');
 
     // Accessibility
-    els.colorVisionSelect = els.root.querySelector('[data-select="colorVision"]');
+    els.colorVisionSelect = els.root.querySelector(
+      '[data-select="colorVision"]'
+    );
     els.motionSelect = els.root.querySelector('[data-select="motion"]');
     els.visionBanner = els.root.querySelector('[data-vision-banner]');
     els.visionBannerText = els.root.querySelector('[data-vision-banner-text]');
@@ -1726,7 +1902,9 @@
     els.totalBytes = els.root.querySelector('[data-total-bytes]');
     els.importFile = els.root.querySelector('[data-import-file]');
     els.settingsMessage = els.root.querySelector('[data-settings-message]');
-    els.settingsMessageText = els.root.querySelector('[data-settings-message-text]');
+    els.settingsMessageText = els.root.querySelector(
+      '[data-settings-message-text]'
+    );
 
     // Identity
     els.avatarInitial = els.root.querySelector('[data-avatar-initial]');
@@ -1750,8 +1928,12 @@
     els.createdValue = els.root.querySelector('[data-created-value]');
     els.rowLast = els.root.querySelector('[data-row-last]');
     els.lastValue = els.root.querySelector('[data-last-value]');
-    els.userIdValue = els.root.querySelector('[data-copy="userId"]').previousElementSibling;
-    els.supportIdValue = els.root.querySelector('[data-copy="supportId"]').previousElementSibling;
+    els.userIdValue = els.root.querySelector(
+      '[data-copy="userId"]'
+    ).previousElementSibling;
+    els.supportIdValue = els.root.querySelector(
+      '[data-copy="supportId"]'
+    ).previousElementSibling;
     els.cloudCta = els.root.querySelector('[data-cloud-cta]');
     els.accountActions = els.root.querySelector('[data-account-actions]');
     els.deleteIntro = els.root.querySelector('[data-delete-intro]');
@@ -1762,7 +1944,9 @@
     els.deleteProgress = els.root.querySelector('[data-delete-progress]');
 
     // Security
-    els.securitySignedOut = els.root.querySelector('[data-security-signed-out]');
+    els.securitySignedOut = els.root.querySelector(
+      '[data-security-signed-out]'
+    );
     els.securitySignedIn = els.root.querySelector('[data-security-signed-in]');
     els.mfaStatusEl = els.root.querySelector('[data-mfa-status]');
     els.mfaStatusIcon = els.root.querySelector('[data-mfa-status-icon]');
@@ -1785,14 +1969,26 @@
     els.confirmPassword = els.root.querySelector('[data-confirm-password]');
     els.passwordError = els.root.querySelector('[data-password-error]');
     els.changePasswordBtn = els.root.querySelector('[data-change-password]');
-    els.changePasswordLabel = els.root.querySelector('[data-change-password-label]');
+    els.changePasswordLabel = els.root.querySelector(
+      '[data-change-password-label]'
+    );
     els.emailResetBtn = els.root.querySelector('[data-email-reset]');
     els.emailResetLabel = els.root.querySelector('[data-email-reset-label]');
     els.activityList = els.root.querySelector('[data-activity-list]');
-    els.confirmDestructiveSwitch = els.root.querySelector('[data-switch="confirmDestructive"]');
-    els.hideSensitiveSwitch = els.root.querySelector('[data-switch="hideSensitive"]');
+    els.confirmDestructiveSwitch = els.root.querySelector(
+      '[data-switch="confirmDestructive"]'
+    );
+    els.hideSensitiveSwitch = els.root.querySelector(
+      '[data-switch="hideSensitive"]'
+    );
 
-    if (!els.lightInput || !els.darkInput || !els.boardPreview || !els.pieceGrid) return;
+    if (
+      !els.lightInput ||
+      !els.darkInput ||
+      !els.boardPreview ||
+      !els.pieceGrid
+    )
+      return;
     if (!els.identityName || !els.totalBytes) return;
 
     renderThemeMode();
@@ -1812,7 +2008,9 @@
 
     document.addEventListener('keydown', function (e) {
       if (e.key !== 'Escape') return;
-      var openModalEl = document.querySelector('.modal-backdrop[data-state="open"]');
+      var openModalEl = document.querySelector(
+        '.modal-backdrop[data-state="open"]'
+      );
       if (openModalEl) {
         closeModal(openModalEl.id);
         return;

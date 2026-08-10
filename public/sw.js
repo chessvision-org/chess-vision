@@ -1,8 +1,8 @@
-self.addEventListener("install", function () {
+self.addEventListener('install', function () {
   self.skipWaiting();
 });
 
-self.addEventListener("activate", function (e) {
+self.addEventListener('activate', function (e) {
   e.waitUntil(
     Promise.all([
       self.clients.claim(),

@@ -1,4 +1,4 @@
-import { html, raw } from "../helpers/html";
+import { html, raw } from '../helpers/html';
 
 interface PageSidebarLayoutProps {
   sidebar: string;
@@ -9,7 +9,7 @@ interface PageSidebarLayoutProps {
 export function PageSidebarLayout({
   sidebar,
   children,
-  contentLabel,
+  contentLabel
 }: PageSidebarLayoutProps): string {
   return html` <div class="page-container page-sidebar-layout">
     <div class="page-sidebar-sidebar-col">
@@ -19,7 +19,11 @@ export function PageSidebarLayout({
       </div>
     </div>
 
-    <div role="region" aria-label="${contentLabel}" class="page-sidebar-content">
+    <div
+      role="region"
+      aria-label="${contentLabel}"
+      class="page-sidebar-content"
+    >
       ${raw(children)}
     </div>
   </div>`;

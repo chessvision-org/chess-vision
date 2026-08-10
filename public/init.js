@@ -1,15 +1,15 @@
 (function () {
   var purged = false;
   try {
-    purged = localStorage.getItem("cv_sw_purged") === "1";
+    purged = localStorage.getItem('cv_sw_purged') === '1';
   } catch (e) {}
 
-  if (purged || !("serviceWorker" in navigator)) return;
+  if (purged || !('serviceWorker' in navigator)) return;
 
   navigator.serviceWorker.getRegistrations().then(function (regs) {
     if (!regs.length) {
       try {
-        localStorage.setItem("cv_sw_purged", "1");
+        localStorage.setItem('cv_sw_purged', '1');
       } catch (e) {}
       return;
     }
@@ -19,7 +19,7 @@
       })
     ).then(function () {
       try {
-        localStorage.setItem("cv_sw_purged", "1");
+        localStorage.setItem('cv_sw_purged', '1');
       } catch (e) {}
     });
   });

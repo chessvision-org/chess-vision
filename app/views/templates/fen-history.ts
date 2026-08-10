@@ -1,5 +1,5 @@
-import { html } from "../helpers/html";
-import { Modal } from "../components/ui";
+import { html } from '../helpers/html';
+import { Modal } from '../components/ui';
 
 export function FenHistoryPage(): string {
   return html`
@@ -8,15 +8,31 @@ export function FenHistoryPage(): string {
         <h1>FEN History</h1>
         <p class="subtitle">Your recent chess positions</p>
         <div class="history-tabs" role="tablist">
-          <button type="button" role="tab" data-tab="active" class="active" aria-selected="true">
+          <button
+            type="button"
+            role="tab"
+            data-tab="active"
+            class="active"
+            aria-selected="true"
+          >
             Active
             <span class="tab-count" data-tab-count="active">0</span>
           </button>
-          <button type="button" role="tab" data-tab="favorites" aria-selected="false">
+          <button
+            type="button"
+            role="tab"
+            data-tab="favorites"
+            aria-selected="false"
+          >
             Favorites
             <span class="tab-count" data-tab-count="favorites">0</span>
           </button>
-          <button type="button" role="tab" data-tab="archive" aria-selected="false">
+          <button
+            type="button"
+            role="tab"
+            data-tab="archive"
+            aria-selected="false"
+          >
             Archive
             <span class="tab-count" data-tab-count="archive">0</span>
           </button>
@@ -27,14 +43,18 @@ export function FenHistoryPage(): string {
             <option value="oldest">Oldest first</option>
             <option value="name">Alphabetical</option>
           </select>
-          <button type="button" data-clear-all class="btn-sm btn-danger" hidden>Clear All</button>
+          <button type="button" data-clear-all class="btn-sm btn-danger" hidden>
+            Clear All
+          </button>
         </div>
       </div>
 
       <div class="history-grid" data-history-grid hidden></div>
 
       <div class="history-pagination" data-history-pager hidden>
-        <button type="button" data-page-prev class="btn-sm" disabled>Prev</button>
+        <button type="button" data-page-prev class="btn-sm" disabled>
+          Prev
+        </button>
         <span class="page-info" data-page-info></span>
         <button type="button" data-page-next class="btn-sm">Next</button>
       </div>
@@ -46,16 +66,16 @@ export function FenHistoryPage(): string {
       </div>
 
       ${Modal({
-        id: "delete-confirm-modal",
-        type: "danger",
-        title: "Confirm",
+        id: 'delete-confirm-modal',
+        type: 'danger',
+        title: 'Confirm',
         children: html`
           <p data-delete-message></p>
           <label class="history-skip-label" data-skip-wrap>
             <input type="checkbox" data-skip-confirm />
             <span>Don't ask again for archive deletes</span>
           </label>
-        `,
+        `
       })}
     </div>
 
@@ -302,7 +322,7 @@ export function FenHistoryPage(): string {
         pointer-events: none;
       }
       .mini-board:after {
-        content: "";
+        content: '';
         display: table;
         clear: both;
       }
@@ -315,7 +335,7 @@ export function FenHistoryPage(): string {
         color: rgb(130 133 148);
         cursor: pointer;
       }
-      .history-skip-label input[type="checkbox"] {
+      .history-skip-label input[type='checkbox'] {
         accent-color: rgb(59 130 246);
         width: 1rem;
         height: 1rem;

@@ -5,7 +5,7 @@
     mobileOpen: false,
     desktopOpen: false,
     _scrollY: 0,
-    _preventScroll: null,
+    _preventScroll: null
   };
 
   var els = {};
@@ -51,10 +51,12 @@
     els.mobileBackdrop.setAttribute('data-state', open ? 'open' : 'closed');
     els.mobileToggle.classList.toggle('toggle-btn-open', open);
     els.mobileToggle.setAttribute('aria-expanded', String(open));
-    els.mobileToggle.querySelectorAll('[data-nav-icon]').forEach(function (icon) {
-      var isOpen = icon.getAttribute('data-nav-icon') === 'close';
-      icon.classList.toggle('hidden', !(open === isOpen));
-    });
+    els.mobileToggle
+      .querySelectorAll('[data-nav-icon]')
+      .forEach(function (icon) {
+        var isOpen = icon.getAttribute('data-nav-icon') === 'close';
+        icon.classList.toggle('hidden', !(open === isOpen));
+      });
     if (open) lockScroll();
     else unlockScroll();
   }
@@ -64,10 +66,12 @@
     els.desktopPanel.setAttribute('data-state', open ? 'open' : 'closed');
     els.desktopToggle.classList.toggle('dropdown-toggle-active', open);
     els.desktopToggle.setAttribute('aria-expanded', String(open));
-    els.desktopToggle.querySelectorAll('[data-nav-icon]').forEach(function (icon) {
-      var isOpen = icon.getAttribute('data-nav-icon') === 'close';
-      icon.classList.toggle('hidden', !(open === isOpen));
-    });
+    els.desktopToggle
+      .querySelectorAll('[data-nav-icon]')
+      .forEach(function (icon) {
+        var isOpen = icon.getAttribute('data-nav-icon') === 'close';
+        icon.classList.toggle('hidden', !(open === isOpen));
+      });
   }
 
   function closeAll() {
@@ -86,7 +90,9 @@
     els.mobilePanel = document.getElementById('mobile-panel');
     els.mobileBackdrop = document.getElementById('mobile-backdrop');
     els.desktopToggle = document.getElementById('desktop-dropdown-toggle');
-    els.desktopPanel = document.querySelector('.desktop-dropdown-wrap .dropdown-panel');
+    els.desktopPanel = document.querySelector(
+      '.desktop-dropdown-wrap .dropdown-panel'
+    );
 
     if (els.mobileToggle && els.mobilePanel) {
       els.mobileToggle.addEventListener('click', function () {
@@ -123,16 +129,17 @@
         ? e.target.closest('[role="tablist"]')
         : null;
       if (!tablist) return;
-      var tabs = Array.prototype.slice.call(
-        tablist.querySelectorAll('[role="tab"]:not([disabled])')
-      ).filter(function (tab) {
-        return !tab.closest('[hidden]') && !tab.hidden;
-      });
+      var tabs = Array.prototype.slice
+        .call(tablist.querySelectorAll('[role="tab"]:not([disabled])'))
+        .filter(function (tab) {
+          return !tab.closest('[hidden]') && !tab.hidden;
+        });
       if (tabs.length === 0) return;
       var index = tabs.indexOf(e.target);
       var next = null;
       if (e.key === 'ArrowDown') next = (index + 1) % tabs.length;
-      else if (e.key === 'ArrowUp') next = (index - 1 + tabs.length) % tabs.length;
+      else if (e.key === 'ArrowUp')
+        next = (index - 1 + tabs.length) % tabs.length;
       else if (e.key === 'Home') next = 0;
       else if (e.key === 'End') next = tabs.length - 1;
       else return;

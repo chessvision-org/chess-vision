@@ -1,5 +1,5 @@
-import { Layout } from "./layouts/layout";
-import { getRouteSeo, type SeoMeta } from "./helpers/seo";
+import { Layout } from './layouts/layout';
+import { getRouteSeo, type SeoMeta } from './helpers/seo';
 
 export interface RenderPageOptions {
   path: string;
@@ -14,13 +14,15 @@ export function renderPage(options: RenderPageOptions): string {
   const seo = options.seo ?? getRouteSeo(options.path);
   const noindex = options.noindex ?? seo.noindex;
   return Layout({
-    title: seo.name ?? "",
+    title: seo.name ?? '',
     ...(seo.description !== undefined ? { description: seo.description } : {}),
     ...(seo.path !== undefined ? { path: seo.path } : {}),
     ...(noindex !== undefined ? { noindex } : {}),
     ...(seo.image !== undefined ? { image: seo.image } : {}),
     ...(options.schemas !== undefined ? { schemas: options.schemas } : {}),
-    ...(options.rightSlot !== undefined ? { rightSlot: options.rightSlot } : {}),
-    children: options.children,
+    ...(options.rightSlot !== undefined
+      ? { rightSlot: options.rightSlot }
+      : {}),
+    children: options.children
   });
 }
