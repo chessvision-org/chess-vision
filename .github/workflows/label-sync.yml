@@ -4,8 +4,8 @@ on:
   push:
     branches: [master]
     paths:
-      - '.github/labels.yml'
-      - '.github/workflows/label-sync.yml'
+      - ".github/labels.yml"
+      - ".github/workflows/label-sync.yml"
   workflow_dispatch:
 
 permissions:

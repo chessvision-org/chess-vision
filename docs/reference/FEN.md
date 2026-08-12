@@ -214,8 +214,7 @@ Two kings only. No castling. No en passant. 50 halfmoves since last capture/pawn
 ### Length
 
 ```typescript
-if (fen.length > MAX_FEN_LENGTH)
-  throw new FENParseError('FEN exceeds maximum length');
+if (fen.length > MAX_FEN_LENGTH) throw new FENParseError("FEN exceeds maximum length");
 // MAX_FEN_LENGTH = 93
 ```
 
@@ -280,14 +279,14 @@ Returns an 8×8 array of strings. Empty square = `''`. Piece = piece letter (`'K
 export function parseFEN(fenString: string): BoardMatrix {
   const parts = fenString.trim().split(/\s+/);
   const position = parts[0];
-  const rows = position.split('/');
+  const rows = position.split("/");
 
   return rows.map((row) => {
     const boardRow: string[] = [];
     for (const char of row) {
       if (VALID_DIGITS.has(char)) {
         for (let i = 0; i < parseInt(char, 10); i++) {
-          boardRow.push('');
+          boardRow.push("");
         }
       } else {
         boardRow.push(char);
@@ -305,10 +304,10 @@ Converts an 8×8 board array back to a FEN piece-placement string and appends th
 ```typescript
 export function boardToFEN(board: BoardMatrix): string {
   const ranks = board.map((row) => {
-    let rankStr = '';
+    let rankStr = "";
     let emptyCount = 0;
     for (const square of row) {
-      if (square === '') {
+      if (square === "") {
         emptyCount++;
       } else {
         if (emptyCount > 0) {
@@ -321,7 +320,7 @@ export function boardToFEN(board: BoardMatrix): string {
     if (emptyCount > 0) rankStr += emptyCount;
     return rankStr;
   });
-  return ranks.join('/') + ' w - - 0 1';
+  return ranks.join("/") + " w - - 0 1";
 }
 ```
 

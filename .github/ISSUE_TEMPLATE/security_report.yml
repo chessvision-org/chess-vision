@@ -1,7 +1,7 @@
 name: Security Report
 description: Report a security vulnerability (for critical issues, email us privately instead)
-title: '[Security]: '
-labels: ['security', 'needs-triage']
+title: "[Security]: "
+labels: ["security", "needs-triage"]
 
 body:
   - type: markdown

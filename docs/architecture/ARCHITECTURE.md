@@ -11,12 +11,17 @@
 - [Canvas Rendering](#canvas-rendering)
 - [Export System](#export-system)
 - [Authentication and Cloud Sync](#authentication-and-cloud-sync)
+- [SSR-Style Prerendering](#ssr-style-prerendering)
+- [Content Security Policy](#content-security-policy)
+- [Client Scripts](#client-scripts)
 
 ---
 
 ## Overview
 
-ChessViewer is a **PWA** (Progressive Web App) built with Preact. It runs entirely in the browser — there is no server-side rendering. A service worker (via `vite-plugin-pwa`) enables offline use. URL-based navigation is handled client-side by **wouter**; the server serves the same `index.html` for every path.
+ChessViewer is a **Single Page Application (SPA) with SSR-style prerendering for SEO**. It runs as a static site served by nginx, with pages pre-rendered via Puppeteer at build time. There is **no service worker** — this is deliberate (lila-style SSR; SW caused reload crashes). The `public/sw.js` file is a **kill-switch** that replaces any legacy PWA service worker, deletes its caches, then unregisters itself.
+
+URL-based navigation is handled client-side by **wouter**; the server serves the same `index.html` for every path (SPA fallback), but static HTML files exist for each route thanks to prerendering.
 
 It parses FEN notation, renders chess positions on an HTML5 Canvas, and exports high-resolution raster or vector images. Optional user authentication enables cloud sync via a custom Supabase client with row-level security.
 
@@ -28,6 +33,8 @@ It parses FEN notation, renders chess positions on an HTML5 Canvas, and exports 
 - All local state persisted to localStorage; cloud sync is opt-in
 - All pages lazy-loaded with code splitting
 - TypeScript 6 strict mode throughout
+- **No inline scripts** — all client JS lives in external `public/*.js` files
+- **Strict CSP** — no `'unsafe-eval'`, no `'unsafe-inline'` for scripts
 
 ---
 
@@ -46,19 +53,21 @@ It parses FEN notation, renders chess positions on an HTML5 Canvas, and exports 
 | ZIP export      | fflate                                                       | 0.8.x   |
 | QR codes        | uqr                                                          | 0.1.x   |
 | Fonts           | @fontsource-variable/inter                                   | 5.x     |
-| Backend / Auth  | Custom Supabase client (`src/auth/Supabase.ts`)              | —       |
-| PWA             | vite-plugin-pwa (Workbox service worker)                     | 1.3.x   |
+| Backend / Auth  | Custom Supabase client (`src/auth/core/Supabase.ts`)         | —       |
+| Prerendering    | Puppeteer (`scripts/prerender.mjs`)                          | —       |
 | Package manager | pnpm                                                         | 10.x    |
 
 > **Preact instead of React** — `@preact/preset-vite` aliases `react` and `react-dom` to Preact at build time. All source code uses the React API; Preact provides it with a smaller runtime. `preact` and `@types/react` coexist in `package.json` for this reason.
 
 > **Icon system — embedded SVG paths, not a package** — `lucide-react` is not installed. Instead, the SVG path data for only the icons we actually use is copied into `src/assets/icons/index.tsx`. The `createLucideIcon` helper in `src/assets/icons/createIcon.tsx` turns each path list into a React component with the same API as the original Lucide package. Attribution: icon paths originate from the [Lucide](https://lucide.dev) project (ISC License).
 
-> **Supabase client — custom implementation, not `@supabase/supabase-js`** — `src/auth/Supabase.ts` contains a hand-written HTTP client (~940 lines) that covers only the Supabase APIs we use: Auth (sign-in/sign-up/MFA/session management), PostgREST queries, and RPC calls. This avoids the full SDK bundle weight. The `supabase` singleton exported from that file is the only approved entry point for all Supabase access.
+> **Supabase client — custom implementation, not `@supabase/supabase-js`** — `src/auth/core/Supabase.ts` contains a hand-written HTTP client that covers only the Supabase APIs we use: Auth (sign-in/sign-up/MFA/session management), PostgREST queries, and RPC calls. This avoids the full SDK bundle weight. The `supabase` singleton exported from that file is the only approved entry point for all Supabase access.
 
 > **Page animations — custom CSS, not Framer Motion** — `framer-motion` is not installed. The enter/exit animation system works with CSS `@keyframes` defined in `src/styles/animations.css` and a `usePageTransition` hook that keeps both pages in the DOM simultaneously for 180 ms. The animation class names (`animate-page-enter`, `page-transition-exit`) intentionally mirror the naming style from Framer Motion's AnimatePresence for familiarity.
 
 > **Chess domain logic — private package** — `@chessviewer-org/chess-viewer` provides `ChessBoard`, `PieceSymbol`, `validateFEN`, `parseFEN`, `boardToFEN`, and related types. It is a private package not published to npm.
+
+> **NO Service Worker** — This is deliberate (lila-style SSR; SW caused reload crashes). `public/sw.js` is a **kill-switch** that replaces any legacy PWA service worker, deletes its caches, then unregisters itself — do NOT replace it with a real SW, do NOT delete it (legacy zombies from the old vite-PWA era still exist in users' browsers). `public/init.js` mirrors this: unregisters legacy SWs once per browser (`cv_sw_purged` localStorage marker) — never add reloads or `caches.delete` back to it (raced with the legacy SW and caused the "site goes and comes back" crash). `_headers` serves `/sw.js` with `Cache-Control: no-cache` so the update check always sees the kill-switch.
 
 ---
 
@@ -66,133 +75,29 @@ It parses FEN notation, renders chess positions on an HTML5 Canvas, and exports 
 
 ```
 src/
-├── App.tsx                        # Root component — theme bootstrap, context providers
-├── index.tsx                      # Application entry point
-├── index.css                      # Global styles (imports from src/styles/)
-│
-├── auth/                          # Authentication — self-contained module
-│   ├── AuthContext.tsx            # Session state, AuthProvider, useAuth()
-│   ├── SecurityLock.tsx           # Fail-closed 90-day re-verification gate UI
-│   ├── TwoFactor.tsx              # Two-factor setup/management UI
-│   ├── TwoFactorSteps.tsx         # Step-by-step 2FA flow components
-│   ├── Supabase.ts                # Singleton Supabase client + type exports
-│   ├── syncStorage.ts             # KV interface to user_data (RLS owner-scoped)
-│   ├── dataMigration.ts           # localStorage → Supabase migration on first login
-│   ├── membership.ts              # Supporter tier logic + getMembershipTier()
-│   ├── profile.ts                 # profileService (get/updateDisplayName/setSupporter)
-│   ├── securityEvents.ts          # securityEventsService.recent()
-│   └── index.ts                   # Barrel re-exports
-│
-├── shared/
-│   ├── types/
-│   │   └── index.ts               # ChessBoard, isChessBoard, AdvancedFenConfig — import via @app-types
-│   ├── constants/
-│   │   ├── chessConstants.ts      # PIECE_SETS, BOARD_THEMES, QUALITY_PRESETS
-│   │   ├── dragDropConstants.ts   # ChessDragData, PALETTE_PIECES, getPieceImageKey
-│   │   ├── syncConstants.ts       # Storage key constants
-│   │   └── seoConstants.ts        # getRouteSeo, structured data schemas
-│   ├── hooks/                     # Cross-page reusable hooks
-│   │   ├── useA11y.ts             # CVD, contrast, reduced-motion — deferred cloud hydration
-│   │   ├── useChessBoard.ts       # FEN → 8×8 board array (memoized)
-│   │   ├── useDatabaseSearch.ts   # Lichess/PDB/YACPDB position lookup
-│   │   ├── useDOM.ts              # Small DOM utilities (useOutsideClick, useFocusTrap…)
-│   │   ├── useDragDrop.ts         # Custom drag-and-drop (no @dnd-kit)
-│   │   ├── useFENHistory.ts       # History CRUD + localStorage persistence
-│   │   ├── useFenValidation.ts    # Debounced FEN validation
-│   │   ├── useHomeExport.ts       # Export orchestration for HomePage
-│   │   ├── useInteractiveBoard.ts # Board state + undo/redo + FEN generation
-│   │   ├── useKeyboard.ts         # useEscapeKey, usePageScrollKeys, useEditorKeyboard, useListboxKeyboard
-│   │   ├── useLocalStorage.ts     # Debounced localStorage read/write
-│   │   ├── useNotifications.ts    # Toast notification system
-│   │   ├── usePagination.ts       # Generic pagination logic
-│   │   ├── usePiece.ts            # Piece-related helpers
-│   │   ├── usePieceImages.ts      # Piece SVG → HTMLImageElement loading
-│   │   ├── usePrefetchRoute.ts    # Hover-prefetch for page chunks
-│   │   ├── useSearchParams.ts     # URL search param read/write
-│   │   ├── useTheme.ts            # Board colour theme (light/dark squares + presets)
-│   │   └── index.ts               # Barrel re-exports (@hooks alias)
-│   ├── utils/
-│   │   ├── a11yUtils.ts           # applyColorVision, applyContrast, applyReducedMotion
-│   │   ├── archiveManager.ts      # ZIP batch compilation (fflate)
-│   │   ├── canvasExporter.ts      # downloadPNG/JPEG, copyToClipboard — export orchestrator
-│   │   ├── canvasRenderer.ts      # createUltraQualityCanvas() — off-screen draw
-│   │   ├── coordinateCalculations.ts # Square bounds, coordinate label drawing
-│   │   ├── databaseSearch.ts      # Database search API calls
-│   │   ├── exportRaster.ts        # createRasterBlob() — worker-first, canvas fallback
-│   │   ├── exportState.ts         # Cancel/pause/resume state machine
-│   │   ├── historyUtils.ts        # FEN history filter/sort utilities
-│   │   ├── imageOptimizer.ts      # calculateRenderSurfaceSize, getMaxCanvasSize (Safari cap)
-│   │   ├── logger.ts              # Structured logger (logger.warn/error/info)
-│   │   ├── pageScroll.ts          # getPageViewportHeight, canPageScroll, pageScrollBy…
-│   │   ├── pieceUtils.ts          # Piece image helpers
-│   │   ├── saveBlob.ts            # File download via <a download>
-│   │   ├── svgExporter.ts         # generateBoardSVG(), downloadSVG()
-│   │   ├── svgRasterWorker.ts     # Web Worker: SVG Blob → PNG/JPEG via OffscreenCanvas
-│   │   ├── syncHydration.ts       # hydrateFromSync() — deferred cloud→localStorage hydration
-│   │   ├── themeMode.ts           # readThemeModePreference, applyThemeMode
-│   │   ├── workerRasterExport.ts  # startSvgRasterWorkerTask() — queues SVG→raster to Worker
-│   │   └── index.ts               # Barrel re-exports (@utils alias)
-│   ├── ui/                        # Reusable UI primitives
-│   │   ├── Checkbox.tsx
-│   │   ├── CustomSelect.tsx       # Accessible listbox with keyboard navigation
-│   │   ├── DatePicker.tsx
-│   │   ├── ErrorBoundary.tsx
-│   │   ├── Logo.tsx
-│   │   ├── MembershipIdentity/    # Supporter badge components
-│   │   ├── Modal/                 # Modal + ModalShell
-│   │   ├── NotificationContainer.tsx
-│   │   ├── Pagination/
-│   │   ├── Seo.tsx
-│   │   ├── Switch.tsx
-│   │   └── index.ts
-│   └── contexts/
-│       ├── FENBatchContext.tsx    # FEN batch list (add/remove/clear, localStorage)
-│       ├── ModalContext.tsx       # Global alert/confirm modal
-│       └── index.ts
-│
+├── App.tsx                    # App root, routing, providers
+├── index.tsx                  # Entry, SW kill-switch registration
+├── auth/                      # Custom Supabase auth + sync
+│   ├── core/                  # AuthProvider, useAuth, Supabase client
+│   ├── storage/               # syncStorage, dataMigration
+│   └── mfa/                   # TOTP / 2FA
 ├── components/
-│   ├── board/
-│   │   └── MiniPreview.tsx        # Thumbnail board for history cards
-│   ├── features/
-│   │   ├── BoardStylePanel.tsx    # Board style controls wrapper
-│   │   ├── ColorPicker/           # HSV/HEX picker
-│   │   ├── ExportProgress.tsx     # Export progress overlay
-│   │   ├── Fen/                   # FENInputField with validation feedback
-│   │   └── History/               # HistoryFilters, StatusBadge, ConfirmationModal
-│   ├── interactions/
-│   │   ├── Editor/                # Master editor — ChessEditor, CommandBar, DatabaseSearch, ShareDialog
-│   │   ├── DraggablePiece.tsx     # Draggable piece wrapper (memo'd)
-│   │   ├── DroppableSquare.tsx    # Drop target per square (memo'd)
-│   │   ├── DragProvider.tsx       # Drag context wrapper
-│   │   ├── InteractiveBoard/      # 8×8 grid of DroppableSquares
-│   │   ├── PiecePalette/          # Off-board piece picker
-│   │   └── TrashZone.tsx          # Drop-to-delete zone
-│   └── layout/
-│       └── Navbar/                # App shell nav (desktop dropdown, mobile menu)
-│
+│   ├── features/              # Feature components (Export, History, etc.)
+│   ├── interactions/          # Editor, DnD board, drag-drop
+│   ├── layout/                # Navbar, Footer
+│   └── ui/                    # Shared UI primitives (Modal, Button, Input, etc.)
 ├── pages/
-│   ├── HomePage/                  # Primary board workspace
-│   ├── ExportPage/                # Full-screen export studio (board style + settings)
-│   ├── AdvancedFENInputPage/      # Batch FEN studio — up to 10 positions
-│   ├── FENHistoryPage/            # FEN history browser with filters
-│   ├── SettingsPage/              # Settings tabs (appearance, board, account, security)
-│   ├── AboutPage/                 # About sections (FAQ, Privacy, Contribute, Donate)
-│   ├── AuthPage/                  # Sign in, sign up, forgot password, MFA pages
-│   └── NotFoundPage.tsx
-│
-├── routes/
-│   ├── Router.tsx                 # All pages lazy() + Suspense, page transition animations
-│   ├── lazyPages.ts               # Lazy import factories + prefetch registry
-│   └── usePageTransition.ts       # Two-page simultaneous render for enter/exit animations
-│
-└── styles/
-    ├── animations.css             # @keyframes definitions + .animate-* utility classes
-    ├── base.css                   # HTML/body/element resets (@layer base)
-    ├── components.css             # Shared layout classes (page-container, main-content-offset)
-    ├── theme.css                  # @theme variables, CSS custom properties, color tokens
-    ├── utilities.css              # Scrollbar, marching-ants, safe-area, print styles
-    ├── _variables.scss            # SCSS breakpoint + spacing variables
-    └── _mixins.scss               # SCSS mixins (viewport-up/down, touch, hover-capable…)
+│   ├── HomePage/              # Main board editor
+│   ├── ExportPage/            # Multi-step export wizard
+│   ├── SettingsPage/          # User settings
+│   └── AuthPages/             # Login, register, MFA
+├── shared/
+│   ├── hooks/                 # useScrollLock, useFocusTrap, useLocalStorage, etc.
+│   ├── utils/                 # fenParser, colorConversions, etc.
+│   ├── styles/                # Tailwind 4 + SCSS modules (ui.module.scss)
+│   ├── contexts/              # Theme, FENBatch, Modal
+│   └── types/                 # Shared types
+└── styles/                    # Global CSS (base, animations, components)
 ```
 
 ---
@@ -224,23 +129,17 @@ Convention: use `@/x` for app-structure paths (`@/components`, `@/auth`). Use ba
 
 ## Routing
 
-Routing is handled by **wouter** (not React Router). All routes are in `src/routes/Router.tsx`. Every page is `lazy()`-loaded in a `<Suspense>` boundary.
+Routing is handled by **wouter** (not React Router). All routes are in `src/App.tsx`. Every page is `lazy()`-loaded in a `<Suspense>` boundary.
 
 Page transitions use a custom `usePageTransition` hook — no Framer Motion. Both the entering and exiting pages are held in the DOM simultaneously for 180 ms while CSS animations run (`animate-page-enter` / `page-transition-exit`).
 
-| Path                    | Component              |
-| ----------------------- | ---------------------- |
-| `/`                     | `HomePage`             |
-| `/export`               | `ExportPage`           |
-| `/about`                | `AboutPage`            |
-| `/settings`             | `SettingsPage`         |
-| `/fen-history`          | `FENHistoryPage`       |
-| `/advanced-fen`         | `AdvancedFENInputPage` |
-| `/auth/sign-in`         | `SignInPage`           |
-| `/auth/sign-up`         | `SignUpPage`           |
-| `/auth/forgot-password` | `ForgotPasswordPage`   |
-| `/auth/mfa`             | `MfaChallengePage`     |
-| `*`                     | `NotFoundPage`         |
+| Path        | Component                                |
+| ----------- | ---------------------------------------- |
+| `/`         | `HomePage`                               |
+| `/export`   | `ExportPage`                             |
+| `/settings` | `SettingsPage`                           |
+| `/auth/*`   | Auth pages (sign-in, sign-up, MFA, etc.) |
+| `*`         | `NotFoundPage`                           |
 
 `usePrefetchRoute` prefetches a page chunk on link hover/focus, so click-time navigation is instant.
 
@@ -286,7 +185,7 @@ See [EXPORT_PIPELINE.md](../reference/EXPORT_PIPELINE.md) for the full technical
 **Flow:**
 
 1. User opens ExportPage (full-screen studio) from the CommandBar download button
-2. Configures format (PNG/JPEG/SVG), quality preset (1×–4×), board size (4/6/8 cm), and filename
+2. Configures format (PNG/JPEG/SVG), quality preset (1×–3×), board size (4/6/8 cm), and filename
 3. `handleBatchExport` in `useHomeExport` triggers `canvasExporter.ts`
 4. For PNG/JPEG: `createRasterBlob()` attempts the SVG→Worker path first; falls back to main-thread canvas if pieces are blob URLs
 5. For SVG: `downloadSVG()` in `svgExporter.ts` embeds piece images as base64 data URLs
@@ -303,14 +202,15 @@ All auth logic is in `src/auth/` — a self-contained module. Nothing outside th
 
 **Services:**
 
-- `Supabase.ts` — singleton Supabase client
-- `syncStorage.ts` — the only approved KV interface for `user_data` table
-- `profile.ts` — display name and supporter tier operations
-- `dataMigration.ts` — one-time localStorage → Supabase migration on first login
-- `membership.ts` — supporter tier logic (`getMembershipTier`)
-- `securityEvents.ts` — recent login event log
+- `core/Supabase.ts` — singleton Supabase client
+- `storage/syncStorage.ts` — the only approved KV interface for `user_data` table
+- `core/profile.ts` — display name and supporter tier operations
+- `storage/dataMigration.ts` — one-time localStorage → Supabase migration on first login
+- `core/membership.ts` — supporter tier logic (`getMembershipTier`)
+- `core/securityEvents.ts` — recent login event log
+- `mfa/` — TOTP / 2FA setup and verification
 
-**Security gate:** `SecurityLock.tsx` / `useSecurityCheck` is fail-closed — `isLocked` defaults to `true` and only unlocks on positive server confirmation via the `refresh_security_session` RPC.
+**Security gate:** Fail-closed 90-day re-verification via `refresh_security_session` RPC. Defaults to locked; only unlocks on positive server confirmation.
 
 **Cloud sync:** `syncStorage.set(key, value)` upserts into `user_data`. Each row is owner-scoped by Supabase RLS: `auth.uid() = user_id`. No user can read another user's rows. The local localStorage copy is the source of truth; cloud is best-effort sync on top.
 
@@ -318,4 +218,82 @@ All auth logic is in `src/auth/` — a self-contained module. Nothing outside th
 
 ---
 
-_Last updated: July 2026_
+## SSR-Style Prerendering
+
+ChessViewer uses **SSG/prerendering** for SEO, not a traditional PWA with service worker.
+
+**How it works:**
+
+1. Build produces `dist/` with SPA `index.html` + all JS/CSS chunks
+2. `scripts/prerender.mjs` launches Puppeteer, visits each route, waits for network idle
+3. Static HTML snapshots saved to `dist/<route>/index.html`
+4. nginx serves static HTML when available; falls back to `index.html` for SPA routes
+
+**Routes prerendered:** `/`, `/export`, `/settings`, `/auth/sign-in`, `/auth/sign-up`, `/auth/forgot-password`, `/auth/mfa`, `/about`, `/fen-history`, `/advanced-fen`
+
+**Prerender config:** `scripts/prerender.mjs` — requires Chromium. Runs in CI after `pnpm build`.
+
+**No service worker:** The old PWA approach (vite-plugin-pwa + Workbox) was removed because it caused reload crashes. The only SW is the kill-switch at `public/sw.js`.
+
+---
+
+## Content Security Policy
+
+CSP is **strict (lila-style)** and defined in two places — both must stay in sync:
+
+1. `app/middleware/security.ts` (nginx config generation)
+2. `public/_headers` (Netlify-style headers for edge/CDN)
+
+**Policy:**
+
+```
+script-src 'self' https://static.cloudflareinsights.com
+style-src 'self' 'unsafe-inline'
+img-src 'self' data: blob: https://cdn.jsdelivr.net https://lichess1.org
+font-src 'self' data: https://fonts.gstatic.com
+connect-src 'self' https://*.supabase.co wss://*.supabase.co https://static.cloudflareinsights.com
+frame-ancestors 'none'
+base-uri 'self'
+form-action 'self'
+```
+
+**Key constraints:**
+
+- **NO `'unsafe-eval'`** — all code must be valid without eval
+- **NO `'unsafe-inline'` for scripts** — no inline `<script>` blocks, no `onclick="..."`, no `javascript:` URLs
+- `'unsafe-inline'` **allowed for styles only** — dynamic `style=""` attributes (board square colors, drag ghost, picker cursors) require it
+- `<script type="application/ld+json">` schema blocks are NOT executed and are exempt from CSP — they may stay inline
+
+---
+
+## Client Scripts
+
+**All client-side JavaScript lives in external files under `public/`** — never inline in HTML.
+
+This is mandatory due to strict CSP. The following files exist:
+
+| File                      | Purpose                                                 |
+| ------------------------- | ------------------------------------------------------- |
+| `public/layout-state.js`  | Navbar mobile menu, theme toggle, scroll handling       |
+| `public/editor-state.js`  | HomePage editor interactions (FEN input, board actions) |
+| `public/export-page.js`   | ExportPage wizard steps, format selection               |
+| `public/notifications.js` | Toast notification display                              |
+| `public/fen-history.js`   | FEN history page filters, search, pagination            |
+| `public/settings-page.js` | Settings tabs, form handling                            |
+| `public/advanced-fen.js`  | Advanced FEN batch input                                |
+| `public/donate-state.js`  | Donate modal state                                      |
+| `public/init.js`          | Legacy SW unregistration (kill-switch mirror)           |
+| `public/sw.js`            | Service worker kill-switch                              |
+
+**Adding a new vanilla component:**
+
+1. Create `public/<feature>.js`
+2. Register delegated event handlers (event delegation on `document`)
+3. Reference with `<script src="/<feature>.js">` in the page HTML
+4. Never use inline `<script>` blocks
+
+**Historical note:** The share modal / navbar "stuck" bugs were caused by CSP blocking inline scripts. Never reintroduce them.
+
+---
+
+_Last updated: August 2026_

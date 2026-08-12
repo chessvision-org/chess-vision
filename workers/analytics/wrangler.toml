@@ -1,0 +1,20 @@
+name = "chess-viewer-analytics"
+main = "index.ts"
+compatibility_date = "2024-01-01"
+
+# Daily flush at 23:59 UTC
+[triggers]
+crons = ["59 23 * * *"]
+
+[[kv_namespaces]]
+binding = "ANALYTICS_KV"
+id = "c8704ec0fc1642b9bf68ff8daff0c680"
+
+[vars]
+SUPABASE_URL = "https://exhlxcigncuqaichgbmy.supabase.co"
+ALLOWED_ORIGIN = "https://chessvision.org"
+
+# These are SECRETS — set via `wrangler secret put`, NOT in this file:
+# - SUPABASE_SERVICE_ROLE_KEY
+# - ANALYTICS_SALT
+# - FLUSH_SECRET

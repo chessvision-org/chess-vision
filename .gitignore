@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+node_modules
 /.pnp
 .pnp.js
 
@@ -12,9 +12,8 @@
 /build
 /dist
 
-# Vite
+# Local env
 *.local
-.vite/
 
 # pnpm
 .pnpm-store/
@@ -40,4 +39,4 @@ yarn-error.log*
 
 # Supabase CLI local artifacts (link state, temp files) — never committed
 supabase/.temp/
-supabase/.branches/
+supabase/.branches/public/

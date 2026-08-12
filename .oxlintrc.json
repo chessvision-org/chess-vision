@@ -1,0 +1,29 @@
+{
+  "$schema": "https://oxlint.org/oxlintrc.json",
+  "ignorePatterns": [
+    "node_modules",
+    "dist",
+    "build",
+    "public",
+    ".tmp",
+    "supabase",
+    "src",
+    "modules",
+    "server",
+    "scripts"
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "pedantic": "off",
+    "perf": "off",
+    "style": "off"
+  },
+  "rules": {
+    "eslint/no-underscore-dangle": ["error", { "allow": ["__dirname", "__filename"] }],
+    "eslint/no-shadow": "off",
+    "unicorn/no-array-sort": "off",
+    "unicorn/no-new-array": "off",
+    "unicorn/consistent-function-scoping": "off"
+  }
+}

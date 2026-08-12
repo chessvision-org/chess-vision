@@ -7,6 +7,10 @@ pnpm-lock.yaml
 dist
 build
 
+# Compiled assets (sass output + chess-viewer library build)
+public/styles/main.css
+public/compiled
+
 # Logs
 logs
 *.log
@@ -38,3 +42,5 @@ coverage
 # Other
 *.min.js
 *.min.css
+# Cloudflare
+wrangler.toml

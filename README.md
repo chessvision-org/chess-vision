@@ -83,9 +83,19 @@ To report a vulnerability, see [SECURITY.md](SECURITY.md).
 
 ## Tech stack
 
-Preact 10, TypeScript 6, Vite 8, Tailwind CSS 4, wouter, fflate, vite-plugin-pwa.
+Preact 10, TypeScript 6, Vite 8, Tailwind CSS 4, wouter, fflate.
 
-Supabase is used for auth and cloud sync via a custom hand-written client (`src/auth/Supabase.ts`) — the `@supabase/supabase-js` SDK is not installed. Icons are Lucide SVG paths embedded directly in `src/assets/icons/` (ISC License) — `lucide-react` is not installed. Page transition animations are CSS-based — `framer-motion` is not installed.
+**Architecture:** SPA with SSR-style prerendering (Puppeteer) for SEO — no service worker. `public/sw.js` is a kill-switch for legacy PWA workers.
+
+**Auth/Sync:** Custom Supabase client (`src/auth/core/Supabase.ts`) — the `@supabase/supabase-js` SDK is not installed.
+
+**Icons:** Lucide SVG paths embedded directly in `src/assets/icons/` (ISC License) — `lucide-react` is not installed.
+
+**Animations:** CSS-based (`src/styles/animations.css`) — `framer-motion` is not installed.
+
+**CSP:** Strict (lila-style) — no `'unsafe-eval'`, no `'unsafe-inline'` for scripts. All client JS in external `public/*.js` files.
+
+**Hosting:** Static `dist/` served by nginx (Docker) with security headers + CSP in `nginx.conf`.
 
 ---
 

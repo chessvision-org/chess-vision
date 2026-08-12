@@ -177,6 +177,78 @@ Records of key architectural and technical decisions made during ChessViewer's d
 
 ---
 
+## ADR-015: SSR-Style Prerendering over PWA
+
+**Date:** 2026-08-11 | **Status:** Accepted (supersedes PWA approach)
+
+**Decision:** Use static site generation (SSG) via Puppeteer prerendering for SEO instead of a Progressive Web App with service worker. Build produces static HTML snapshots for each route; nginx serves them directly with SPA fallback.
+
+**Rationale:** PWA service worker caused reload crashes and complex cache invalidation issues. Prerendering provides SEO benefits without runtime SW complexity. The app is a static bundle — no server runtime needed.
+
+**Constraints:**
+
+- `scripts/prerender.mjs` runs in CI after `pnpm build`
+- Requires Chromium in CI environment
+- All routes must be known at build time for prerendering
+- SPA fallback (`index.html`) still served for unprerendered routes
+
+**Trade-offs:** No offline support (intentional — core features work offline via localStorage anyway). Prerender adds ~30s to CI. Dynamic content (auth state) still hydrates client-side.
+
+---
+
+## ADR-016: No Service Worker — Kill-Switch Only
+
+**Date:** 2026-08-11 | **Status:** Accepted
+
+**Decision:** No service worker for caching/offline. `public/sw.js` exists solely as a kill-switch: it replaces any legacy PWA service worker, deletes its caches, then unregisters itself. `public/init.js` mirrors this for browsers that already have the legacy SW registered.
+
+**Rationale:** The previous vite-plugin-pwa + Workbox setup caused "site goes and comes back" reload crashes due to race conditions between the legacy SW and new deployments. A kill-switch is safer than trying to maintain a working SW.
+
+**Constraints:**
+
+- `_headers` serves `/sw.js` with `Cache-Control: no-cache` so the update check always sees the kill-switch
+- `cv_sw_purged` localStorage marker prevents repeated unregistration attempts
+- Never add reloads or `caches.delete` back to `init.js` — raced with legacy SW and caused crashes
+- Do NOT replace kill-switch with a real SW, do NOT delete it (legacy zombies still exist in users' browsers)
+
+---
+
+## ADR-017: Strict CSP with External Client Scripts
+
+**Date:** 2026-08-11 | **Status:** Accepted
+
+**Decision:** Content Security Policy is strict (lila-style): `script-src 'self' https://static.cloudflareinsights.com` — NO `'unsafe-eval'`, NO `'unsafe-inline'` for scripts. All client-side JavaScript lives in external files under `public/*.js` (delegated event handlers). Inline `<script>` blocks are forbidden.
+
+**Rationale:** Security-first posture. CSP prevents XSS via script injection. External scripts are cacheable and auditable. The lila.org chess server uses this pattern successfully.
+
+**Constraints:**
+
+- `style-src 'self' 'unsafe-inline'` remains — dynamic `style=""` attributes (board square colors, drag ghost, picker cursors) require it
+- `<script type="application/ld+json">` schema blocks are exempt (not executed)
+- Adding a new vanilla component: create `public/<feature>.js`, register delegated handlers on `document`, reference via `<script src="/<feature>.js">`
+- Never reintroduce inline scripts — share modal / navbar "stuck" bugs were caused by CSP blocking them
+- CSP defined in TWO places: `app/middleware/security.ts` AND `public/_headers` — keep both in sync
+
+---
+
+## ADR-018: Tailwind 4 + SCSS Modules with @reference Pattern
+
+**Date:** 2026-08-11 | **Status:** Accepted
+
+**Decision:** Tailwind 4 (CSS-first) with SCSS modules for components needing complex styling. SCSS modules use `@reference "../../index.css"` to access theme tokens via `@apply` — no hardcoded hex colors in JSX.
+
+**Rationale:** Tailwind 4's CSS-first architecture works natively with CSS variables. SCSS modules provide encapsulation for complex components (Modal, ShareDialog) while `@reference` gives access to the design token system without duplicating values.
+
+**Constraints:**
+
+- Design tokens in `src/styles/theme.css` (CSS variables)
+- Theme init in `src/theme-init.js` (preload, prevents FOUC)
+- `@reference` import path must be correct relative to SCSS file
+- No hardcoded hex colors in JSX — use `text-text-primary`, `bg-surface`, etc.
+- Two modal patterns exist (Inline Tailwind preferred, SCSS Module) — don't mix them
+
+---
+
 ## Proposing a New Decision
 
 1. Open a GitHub Discussion with your proposal.
@@ -187,5 +259,5 @@ Records of key architectural and technical decisions made during ChessViewer's d
 
 ---
 
-_Last updated: July 2026_  
+_Last updated: August 2026_  
 _Maintainer: [Khatai Huseynzada](https://github.com/BilgeGates)_

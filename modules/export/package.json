@@ -1,0 +1,16 @@
+{
+  "name": "@chess-viewer/export",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@chess-viewer/core": "workspace:*",
+    "fflate": "^0.8.3",
+    "uqr": "^0.1.3"
+  }
+}

@@ -1,0 +1,3 @@
+{
+  "ignorePatterns": ["app/views/layouts/layout.ts", "app/views/templates/about.ts"]
+}

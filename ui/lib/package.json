@@ -1,0 +1,13 @@
+{
+  "name": "@chess-viewer/lib",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./css/*": "./css/*",
+    "./assets/*": "./assets/*"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

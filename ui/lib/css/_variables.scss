@@ -1,0 +1,23 @@
+$bp-xs: 480px;
+$bp-sm: 640px;
+$bp-md: 768px;
+$bp-lg: 1024px;
+$bp-xl: 1280px;
+$bp-2xl: 1536px;
+
+$editor-breakpoint-side: 564px;
+$editor-breakpoint-cmd: 800px;
+$editor-breakpoint-desk: 1024px;
+
+$db-breakpoint-2col: 394px;
+
+$navbar-h-base: 4.5rem;
+$navbar-h-sm: 5rem;
+$navbar-h-lg: 5.5rem;
+
+$gap-xs: clamp(0.5rem, 1vw, 0.75rem);
+$gap-sm: clamp(0.75rem, 1.5vw, 1rem);
+$gap-md: clamp(1rem, 2.5vw, 1.5rem);
+
+$z-board: 1;
+$z-overlay: 30;
