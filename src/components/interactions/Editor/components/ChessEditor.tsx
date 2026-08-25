@@ -176,19 +176,8 @@ export const ChessEditor = memo(function ChessEditor({
   const {
     lichess: lichessState,
     chessdb: chessdbState,
-    pdb: pdbState,
     yacpdb: yacpdbState
   } = useDatabaseSearch(fen);
-
-  const slowSearchNotified = useRef(false);
-  const notifySlowSearch = useCallback(() => {
-    if (slowSearchNotified.current) return;
-    slowSearchNotified.current = true;
-    onNotify?.(
-      'PDB/YACPDB are slow databases — this lookup can take up to ~40 seconds.',
-      'warning'
-    );
-  }, [onNotify]);
 
   const handleCopyFen = useCallback(() => {
     void navigator.clipboard.writeText(fen);
@@ -348,9 +337,7 @@ export const ChessEditor = memo(function ChessEditor({
               <DatabaseSearchPanel
                 lichess={lichessState}
                 chessdb={chessdbState}
-                pdb={pdbState}
                 yacpdb={yacpdbState}
-                onSlowSearch={notifySlowSearch}
               />
             </div>
             <div className={styles.editorTrash}>
@@ -363,9 +350,7 @@ export const ChessEditor = memo(function ChessEditor({
           <DatabaseSearchPanel
             lichess={lichessState}
             chessdb={chessdbState}
-            pdb={pdbState}
             yacpdb={yacpdbState}
-            onSlowSearch={notifySlowSearch}
           />
         </div>
 

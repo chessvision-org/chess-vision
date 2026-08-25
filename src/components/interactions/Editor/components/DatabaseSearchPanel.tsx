@@ -2,7 +2,6 @@ import { memo } from 'react';
 
 import {
   ArrowUpRight,
-  ChessKing,
   Database,
   Globe,
   Library,
@@ -17,11 +16,7 @@ import styles from '../styles/database-search.module.scss';
 interface DatabaseSearchPanelProps {
   lichess: ProviderState;
   chessdb: ProviderState;
-  pdb: ProviderState;
   yacpdb: ProviderState;
-
-  onSlowSearch?: () => void;
-  className?: string;
 }
 
 // Helpers
@@ -125,20 +120,15 @@ const ProviderRow = memo(function ProviderRow({
 export const DatabaseSearchPanel = memo(function DatabaseSearchPanel({
   lichess,
   chessdb,
-  pdb,
-  yacpdb,
-  onSlowSearch,
-  className = ''
+  yacpdb
 }: DatabaseSearchPanelProps) {
-  const slow = onSlowSearch ? { onBeforeSearch: onSlowSearch } : {};
   return (
-    <div className={`${styles.panel} ${className}`}>
+    <div className={styles.panel}>
       <span className={styles.title}>Database Search</span>
       <div className={styles.grid}>
         <ProviderRow state={lichess} Icon={Globe} />
         <ProviderRow state={chessdb} Icon={Database} />
-        <ProviderRow state={pdb} Icon={ChessKing} {...slow} />
-        <ProviderRow state={yacpdb} Icon={Library} {...slow} />
+        <ProviderRow state={yacpdb} Icon={Library} />
       </div>
     </div>
   );

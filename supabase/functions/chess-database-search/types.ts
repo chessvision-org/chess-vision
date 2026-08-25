@@ -1,4 +1,4 @@
-export type Provider = 'lichess' | 'chessdb' | 'pdb' | 'yacpdb';
+export type Provider = 'lichess' | 'chessdb' | 'yacpdb';
 
 export interface SearchResponse {
   found: boolean;

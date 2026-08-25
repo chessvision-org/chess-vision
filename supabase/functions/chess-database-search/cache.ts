@@ -77,10 +77,7 @@ export function isLichessHit(v: unknown): v is { lichess: ProviderHit } {
   return isHit((v as Record<string, unknown>)['lichess']);
 }
 
-export function isProviderPair(
-  v: unknown
-): v is { pdb: ProviderHit; yacpdb: ProviderHit } {
+export function isYacpdbHit(v: unknown): v is { yacpdb: ProviderHit } {
   if (typeof v !== 'object' || v === null) return false;
-  const o = v as Record<string, unknown>;
-  return isHit(o['pdb']) && isHit(o['yacpdb']);
+  return isHit((v as Record<string, unknown>)['yacpdb']);
 }

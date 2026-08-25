@@ -3,10 +3,9 @@ import { supabase } from '@/auth';
 import { validateFEN } from '@chessviewer-org/chess-viewer';
 
 // Types
-export type DatabaseProvider = 'pdb' | 'yacpdb' | 'lichess' | 'chessdb';
+export type DatabaseProvider = 'yacpdb' | 'lichess' | 'chessdb';
 
 export const PROVIDER_LABEL: Record<DatabaseProvider, string> = {
-  pdb: 'PDB',
   yacpdb: 'YACPDB',
   lichess: 'Lichess',
   chessdb: 'ChessDB'
@@ -26,12 +25,7 @@ interface EdgeProviderHit {
 
 type EdgeSearchResponse = Record<DatabaseProvider, EdgeProviderHit>;
 
-const PROVIDERS: readonly DatabaseProvider[] = [
-  'lichess',
-  'chessdb',
-  'pdb',
-  'yacpdb'
-];
+const PROVIDERS: readonly DatabaseProvider[] = ['lichess', 'chessdb', 'yacpdb'];
 
 // Helpers
 function isEdgeProviderHit(value: unknown): value is EdgeProviderHit {
@@ -50,18 +44,8 @@ function boardField(fen: string): string {
   return fen.trim().split(/\s+/)[0] ?? '';
 }
 
-const PDB_PIECE_DE: Record<string, string> = {
-  K: 'K',
-  Q: 'D',
-  R: 'T',
-  B: 'L',
-  N: 'S',
-  P: 'B'
-};
-
-const FILES = 'abcdefgh';
 const YAC_TEXT_FIELDS = 14;
-const YAC_CHECKBOX_DEFAULTS = ['0', '0', '0', '0'];
+const YAC_CHECKBOX_DEFAULTS = ['1', '1', '1', '0'];
 
 function yacEscapeAndJoin(parts: string[]): string {
   return parts
@@ -72,40 +56,6 @@ function yacEscapeAndJoin(parts: string[]): string {
 function yacB64(s: string): string {
   const bytes = unescape(encodeURIComponent(s));
   return btoa(bytes).replace(/\//g, '*');
-}
-
-function pieceTokens(
-  fen: string,
-  colorFor: (white: boolean) => string,
-  letterFor: Record<string, string>
-): string[] {
-  const tokens: string[] = [];
-  const ranks = boardField(fen).split('/');
-
-  for (let ri = 0; ri < ranks.length; ri++) {
-    const rankStr = ranks[ri] ?? '';
-    const rankNum = 8 - ri;
-    let fileIdx = 0;
-
-    for (const ch of rankStr) {
-      if (ch >= '1' && ch <= '8') {
-        fileIdx += Number(ch);
-        continue;
-      }
-      const isWhite = ch === ch.toUpperCase();
-      const type = letterFor[ch.toUpperCase()] ?? '?';
-      const file = FILES[fileIdx] ?? '?';
-      tokens.push(`${colorFor(isWhite)}${type}${file}${rankNum}`);
-      fileIdx++;
-    }
-  }
-  return tokens;
-}
-
-function buildPdbUrl(fen: string): string {
-  const tokens = pieceTokens(fen, (w) => (w ? 'w' : 's'), PDB_PIECE_DE);
-  const query = encodeURIComponent(`POSITION='${tokens.join(' ')}'`);
-  return `https://pdb.dieschwalbe.de/search.jsp?expression=${query}`;
 }
 
 function buildYacpdbUrl(fen: string): string {
@@ -135,7 +85,6 @@ function notFound(fen: string): DatabaseSearchResult {
   return {
     lichess: { found: false, url: buildLichessUrl(fen) },
     chessdb: { found: false, url: buildChessdbUrl(fen) },
-    pdb: { found: false, url: buildPdbUrl(fen) },
     yacpdb: { found: false, url: buildYacpdbUrl(fen) }
   };
 }

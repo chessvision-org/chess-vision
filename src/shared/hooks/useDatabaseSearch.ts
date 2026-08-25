@@ -24,13 +24,12 @@ export interface ProviderState {
 export interface UseDatabaseSearchResult {
   lichess: ProviderState;
   chessdb: ProviderState;
-  pdb: ProviderState;
   yacpdb: ProviderState;
   searchAll: () => void;
 }
 
 // Constants
-const PROVIDERS: DatabaseProvider[] = ['lichess', 'chessdb', 'pdb', 'yacpdb'];
+const PROVIDERS: DatabaseProvider[] = ['lichess', 'chessdb', 'yacpdb'];
 
 interface ProviderData {
   status: ProviderSearchStatus;
@@ -40,7 +39,6 @@ interface ProviderData {
 const IDLE_STATE: Record<DatabaseProvider, ProviderData> = {
   lichess: { status: 'idle', url: null },
   chessdb: { status: 'idle', url: null },
-  pdb: { status: 'idle', url: null },
   yacpdb: { status: 'idle', url: null }
 };
 
@@ -105,7 +103,6 @@ export function useDatabaseSearch(fen: string): UseDatabaseSearchResult {
   return {
     lichess: makeProviderState('lichess'),
     chessdb: makeProviderState('chessdb'),
-    pdb: makeProviderState('pdb'),
     yacpdb: makeProviderState('yacpdb'),
     searchAll: () => run(PROVIDERS)
   };

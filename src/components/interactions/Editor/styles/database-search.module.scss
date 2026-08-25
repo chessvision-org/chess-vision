@@ -27,11 +27,11 @@
 .grid {
   display: grid;
   min-height: 0;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, 1fr);
   gap: 0.25rem;
 
-  @include m.editor-side-by-side {
-    grid-template-columns: 1fr 1fr;
+  @include m.db-single-col {
+    grid-template-columns: 1fr;
   }
 }
 

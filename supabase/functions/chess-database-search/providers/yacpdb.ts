@@ -12,19 +12,8 @@ const YAC_PIECE: Record<string, string> = {
   P: 'P'
 };
 const YAC_TYPE_RE = /^([KQRBN])([a-h][1-8])$/;
-const YAC_TEXT_FIELDS = 20;
-const YAC_CHECKBOX_DEFAULTS = [
-  '1',
-  '1',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0'
-];
+const YAC_TEXT_FIELDS = 14;
+const YAC_CHECKBOX_DEFAULTS = ['1', '1', '1', '0'];
 
 // Types
 interface YacEntry {
@@ -87,7 +76,7 @@ export async function searchYacpdb(
   board: string
 ): Promise<SearchResponse> {
   const want = pieceSet(pieces);
-  const query = `Matrix('${[...want].join(' ')}')`;
+  const query = `MatrixExtended('${[...want].join(' ')}', false, false, 'None')`;
   const humanUrl = yacpdbHumanUrl(board);
   const miss: SearchResponse = {
     found: false,

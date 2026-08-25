@@ -1,7 +1,7 @@
 import type { PlacedPiece, ProviderHit, ProviderMap } from './types.ts';
 import {
   isLichessHit,
-  isProviderPair,
+  isYacpdbHit,
   lichessCacheKey,
   makeServiceClient,
   readCache,
@@ -11,7 +11,6 @@ import { boardField, isValidBoardField, parsePieces } from './utils/fen.ts';
 import { trace } from './utils/trace.ts';
 import { searchLichess } from './providers/lichess.ts';
 import { searchChessdb } from './providers/chessdb.ts';
-import { searchPdb, pdbUrl } from './providers/pdb.ts';
 import { searchYacpdb, yacpdbHumanUrl } from './providers/yacpdb.ts';
 import { lichessHumanUrl } from './providers/lichess.ts';
 import { chessdbHumanUrl } from './providers/chessdb.ts';
@@ -64,7 +63,6 @@ Deno.serve(async (req: Request) => {
     return json({
       lichess: { found: false, url: lichessHumanUrl(fen) },
       chessdb: { found: false, url: chessdbHumanUrl(fen) },
-      pdb: { found: false, url: '' },
       yacpdb: { found: false, url: '' }
     } satisfies ProviderMap);
   }
@@ -75,7 +73,6 @@ Deno.serve(async (req: Request) => {
   const map: ProviderMap = {
     lichess: { found: false, url: lichessHumanUrl(fen) },
     chessdb: { found: false, url: chessdbHumanUrl(fen) },
-    pdb: { found: false, url: pdbUrl(pieces) },
     yacpdb: { found: false, url: yacpdbHumanUrl(board) }
   };
 
@@ -87,7 +84,7 @@ Deno.serve(async (req: Request) => {
   // Cache check
   const cachedPair = noCache
     ? null
-    : await readCache(supabase, board, isProviderPair);
+    : await readCache(supabase, board, isYacpdbHit);
   const cachedLichess = noCache
     ? null
     : ((await readCache(supabase, lichessCacheKey(fen), isLichessHit))
@@ -96,21 +93,18 @@ Deno.serve(async (req: Request) => {
 
   // External lookup
   try {
-    const [lichess, chessdb, pdb, yacpdb] = await Promise.all([
+    const [lichess, chessdb, yacpdb] = await Promise.all([
       cachedLichess ? null : searchLichess(fen),
       searchChessdb(fen),
-      cachedPair ? null : searchPdb(pieces),
       cachedPair ? null : searchYacpdb(pieces, board)
     ]);
     if (cachedLichess) map.lichess = cachedLichess;
     else if (lichess) map.lichess = toHit(lichess);
     map.chessdb = toHit(chessdb);
     if (cachedPair) {
-      map.pdb = cachedPair.pdb;
       map.yacpdb = cachedPair.yacpdb;
-    } else {
-      if (pdb) map.pdb = toHit(pdb);
-      if (yacpdb) map.yacpdb = toHit(yacpdb);
+    } else if (yacpdb) {
+      map.yacpdb = toHit(yacpdb);
     }
   } catch (err) {
     console.error('Search pipeline error:', err);
@@ -119,12 +113,7 @@ Deno.serve(async (req: Request) => {
 
   // Cache writes
   if (!cachedPair) {
-    await writeCache(
-      supabase,
-      board,
-      { pdb: map.pdb, yacpdb: map.yacpdb },
-      map.pdb.found || map.yacpdb.found
-    );
+    await writeCache(supabase, board, { yacpdb: map.yacpdb }, map.yacpdb.found);
   }
   if (!cachedLichess) {
     await writeCache(
