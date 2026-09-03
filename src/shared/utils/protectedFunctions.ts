@@ -16,6 +16,8 @@ const BASE_URL =
   '';
 const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY ?? '';
 
+console.info('[invokeProtected] base url:', BASE_URL);
+
 // Service
 export async function invokeProtected<T>(
   name: string,
@@ -39,11 +41,19 @@ export async function invokeProtected<T>(
       const message =
         (data && typeof data['message'] === 'string' && data['message']) ||
         'request_failed';
+      console.error(
+        `[invokeProtected] ${name} -> ${res.status} at ${BASE_URL}/functions/v1/${name}:`,
+        data
+      );
       return { data: null, error: { status: res.status, message } };
     }
 
     return { data: data as T, error: null };
   } catch (err) {
+    console.error(
+      `[invokeProtected] ${name} -> network error at ${BASE_URL}/functions/v1/${name}:`,
+      err
+    );
     const message = err instanceof Error ? err.message : 'network_error';
     return { data: null, error: { message } };
   }
