@@ -78,7 +78,14 @@ Deno.serve(async (req: Request) => {
       403
     );
   }
-  if (!(await checkIpRateLimit(supabase, ipHash, RATE_LIMIT_MAX_PER_HOUR, '1 hour'))) {
+  if (
+    !(await checkIpRateLimit(
+      supabase,
+      ipHash,
+      RATE_LIMIT_MAX_PER_HOUR,
+      '1 hour'
+    ))
+  ) {
     trace('REQ', 'IP rate limited');
     return json({ error: 'rate_limited', message: 'rate_limited' }, 429);
   }
