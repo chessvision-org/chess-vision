@@ -78,7 +78,7 @@ What is built, what is next, and what is not planned. Milestone targets below ar
 - Global modal system (alert / confirm)
 - Skip-to-main-content link
 - PWA manifest and installability
-- Position database search (Lichess, PDB, YACPDB) on demand
+- Position database search (Lichess, ChessDB) on demand
 - Share board via URL or image
 
 ### Code Quality

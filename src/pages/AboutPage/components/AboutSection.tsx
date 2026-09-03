@@ -91,7 +91,7 @@ export default function AboutSection() {
           <li>
             <strong className="text-text-primary">Database lookup.</strong>{' '}
             Wondering if a position has ever been played before? Check it
-            against Lichess, ChessDB, and YACPDB in one click.
+            against Lichess and ChessDB in one click.
           </li>
         </ul>
       </InfoCard>

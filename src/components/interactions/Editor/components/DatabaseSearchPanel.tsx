@@ -1,13 +1,6 @@
 import { memo } from 'react';
 
-import {
-  ArrowUpRight,
-  Database,
-  Globe,
-  Library,
-  Loader2,
-  Search
-} from '@/assets/icons';
+import { ArrowUpRight, Database, Globe, Loader2, Search } from '@/assets/icons';
 
 import type { ProviderState } from '@hooks';
 
@@ -16,7 +9,6 @@ import styles from '../styles/database-search.module.scss';
 interface DatabaseSearchPanelProps {
   lichess: ProviderState;
   chessdb: ProviderState;
-  yacpdb: ProviderState;
 }
 
 // Helpers
@@ -119,8 +111,7 @@ const ProviderRow = memo(function ProviderRow({
 
 export const DatabaseSearchPanel = memo(function DatabaseSearchPanel({
   lichess,
-  chessdb,
-  yacpdb
+  chessdb
 }: DatabaseSearchPanelProps) {
   return (
     <div className={styles.panel}>
@@ -128,7 +119,6 @@ export const DatabaseSearchPanel = memo(function DatabaseSearchPanel({
       <div className={styles.grid}>
         <ProviderRow state={lichess} Icon={Globe} />
         <ProviderRow state={chessdb} Icon={Database} />
-        <ProviderRow state={yacpdb} Icon={Library} />
       </div>
     </div>
   );

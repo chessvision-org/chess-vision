@@ -50,7 +50,7 @@ docker compose --profile dev up --build dev   # http://localhost:5173
 - **Export** — PNG, JPEG, or SVG at four quality presets (300–1200 DPI); batch export downloads a ZIP; DPI metadata is embedded in the file
 - **Board customisation** — 20 piece sets, 20 preset themes, custom colour picker, up to 48 saved presets
 - **Position history** — saved locally with favourites, pinning, freshness indicators, and full-text search
-- **Database search** — look up positions directly from Lichess, PDB, and YACPDB
+- **Database search** — look up positions directly from Lichess and ChessDB
 - **Optional account** — sign in to sync your history and settings across devices via Supabase; data is encrypted at rest and owner-scoped by row-level security
 
 ---

@@ -173,11 +173,8 @@ export const ChessEditor = memo(function ChessEditor({
     onPieceImagesChange?.(pieceImages);
   }, [pieceImages, onPieceImagesChange]);
 
-  const {
-    lichess: lichessState,
-    chessdb: chessdbState,
-    yacpdb: yacpdbState
-  } = useDatabaseSearch(fen);
+  const { lichess: lichessState, chessdb: chessdbState } =
+    useDatabaseSearch(fen);
 
   const handleCopyFen = useCallback(() => {
     void navigator.clipboard.writeText(fen);
@@ -337,7 +334,6 @@ export const ChessEditor = memo(function ChessEditor({
               <DatabaseSearchPanel
                 lichess={lichessState}
                 chessdb={chessdbState}
-                yacpdb={yacpdbState}
               />
             </div>
             <div className={styles.editorTrash}>
@@ -347,11 +343,7 @@ export const ChessEditor = memo(function ChessEditor({
         </div>
 
         <div className={styles.editorDbRow}>
-          <DatabaseSearchPanel
-            lichess={lichessState}
-            chessdb={chessdbState}
-            yacpdb={yacpdbState}
-          />
+          <DatabaseSearchPanel lichess={lichessState} chessdb={chessdbState} />
         </div>
 
         <ShareDialog

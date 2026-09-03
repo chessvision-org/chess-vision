@@ -94,7 +94,7 @@ src/
 │   ├── hooks/                     # Cross-page reusable hooks
 │   │   ├── useA11y.ts             # CVD, contrast, reduced-motion — deferred cloud hydration
 │   │   ├── useChessBoard.ts       # FEN → 8×8 board array (memoized)
-│   │   ├── useDatabaseSearch.ts   # Lichess/PDB/YACPDB position lookup
+│   │   ├── useDatabaseSearch.ts   # Lichess/ChessDB position lookup
 │   │   ├── useDOM.ts              # Small DOM utilities (useOutsideClick, useFocusTrap…)
 │   │   ├── useDragDrop.ts         # Custom drag-and-drop (no @dnd-kit)
 │   │   ├── useFENHistory.ts       # History CRUD + localStorage persistence

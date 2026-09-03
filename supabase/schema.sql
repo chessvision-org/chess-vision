@@ -793,6 +793,115 @@ $$ LANGUAGE plpgsql
 REVOKE EXECUTE ON FUNCTION public.prune_db_search_cache(INTERVAL)
     FROM PUBLIC, anon, authenticated;
 
+CREATE TABLE IF NOT EXISTS public.verified_search_ips (
+    ip_hash      TEXT        PRIMARY KEY CHECK (char_length(ip_hash) = 64),
+    verified_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_used_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    user_agent   TEXT        CHECK (user_agent IS NULL OR char_length(user_agent) <= 500)
+);
+
+CREATE INDEX IF NOT EXISTS idx_verified_search_ips_last_used
+    ON public.verified_search_ips(last_used_at);
+
+ALTER TABLE public.verified_search_ips ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.verified_search_ips FORCE ROW LEVEL SECURITY;
+
+REVOKE ALL ON public.verified_search_ips FROM anon, authenticated;
+
+CREATE OR REPLACE FUNCTION public.prune_verified_search_ips(retain INTERVAL DEFAULT INTERVAL '180 days')
+RETURNS INT AS $$
+DECLARE
+    deleted INT;
+BEGIN
+    DELETE FROM public.verified_search_ips
+    WHERE last_used_at < (NOW() - retain);
+    GET DIAGNOSTICS deleted = ROW_COUNT;
+    RETURN deleted;
+END;
+$$ LANGUAGE plpgsql
+   SECURITY DEFINER
+   SET search_path = public, pg_temp;
+
+REVOKE EXECUTE ON FUNCTION public.prune_verified_search_ips(INTERVAL)
+    FROM PUBLIC, anon, authenticated;
+
+CREATE TABLE IF NOT EXISTS public.search_rate_limit (
+    ip_hash       TEXT        PRIMARY KEY CHECK (char_length(ip_hash) = 64),
+    window_start  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    request_count INT         NOT NULL DEFAULT 0 CHECK (request_count >= 0),
+    updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE public.search_rate_limit ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.search_rate_limit FORCE ROW LEVEL SECURITY;
+
+REVOKE ALL ON public.search_rate_limit FROM anon, authenticated;
+
+CREATE OR REPLACE FUNCTION public.check_ip_rate_limit(
+    p_ip_hash      TEXT,
+    p_max_attempts INT,
+    p_window       INTERVAL
+)
+RETURNS BOOLEAN AS $$
+DECLARE
+    ledger         public.search_rate_limit;
+    window_expired BOOLEAN;
+    new_count      INT;
+BEGIN
+    INSERT INTO public.search_rate_limit (ip_hash, window_start, request_count)
+    VALUES (p_ip_hash, NOW(), 0)
+    ON CONFLICT (ip_hash) DO NOTHING;
+
+    SELECT * INTO ledger
+    FROM public.search_rate_limit
+    WHERE ip_hash = p_ip_hash
+    FOR UPDATE;
+
+    window_expired := (ledger.window_start < (NOW() - p_window));
+
+    IF window_expired THEN
+        new_count := 1;
+        UPDATE public.search_rate_limit
+        SET window_start  = NOW(),
+            request_count = 1,
+            updated_at    = NOW()
+        WHERE ip_hash = p_ip_hash;
+    ELSE
+        new_count := ledger.request_count + 1;
+        UPDATE public.search_rate_limit
+        SET request_count = new_count,
+            updated_at    = NOW()
+        WHERE ip_hash = p_ip_hash;
+    END IF;
+
+    RETURN new_count <= p_max_attempts;
+END;
+$$ LANGUAGE plpgsql
+   SECURITY DEFINER
+   SET search_path = public, pg_temp;
+
+REVOKE EXECUTE ON FUNCTION public.check_ip_rate_limit(TEXT, INT, INTERVAL)
+    FROM PUBLIC, anon, authenticated;
+GRANT  EXECUTE ON FUNCTION public.check_ip_rate_limit(TEXT, INT, INTERVAL)
+    TO service_role;
+
+CREATE OR REPLACE FUNCTION public.prune_search_rate_limit(retain INTERVAL DEFAULT INTERVAL '2 days')
+RETURNS INT AS $$
+DECLARE
+    deleted INT;
+BEGIN
+    DELETE FROM public.search_rate_limit
+    WHERE updated_at < (NOW() - retain);
+    GET DIAGNOSTICS deleted = ROW_COUNT;
+    RETURN deleted;
+END;
+$$ LANGUAGE plpgsql
+   SECURITY DEFINER
+   SET search_path = public, pg_temp;
+
+REVOKE EXECUTE ON FUNCTION public.prune_search_rate_limit(INTERVAL)
+    FROM PUBLIC, anon, authenticated;
+
 REVOKE EXECUTE ON FUNCTION public.refresh_security_session()                       FROM PUBLIC, anon;
 REVOKE EXECUTE ON FUNCTION public.generate_recovery_codes()                        FROM PUBLIC, anon;
 REVOKE EXECUTE ON FUNCTION public.verify_recovery_code(TEXT)                       FROM PUBLIC, anon;

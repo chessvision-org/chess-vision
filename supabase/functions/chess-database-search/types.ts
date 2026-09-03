@@ -1,4 +1,4 @@
-export type Provider = 'lichess' | 'chessdb' | 'yacpdb';
+export type Provider = 'lichess' | 'chessdb';
 
 export interface SearchResponse {
   found: boolean;
@@ -12,9 +12,3 @@ export interface ProviderHit {
 }
 
 export type ProviderMap = Record<Provider, ProviderHit>;
-
-export interface PlacedPiece {
-  piece: string;
-  white: boolean;
-  square: string;
-}

@@ -6,6 +6,8 @@ interface ImportMetaEnv {
   readonly VITE_SUPABASE_ANON_KEY?: string;
   readonly VITE_APP_NAME?: string;
   readonly VITE_APP_VERSION?: string;
+  readonly VITE_TURNSTILE_SITE_KEY?: string;
+  readonly VITE_DB_SEARCH_PROXY_URL?: string;
 }
 
 interface ImportMeta {
