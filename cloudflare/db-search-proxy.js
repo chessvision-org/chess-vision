@@ -17,10 +17,9 @@ export default {
     const init = {
       method: request.method,
       headers,
-      body:
-        request.method === 'GET' || request.method === 'HEAD'
-          ? undefined
-          : request.body
+      body: (request.method === 'GET' || request.method === 'HEAD')
+        ? undefined
+        : request.body,
     };
 
     return fetch(target.toString(), init);
